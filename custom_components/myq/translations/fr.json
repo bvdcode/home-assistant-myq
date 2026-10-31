@@ -121,11 +121,19 @@
       "last_activation_source": {
         "name": "Source de la dernière activation"
       }
+    },
+    "camera": {
+      "camera": {
+        "name": "Caméra"
+      }
     }
   },
   "exceptions": {
     "command_failed": {
       "message": "La commande MyQ de la porte de garage a échoué."
+    },
+    "camera_image_failed": {
+      "message": "Impossible de récupérer une image de la caméra MyQ."
     }
   }
 }

@@ -121,11 +121,19 @@
       "last_activation_source": {
         "name": "Bron van laatste activering"
       }
+    },
+    "camera": {
+      "camera": {
+        "name": "Camera"
+      }
     }
   },
   "exceptions": {
     "command_failed": {
       "message": "De MyQ-opdracht voor de garagedeur is mislukt."
+    },
+    "camera_image_failed": {
+      "message": "De momentopname van de MyQ-camera kon niet worden opgehaald."
     }
   }
 }

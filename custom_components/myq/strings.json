@@ -121,11 +121,19 @@
       "last_activation_source": {
         "name": "Last activation source"
       }
+    },
+    "camera": {
+      "camera": {
+        "name": "Camera"
+      }
     }
   },
   "exceptions": {
     "command_failed": {
       "message": "The MyQ garage-door command failed."
+    },
+    "camera_image_failed": {
+      "message": "The MyQ camera snapshot could not be retrieved."
     }
   }
 }

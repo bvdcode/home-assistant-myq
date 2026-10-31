@@ -121,11 +121,19 @@
       "last_activation_source": {
         "name": "Źródło ostatniego uruchomienia"
       }
+    },
+    "camera": {
+      "camera": {
+        "name": "Kamera"
+      }
     }
   },
   "exceptions": {
     "command_failed": {
       "message": "Polecenie MyQ dla bramy garażowej nie powiodło się."
+    },
+    "camera_image_failed": {
+      "message": "Nie udało się pobrać zdjęcia z kamery MyQ."
     }
   }
 }

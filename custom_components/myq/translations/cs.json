@@ -121,11 +121,19 @@
       "last_activation_source": {
         "name": "Zdroj poslední aktivace"
       }
+    },
+    "camera": {
+      "camera": {
+        "name": "Kamera"
+      }
     }
   },
   "exceptions": {
     "command_failed": {
       "message": "Příkaz MyQ pro garážová vrata selhal."
+    },
+    "camera_image_failed": {
+      "message": "Snímek z kamery MyQ se nepodařilo načíst."
     }
   }
 }

@@ -121,11 +121,19 @@
       "last_activation_source": {
         "name": "Letzte Auslösequelle"
       }
+    },
+    "camera": {
+      "camera": {
+        "name": "Kamera"
+      }
     }
   },
   "exceptions": {
     "command_failed": {
       "message": "Der MyQ-Befehl für das Garagentor ist fehlgeschlagen."
+    },
+    "camera_image_failed": {
+      "message": "Das Standbild der MyQ-Kamera konnte nicht abgerufen werden."
     }
   }
 }

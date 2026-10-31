@@ -121,11 +121,19 @@
       "last_activation_source": {
         "name": "Senaste aktiveringskälla"
       }
+    },
+    "camera": {
+      "camera": {
+        "name": "Kamera"
+      }
     }
   },
   "exceptions": {
     "command_failed": {
       "message": "MyQ-kommandot för garageporten misslyckades."
+    },
+    "camera_image_failed": {
+      "message": "Det gick inte att hämta en stillbild från MyQ-kameran."
     }
   }
 }

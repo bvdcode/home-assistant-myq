@@ -121,11 +121,19 @@
       "last_activation_source": {
         "name": "Seneste aktiveringskilde"
       }
+    },
+    "camera": {
+      "camera": {
+        "name": "Kamera"
+      }
     }
   },
   "exceptions": {
     "command_failed": {
       "message": "MyQ-kommandoen til garageporten mislykkedes."
+    },
+    "camera_image_failed": {
+      "message": "Billedet fra MyQ-kameraet kunne ikke hentes."
     }
   }
 }

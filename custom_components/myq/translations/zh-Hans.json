@@ -121,11 +121,19 @@
       "last_activation_source": {
         "name": "上次触发来源"
       }
+    },
+    "camera": {
+      "camera": {
+        "name": "摄像头"
+      }
     }
   },
   "exceptions": {
     "command_failed": {
       "message": "MyQ 车库门命令执行失败。"
+    },
+    "camera_image_failed": {
+      "message": "无法获取 MyQ 摄像头的快照。"
     }
   }
 }

@@ -121,11 +121,19 @@
       "last_activation_source": {
         "name": "Последний источник активации"
       }
+    },
+    "camera": {
+      "camera": {
+        "name": "Камера"
+      }
     }
   },
   "exceptions": {
     "command_failed": {
       "message": "Не удалось выполнить команду гаражной двери MyQ."
+    },
+    "camera_image_failed": {
+      "message": "Не удалось получить снимок с камеры MyQ."
     }
   }
 }
