@@ -74,7 +74,7 @@ class MyQClient:
         await self._async_command(door, "close")
 
     async def async_get_camera_image(self, camera: MyQCamera) -> bytes:
-        """Return a JPEG frame captured by the camera for this request."""
+        """Return the latest JPEG image supplied by Tend."""
         image = await self._async_request(
             "GET",
             f"{TEND_API_BASE_URL}/devices/{camera.tend_device_id}/cam/recentImage.jpg",

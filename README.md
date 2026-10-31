@@ -19,6 +19,7 @@ The integration provides:
 - a door-open binary sensor for Alarmo and other sensor-based automations;
 - vacation mode, work-light, fault, cycle-count, and activation diagnostics
   when provided by MyQ;
+- snapshots from attached cameras and experimental live video for TC cameras;
 - cloud polling every 30 seconds.
 
 ## Alarmo
@@ -78,6 +79,26 @@ The password is used only during sign-in and is not stored. Home Assistant
 stores the issued OAuth tokens in the config entry and refreshes them
 automatically. If MyQ rejects token refresh or account access, Home Assistant
 requests reauthentication.
+
+## Cameras
+
+Openers with an attached camera get a camera entity on the same device.
+Snapshots are fetched on demand from the Tend cloud using the existing MyQ
+authorization. Concurrent requests share an image request.
+
+TC cameras also offer experimental live H.264 video. Home Assistant must be able
+to reach the camera over the local network. Playback uses the `stream`
+integration or Home Assistant's built-in go2rtc. An external go2rtc server on
+another host or in another container cannot access the loopback video source.
+Other camera generations currently provide snapshots only.
+
+Viewers share one camera session, which closes 60 seconds after the last viewer
+disconnects. Opening the camera simultaneously in the myQ app may interrupt the
+session. Audio and retrieval of cloud recordings are not implemented.
+
+The `camera_serial_prefix` attribute identifies the camera generation. Connection
+failures are logged with `TC camera live video unavailable`. Real-camera playback
+and recovery still require validation on this implementation.
 
 ## Safety
 
