@@ -74,6 +74,7 @@
       "unknown": "Errore MyQ imprevisto. Controlla i log per i dettagli."
     },
     "abort": {
+      "already_configured": "Questo account MyQ è già configurato. Non è necessario configurarlo di nuovo.",
       "cannot_connect": "Autenticazione riuscita, ma il servizio di rilevamento dei dispositivi MyQ non è raggiungibile.",
       "no_devices": "Nessuna porta del garage trovata in questo account MyQ.",
       "reauth_successful": "MyQ è stato riconnesso correttamente.",

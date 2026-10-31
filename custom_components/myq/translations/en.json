@@ -74,6 +74,7 @@
       "unknown": "Unexpected MyQ error. Check the logs for details."
     },
     "abort": {
+      "already_configured": "This MyQ account is already configured. No additional setup is needed.",
       "cannot_connect": "Authentication succeeded, but MyQ device discovery could not be reached.",
       "no_devices": "No garage doors were found on this MyQ account.",
       "reauth_successful": "MyQ was reconnected successfully.",

@@ -74,6 +74,7 @@
       "unknown": "Nieoczekiwany błąd MyQ. Szczegóły znajdziesz w logach."
     },
     "abort": {
+      "already_configured": "To konto MyQ jest już skonfigurowane. Ponowna konfiguracja nie jest potrzebna.",
       "cannot_connect": "Uwierzytelnianie powiodło się, ale usługa wykrywania urządzeń MyQ jest niedostępna.",
       "no_devices": "Na tym koncie MyQ nie znaleziono bram garażowych.",
       "reauth_successful": "Ponowne połączenie z MyQ powiodło się.",
