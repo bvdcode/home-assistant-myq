@@ -1,10 +1,10 @@
-"""Snapshots from cameras attached to MyQ garage doors."""
+"""Snapshots and live video from cameras attached to MyQ garage doors."""
 
 import asyncio
 import time
 
 from aiohttp import ClientError
-from homeassistant.components.camera import Camera
+from homeassistant.components.camera import Camera, CameraEntityFeature
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -15,6 +15,7 @@ from .entity import MyQEntity
 from .exceptions import MyQError
 from .models import GarageDoor, MyQCamera
 from .runtime import MyQConfigEntry
+from .tend_stream import TendLiveStream
 
 SNAPSHOT_FRAME_INTERVAL = 5.0
 
@@ -47,6 +48,10 @@ class MyQGarageCamera(MyQEntity, Camera):
         self._capture_lock = asyncio.Lock()
         self._image: bytes | None = None
         self._captured_at = 0.0
+        self._live_stream: TendLiveStream | None = None
+        if door.camera is not None and door.camera.serial_prefix == "TC":
+            self._attr_supported_features = CameraEntityFeature.STREAM
+            self.stream_options = {"use_wallclock_as_timestamps": True}
 
     @property
     def camera(self) -> MyQCamera | None:
@@ -89,3 +94,26 @@ class MyQGarageCamera(MyQEntity, Camera):
                 ) from error
             self._captured_at = time.monotonic()
             return self._image
+
+    async def stream_source(self) -> str | None:
+        """Provide a local H.264 source for TC cameras."""
+        camera = self.camera
+        if not self.available or camera is None or camera.serial_prefix != "TC":
+            return None
+        if self._live_stream is None:
+            self._live_stream = TendLiveStream(
+                self._serial_number, self.coordinator.client.async_access_token
+            )
+        return await self._live_stream.source_url()
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Close the source before waiting for the stream reader to stop."""
+        try:
+            if self._live_stream is not None:
+                await self._live_stream.close()
+        finally:
+            self._live_stream = None
+            if self.stream is not None:
+                await self.stream.stop()
+                self.stream = None
+            await super().async_will_remove_from_hass()
