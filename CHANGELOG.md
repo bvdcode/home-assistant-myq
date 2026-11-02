@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v0.2.9 (2026-11-02)
+
+Preserve garage movement feedback during delayed starts
+
+• Keep Opening and Closing visible while MyQ still reports the original door state, including the warning delay before closing.
+• Use confirmed MyQ states once the status changes, with the existing error handling and 60-second timeout.
+• Verify repeated unchanged responses in coordinator and Home Assistant scheduling tests.
+
+
 ## v0.2.8 (2026-11-02)
 
 Camera support and improved garage door feedback
