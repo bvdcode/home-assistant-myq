@@ -228,11 +228,11 @@ async def test_command_polls_motion_and_final_state_then_stops_on_unload(
 
     for interval, reported, expected in (
         (1, initial, moving),
-        (2, initial, initial),
-        (3, moving, moving),
-        (4, target, target),
-        (5, target, target),
-        (5, target, target),
+        (2, initial, moving),
+        (3, initial, moving),
+        (4, moving, moving),
+        (5, moving, moving),
+        (5, moving, moving),
         (5, target, target),
         (5, target, target),
     ):

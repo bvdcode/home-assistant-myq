@@ -121,7 +121,7 @@ async def test_command_polling_gradually_increases_intervals(
         ("opening", "closed", None),
     ],
 )
-async def test_first_unchanged_status_keeps_provisional_motion_once(
+async def test_unchanged_status_keeps_provisional_motion_until_status_changes(
     command_updates: tuple[MyQDataUpdateCoordinator, MagicMock],
     initial: str,
     target: Literal["open", "closed"],
@@ -140,15 +140,20 @@ async def test_first_unchanged_status_keeps_provisional_motion_once(
     client.async_get_garage_doors.assert_not_awaited()
     listener.assert_called_once()
 
-    await coordinator.async_refresh()
-    assert coordinator.command_motion(door.serial_number) == motion
-    assert coordinator.data[door.serial_number] is door
-    assert listener.call_count == 2
+    for poll in range(4):
+        await coordinator.async_refresh()
+        assert coordinator.command_motion(door.serial_number) == motion
+        assert coordinator.data[door.serial_number] is door
+        assert listener.call_count == poll + 2
 
+    client.async_get_garage_doors.return_value = (replace(door, door_state="moving"),)
+    await coordinator.async_refresh()
+    assert coordinator.command_motion(door.serial_number) is None
+
+    client.async_get_garage_doors.return_value = (door,)
     await coordinator.async_refresh()
     assert coordinator.command_motion(door.serial_number) is None
     assert coordinator.data[door.serial_number] is door
-    assert listener.call_count == 3
     unsubscribe()
 
 
@@ -187,6 +192,7 @@ async def test_unchanged_state_stops_fast_polling_at_deadline(
         await coordinator.async_refresh()
     assert coordinator.update_interval == DEFAULT_UPDATE_INTERVAL
     assert coordinator.data["door-1"].door_state == "closed"
+    assert coordinator.command_motion("door-1") is None
 
 
 @pytest.mark.parametrize("doors", [(), (replace(DOOR, online=False),)])
@@ -199,6 +205,7 @@ async def test_missing_or_offline_door_stops_fast_polling(
     client.async_get_garage_doors.return_value = doors
     await coordinator.async_refresh()
     assert coordinator.update_interval == DEFAULT_UPDATE_INTERVAL
+    assert coordinator.command_motion("door-1") is None
 
 
 @pytest.mark.parametrize(
