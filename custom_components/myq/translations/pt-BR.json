@@ -74,6 +74,7 @@
       "unknown": "Erro inesperado do MyQ. Verifique os logs para obter detalhes."
     },
     "abort": {
+      "already_configured": "Esta conta MyQ já está configurada. Não é necessário configurá-la novamente.",
       "cannot_connect": "A autenticação foi bem-sucedida, mas não foi possível acessar o serviço de descoberta de dispositivos do MyQ.",
       "no_devices": "Nenhum portão de garagem foi encontrado nesta conta MyQ.",
       "reauth_successful": "O MyQ foi reconectado com sucesso.",
@@ -121,11 +122,19 @@
       "last_activation_source": {
         "name": "Origem da última ativação"
       }
+    },
+    "camera": {
+      "camera": {
+        "name": "Câmera"
+      }
     }
   },
   "exceptions": {
     "command_failed": {
       "message": "O comando do MyQ para o portão da garagem falhou."
+    },
+    "camera_image_failed": {
+      "message": "Não foi possível obter uma imagem da câmera MyQ."
     }
   }
 }

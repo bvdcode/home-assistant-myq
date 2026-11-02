@@ -34,24 +34,42 @@ def test_cover_maps_door_state(
     assert entity.is_closing is closing
 
 
+@pytest.mark.parametrize(("initial", "motion"), [("closed", "opening"), ("open", "closing")])
+def test_cover_shows_provisional_motion_without_changing_confirmed_state(
+    initial: str, motion: str
+) -> None:
+    entity, coordinator = _entity(initial)
+    coordinator.command_motion.return_value = motion
+
+    assert entity.is_closed is False
+    assert entity.is_opening is (motion == "opening")
+    assert entity.is_closing is (motion == "closing")
+    assert entity.door is not None and entity.door.door_state == initial
+
+
 @pytest.mark.parametrize("operation", ["open", "close"])
-async def test_cover_commands_client_once_then_refreshes(operation: str) -> None:
+async def test_cover_commands_client_once_then_schedules_updates(operation: str) -> None:
     entity, coordinator = _entity("closed")
     commands = {"open": entity.async_open_cover, "close": entity.async_close_cover}
     calls = MagicMock()
     calls.attach_mock(coordinator.client.async_open_door, "open")
     calls.attach_mock(coordinator.client.async_close_door, "close")
-    calls.attach_mock(coordinator.async_request_refresh, "refresh")
+    calls.attach_mock(coordinator.async_schedule_command_updates, "refresh")
 
     await commands[operation]()
 
     expected = {"open": call.open(entity.door), "close": call.close(entity.door)}[operation]
-    assert calls.mock_calls == [expected, call.refresh()]
+    assert calls.mock_calls == [
+        expected,
+        call.refresh("door-1", {"open": "open", "close": "closed"}[operation]),
+    ]
     assert (
         coordinator.client.async_open_door.await_count
         + coordinator.client.async_close_door.await_count
     ) == 1
-    coordinator.async_request_refresh.assert_awaited_once_with()
+    coordinator.async_schedule_command_updates.assert_called_once_with(
+        "door-1", {"open": "open", "close": "closed"}[operation]
+    )
 
 
 @pytest.mark.parametrize("operation", ["open", "close"])
@@ -77,30 +95,7 @@ async def test_cover_translates_command_failure_without_retry_or_refresh(
     assert raised.value.translation_key == "command_failed"
     expected = {"open": call.open(entity.door), "close": call.close(entity.door)}[operation]
     assert calls.mock_calls == [expected]
-    coordinator.async_request_refresh.assert_not_awaited()
-
-
-@pytest.mark.parametrize("operation", ["open", "close"])
-async def test_refresh_failure_does_not_repeat_successful_command(operation: str) -> None:
-    entity, coordinator = _entity("closed")
-    commands = {"open": entity.async_open_cover, "close": entity.async_close_cover}
-    calls = MagicMock()
-    calls.attach_mock(coordinator.client.async_open_door, "open")
-    calls.attach_mock(coordinator.client.async_close_door, "close")
-    calls.attach_mock(coordinator.async_request_refresh, "refresh")
-    error = ClientConnectionError("Update failed")
-    coordinator.async_request_refresh.side_effect = error
-
-    with pytest.raises(ClientConnectionError) as raised:
-        await commands[operation]()
-
-    assert raised.value is error
-    expected = {"open": call.open(entity.door), "close": call.close(entity.door)}[operation]
-    assert calls.mock_calls == [expected, call.refresh()]
-    assert (
-        coordinator.client.async_open_door.await_count
-        + coordinator.client.async_close_door.await_count
-    ) == 1
+    coordinator.async_schedule_command_updates.assert_not_called()
 
 
 async def test_missing_door_has_no_state_and_cannot_receive_commands() -> None:
@@ -117,14 +112,15 @@ async def test_missing_door_has_no_state_and_cannot_receive_commands() -> None:
 
     coordinator.client.async_open_door.assert_not_awaited()
     coordinator.client.async_close_door.assert_not_awaited()
-    coordinator.async_request_refresh.assert_not_awaited()
+    coordinator.async_schedule_command_updates.assert_not_called()
 
 
 def _entity(state: str) -> tuple[MyQGarageDoor, MagicMock]:
     door = GarageDoor("account-1", "door-1", "Garage", None, state, True)
     coordinator = MagicMock()
     coordinator.data = {door.serial_number: door}
+    coordinator.command_motion.return_value = None
     coordinator.client.async_open_door = AsyncMock()
     coordinator.client.async_close_door = AsyncMock()
-    coordinator.async_request_refresh = AsyncMock()
+    coordinator.async_schedule_command_updates = MagicMock()
     return MyQGarageDoor(coordinator, door), coordinator

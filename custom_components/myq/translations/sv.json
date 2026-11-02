@@ -74,6 +74,7 @@
       "unknown": "Oväntat MyQ-fel. Se loggarna för mer information."
     },
     "abort": {
+      "already_configured": "Det här MyQ-kontot är redan konfigurerat. Ingen ytterligare konfiguration behövs.",
       "cannot_connect": "Autentiseringen lyckades, men MyQ:s enhetsidentifiering gick inte att nå.",
       "no_devices": "Inga garageportar hittades på det här MyQ-kontot.",
       "reauth_successful": "MyQ har återanslutits.",
@@ -121,11 +122,19 @@
       "last_activation_source": {
         "name": "Senaste aktiveringskälla"
       }
+    },
+    "camera": {
+      "camera": {
+        "name": "Kamera"
+      }
     }
   },
   "exceptions": {
     "command_failed": {
       "message": "MyQ-kommandot för garageporten misslyckades."
+    },
+    "camera_image_failed": {
+      "message": "Det gick inte att hämta en stillbild från MyQ-kameran."
     }
   }
 }

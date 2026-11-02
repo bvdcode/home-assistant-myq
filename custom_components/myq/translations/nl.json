@@ -74,6 +74,7 @@
       "unknown": "Onverwachte MyQ-fout. Bekijk de logboeken voor details."
     },
     "abort": {
+      "already_configured": "Dit MyQ-account is al ingesteld. Opnieuw instellen is niet nodig.",
       "cannot_connect": "De authenticatie is gelukt, maar de apparaatdetectie van MyQ was niet bereikbaar.",
       "no_devices": "Er zijn geen garagedeuren gevonden in dit MyQ-account.",
       "reauth_successful": "MyQ is opnieuw verbonden.",
@@ -121,11 +122,19 @@
       "last_activation_source": {
         "name": "Bron van laatste activering"
       }
+    },
+    "camera": {
+      "camera": {
+        "name": "Camera"
+      }
     }
   },
   "exceptions": {
     "command_failed": {
       "message": "De MyQ-opdracht voor de garagedeur is mislukt."
+    },
+    "camera_image_failed": {
+      "message": "De momentopname van de MyQ-camera kon niet worden opgehaald."
     }
   }
 }

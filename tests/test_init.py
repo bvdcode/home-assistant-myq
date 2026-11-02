@@ -1,18 +1,25 @@
 from collections.abc import Callable
 from dataclasses import replace
+from datetime import timedelta
 from typing import cast
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
+from freezegun.api import FrozenDateTimeFactory
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from homeassistant.util import dt as dt_util
+from pytest_homeassistant_custom_component.common import MockConfigEntry, async_fire_time_changed
 
 from custom_components.myq.const import (
+    COMMAND_UPDATE_INITIAL_INTERVAL,
+    COMMAND_UPDATE_INTERVAL,
     CONF_EMAIL,
     CONF_MFA_METHOD,
     CONF_TOKENS,
+    DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
     MFA_METHOD_EMAIL,
 )
@@ -182,6 +189,135 @@ async def test_door_open_sensor_tracks_cover_without_additional_polling(
     await hass.async_block_till_done()
 
 
+@pytest.mark.parametrize(
+    ("service", "initial", "moving", "target"),
+    [("open_cover", "closed", "opening", "open"), ("close_cover", "open", "closing", "closed")],
+)
+async def test_command_polls_motion_and_final_state_then_stops_on_unload(
+    hass: HomeAssistant,
+    freezer: FrozenDateTimeFactory,
+    service: str,
+    initial: str,
+    moving: str,
+    target: str,
+) -> None:
+    freezer.move_to("2026-11-02T12:00:00+00:00")
+    entry = _entry()
+    entry.add_to_hass(hass)
+    client = MagicMock()
+    client.async_get_garage_doors = AsyncMock(return_value=(replace(DOOR, door_state=initial),))
+    client.async_open_door = AsyncMock()
+    client.async_close_door = AsyncMock()
+    with patch("custom_components.myq.MyQClient", return_value=client):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+    entity_id = er.async_get(hass).async_get_entity_id("cover", DOMAIN, "door-1")
+    assert entity_id is not None
+    runtime = cast(MyQRuntimeData, entry.runtime_data)
+    await hass.services.async_call("cover", service, {"entity_id": entity_id}, blocking=True)
+    assert client.async_get_garage_doors.await_count == 1
+    state = hass.states.get(entity_id)
+    assert state is not None and state.state == moving
+    assert runtime.coordinator.data["door-1"].door_state == initial
+    sensor_id = er.async_get(hass).async_get_entity_id("binary_sensor", DOMAIN, "door-1_door_open")
+    assert sensor_id is not None
+    sensor_state = hass.states.get(sensor_id)
+    assert sensor_state is not None
+    assert sensor_state.state == {"closed": "off", "open": "on"}[initial]
+
+    for interval, reported, expected in (
+        (1, initial, moving),
+        (2, initial, initial),
+        (3, moving, moving),
+        (4, target, target),
+        (5, target, target),
+        (5, target, target),
+        (5, target, target),
+        (5, target, target),
+    ):
+        before = client.async_get_garage_doors.await_count
+        client.async_get_garage_doors.return_value = (replace(DOOR, door_state=reported),)
+        assert runtime.coordinator.update_interval == timedelta(seconds=interval)
+        async_fire_time_changed(hass, dt_util.utcnow() + timedelta(seconds=interval - 1))
+        await hass.async_block_till_done()
+        assert client.async_get_garage_doors.await_count == before
+
+        freezer.tick(timedelta(seconds=interval))
+        async_fire_time_changed(hass)
+        await hass.async_block_till_done()
+        assert client.async_get_garage_doors.await_count == before + 1
+        state = hass.states.get(entity_id)
+        assert state is not None and state.state == expected
+
+    assert runtime.coordinator.update_interval == DEFAULT_UPDATE_INTERVAL
+    before = client.async_get_garage_doors.await_count
+    async_fire_time_changed(hass, dt_util.utcnow() + COMMAND_UPDATE_INTERVAL)
+    await hass.async_block_till_done()
+    assert client.async_get_garage_doors.await_count == before
+
+    reverse_service = {"open_cover": "close_cover", "close_cover": "open_cover"}[service]
+    await hass.services.async_call(
+        "cover", reverse_service, {"entity_id": entity_id}, blocking=True
+    )
+    assert runtime.coordinator.update_interval == COMMAND_UPDATE_INITIAL_INTERVAL
+    client.async_open_door.assert_awaited_once()
+    client.async_close_door.assert_awaited_once()
+    before = client.async_get_garage_doors.await_count
+    assert await hass.config_entries.async_unload(entry.entry_id)
+    async_fire_time_changed(hass, dt_util.utcnow() + DEFAULT_UPDATE_INTERVAL)
+    await hass.async_block_till_done()
+    assert client.async_get_garage_doors.await_count == before
+
+
+@pytest.mark.parametrize(
+    ("service", "initial", "target"),
+    [("open_cover", "closed", "open"), ("close_cover", "open", "closed")],
+)
+async def test_commands_with_polling_disabled_keep_confirmed_state(
+    hass: HomeAssistant,
+    freezer: FrozenDateTimeFactory,
+    service: str,
+    initial: str,
+    target: str,
+) -> None:
+    entry = _entry(disable_polling=True)
+    entry.add_to_hass(hass)
+    client = MagicMock()
+    client.async_get_garage_doors = AsyncMock(return_value=(replace(DOOR, door_state=initial),))
+    client.async_open_door = AsyncMock()
+    client.async_close_door = AsyncMock()
+    with patch("custom_components.myq.MyQClient", return_value=client):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+    entity_id = er.async_get(hass).async_get_entity_id("cover", DOMAIN, "door-1")
+    assert entity_id is not None
+    runtime = cast(MyQRuntimeData, entry.runtime_data)
+    await hass.services.async_call("cover", service, {"entity_id": entity_id}, blocking=True)
+    state = hass.states.get(entity_id)
+    assert state is not None and state.state == initial
+    assert runtime.coordinator.command_motion("door-1") is None
+    assert runtime.coordinator.update_interval == DEFAULT_UPDATE_INTERVAL
+
+    client.async_get_garage_doors.return_value = (replace(DOOR, door_state=target),)
+    freezer.tick(timedelta(seconds=61))
+    async_fire_time_changed(hass)
+    await hass.async_block_till_done()
+    assert client.async_get_garage_doors.await_count == 1
+    state = hass.states.get(entity_id)
+    assert state is not None and state.state == initial
+
+    await runtime.coordinator.async_request_refresh()
+    await hass.async_block_till_done()
+    state = hass.states.get(entity_id)
+    assert state is not None and state.state == target
+    assert client.async_get_garage_doors.await_count == 2
+    assert client.async_open_door.await_count == (service == "open_cover")
+    assert client.async_close_door.await_count == (service == "close_cover")
+    assert await hass.config_entries.async_unload(entry.entry_id)
+
+
 async def test_missing_door_recovers_all_entities_without_losing_customization(
     hass: HomeAssistant,
 ) -> None:
@@ -258,11 +394,12 @@ async def test_missing_door_recovers_all_entities_without_losing_customization(
     await hass.async_block_till_done()
 
 
-def _entry() -> MockConfigEntry:
+def _entry(*, disable_polling: bool = False) -> MockConfigEntry:
     return MockConfigEntry(
         domain=DOMAIN,
         unique_id=EMAIL,
         title=EMAIL,
+        pref_disable_polling=disable_polling,
         data={
             CONF_EMAIL: EMAIL,
             CONF_MFA_METHOD: MFA_METHOD_EMAIL,

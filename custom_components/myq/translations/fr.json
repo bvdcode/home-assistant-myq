@@ -74,6 +74,7 @@
       "unknown": "Erreur MyQ inattendue. Consultez les journaux pour plus de détails."
     },
     "abort": {
+      "already_configured": "Ce compte MyQ est déjà configuré. Il n’est pas nécessaire de le configurer à nouveau.",
       "cannot_connect": "L'authentification a réussi, mais le service de découverte des appareils MyQ est injoignable.",
       "no_devices": "Aucune porte de garage n'a été trouvée sur ce compte MyQ.",
       "reauth_successful": "MyQ a été reconnecté avec succès.",
@@ -121,11 +122,19 @@
       "last_activation_source": {
         "name": "Source de la dernière activation"
       }
+    },
+    "camera": {
+      "camera": {
+        "name": "Caméra"
+      }
     }
   },
   "exceptions": {
     "command_failed": {
       "message": "La commande MyQ de la porte de garage a échoué."
+    },
+    "camera_image_failed": {
+      "message": "Impossible de récupérer une image de la caméra MyQ."
     }
   }
 }

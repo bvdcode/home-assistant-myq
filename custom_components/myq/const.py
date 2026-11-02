@@ -19,6 +19,9 @@ IDENTITY_BASE_URL: Final = "https://partner-identity.myq-cloud.com"
 ACCOUNTS_BASE_URL: Final = "https://accounts.myq-cloud.com"
 DEVICES_BASE_URL: Final = "https://devices.myq-cloud.com"
 GARAGE_DEVICES_BASE_URL: Final = "https://account-devices-gdo.myq-cloud.com"
+TEND_API_BASE_URL: Final = "https://media.hubs.tend-us.tendplatform.com/cxs/api"
+TEND_PARTNER_ID: Final = "myQ"
+TEND_LOCALE: Final = "en-US"
 
 OAUTH_CLIENT_ID: Final = "ANDROID_CGI_MYQ"
 OAUTH_REDIRECT_URI: Final = "com.myqops://android"
@@ -39,4 +42,8 @@ APP_CHECK_DATA: Final = bytes.fromhex(
 )
 
 DEFAULT_UPDATE_INTERVAL: Final = timedelta(seconds=30)
+COMMAND_UPDATE_INITIAL_INTERVAL: Final = timedelta(seconds=1)
+COMMAND_UPDATE_INTERVAL: Final = timedelta(seconds=5)
+COMMAND_UPDATE_MIN_DURATION: Final = timedelta(seconds=30)
+COMMAND_UPDATE_TIMEOUT: Final = timedelta(minutes=1)
 TOKEN_EXPIRY_MARGIN: Final = timedelta(minutes=1)

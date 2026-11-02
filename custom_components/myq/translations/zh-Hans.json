@@ -74,6 +74,7 @@
       "unknown": "MyQ 发生意外错误。请查看日志了解详情。"
     },
     "abort": {
+      "already_configured": "该 MyQ 账户已配置，无需重复设置。",
       "cannot_connect": "身份验证成功，但无法访问 MyQ 设备发现服务。",
       "no_devices": "此 MyQ 账户中未找到车库门。",
       "reauth_successful": "MyQ 已成功重新连接。",
@@ -121,11 +122,19 @@
       "last_activation_source": {
         "name": "上次触发来源"
       }
+    },
+    "camera": {
+      "camera": {
+        "name": "摄像头"
+      }
     }
   },
   "exceptions": {
     "command_failed": {
       "message": "MyQ 车库门命令执行失败。"
+    },
+    "camera_image_failed": {
+      "message": "无法获取 MyQ 摄像头的快照。"
     }
   }
 }

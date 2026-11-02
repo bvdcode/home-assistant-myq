@@ -74,6 +74,7 @@
       "unknown": "Neočekávaná chyba MyQ. Podrobnosti najdete v protokolech."
     },
     "abort": {
+      "already_configured": "Tento účet MyQ už je připojen. Další nastavení není potřeba.",
       "cannot_connect": "Ověření proběhlo úspěšně, ale služba vyhledávání zařízení MyQ není dostupná.",
       "no_devices": "V tomto účtu MyQ nebyla nalezena žádná garážová vrata.",
       "reauth_successful": "MyQ bylo úspěšně znovu připojeno.",
@@ -121,11 +122,19 @@
       "last_activation_source": {
         "name": "Zdroj poslední aktivace"
       }
+    },
+    "camera": {
+      "camera": {
+        "name": "Kamera"
+      }
     }
   },
   "exceptions": {
     "command_failed": {
       "message": "Příkaz MyQ pro garážová vrata selhal."
+    },
+    "camera_image_failed": {
+      "message": "Snímek z kamery MyQ se nepodařilo načíst."
     }
   }
 }

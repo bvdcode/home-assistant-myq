@@ -19,13 +19,16 @@ The integration provides:
 - a door-open binary sensor for Alarmo and other sensor-based automations;
 - vacation mode, work-light, fault, cycle-count, and activation diagnostics
   when provided by MyQ;
-- cloud polling every 30 seconds.
+- snapshots from attached cameras and experimental live video for TC cameras;
+- cloud polling every 30 seconds, temporarily more frequently after a command.
 
 ## Alarmo
 
 Each garage door includes a **Door open** binary sensor with the `garage_door` device class. Add this sensor in Alarmo's **Sensors** tab. The existing cover provides the open and close controls.
 
-The sensor is on whenever the door is known to be not closed, including while it is moving. Unknown states remain unknown, and offline or missing doors are unavailable. The sensor uses the same 30-second cloud polling as the cover.
+The sensor is on whenever the door is known to be not closed, including while it is moving. Unknown states remain unknown, and offline or missing doors are unavailable. The sensor shares cloud polling with the cover.
+
+After an accepted open or close command, the integration waits 1 second before checking the status. The intervals then increase to 2, 3, 4, and 5 seconds and remain at 5 seconds. Polling continues for at least 30 seconds, even if the requested state is reported earlier, and for up to 60 seconds while waiting for it. A new command restarts the sequence and polling window for that door. After an accepted command from a fully closed or open door, the cover immediately shows Opening or Closing. If the first status response still reports the original state, the cover keeps this provisional movement until the next response. A changed status replaces it immediately; from the second response onward, the cover always uses the state reported by MyQ. All sensors continue to use confirmed MyQ data. Polling returns to the normal 30-second interval when tracking finishes, the door becomes unavailable, or an update fails. If polling is disabled in Home Assistant system options, commands keep the last confirmed state without provisional movement or automatic status requests; manual updates still work.
 
 ## Requirements
 
@@ -78,6 +81,26 @@ The password is used only during sign-in and is not stored. Home Assistant
 stores the issued OAuth tokens in the config entry and refreshes them
 automatically. If MyQ rejects token refresh or account access, Home Assistant
 requests reauthentication.
+
+## Cameras
+
+Openers with an attached camera get a camera entity on the same device.
+Snapshots are fetched on demand from the Tend cloud using the existing MyQ
+authorization. Concurrent requests share an image request.
+
+TC cameras also offer experimental live H.264 video. Home Assistant must be able
+to reach the camera over the local network. Playback uses the `stream`
+integration or Home Assistant's built-in go2rtc. An external go2rtc server on
+another host or in another container cannot access the loopback video source.
+Other camera generations currently provide snapshots only.
+
+Viewers share one camera session, which closes 60 seconds after the last viewer
+disconnects. Opening the camera simultaneously in the myQ app may interrupt the
+session. Audio and retrieval of cloud recordings are not implemented.
+
+The `camera_serial_prefix` attribute identifies the camera generation. Connection
+failures are logged with `TC camera live video unavailable`. Real-camera playback
+and recovery still require validation on this implementation.
 
 ## Safety
 

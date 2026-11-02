@@ -5,6 +5,7 @@ import pytest
 from aiohttp import ClientConnectionError
 from homeassistant import config_entries, data_entry_flow
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.translation import async_get_translations
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.myq.const import (
@@ -274,17 +275,43 @@ async def test_unsupported_reauthentication_preserves_existing_entry(
     assert entry.data == original_data
 
 
-async def test_user_flow_aborts_duplicate_account(hass: HomeAssistant) -> None:
-    MockConfigEntry(
+@pytest.mark.parametrize("step_id", ["credentials", "browser_start"])
+@pytest.mark.parametrize("language", ["en", "ru"])
+async def test_user_flow_aborts_duplicate_account(
+    hass: HomeAssistant,
+    mock_login_session: MagicMock,
+    step_id: str,
+    language: str,
+) -> None:
+    original_data = _entry_data()
+    entry = MockConfigEntry(
         domain=DOMAIN,
         unique_id=EMAIL,
-        data={CONF_EMAIL: EMAIL},
-    ).add_to_hass(hass)
+        data=original_data,
+    )
+    entry.add_to_hass(hass)
 
-    result = await _submit_credentials(hass)
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={"source": config_entries.SOURCE_USER},
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": step_id}
+    )
+    user_input: dict[str, str] = {CONF_EMAIL: " Driver@Example.com "}
+    if step_id == "credentials":
+        user_input.update(password=PASSWORD, mfa_method=MFA_METHOD_EMAIL)
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], user_input)
 
     assert result["type"] is data_entry_flow.FlowResultType.ABORT
     assert result["reason"] == "already_configured"
+    assert hass.config_entries.async_entries(DOMAIN) == [entry]
+    assert entry.data == original_data
+    mock_login_session.async_start.assert_not_awaited()
+    mock_login_session.start_browser.assert_not_called()
+
+    translations = await async_get_translations(hass, language, "config", {DOMAIN})
+    assert translations[f"component.{DOMAIN}.config.abort.{result['reason']}"].strip()
 
 
 async def test_reauthentication_updates_tokens_and_mfa_method(
