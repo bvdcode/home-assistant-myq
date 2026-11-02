@@ -97,8 +97,7 @@ class MyQDataUpdateCoordinator(DataUpdateCoordinator[MyQCoordinatorData]):
             elapsed = now - command.started_at
             door = data.get(serial_number)
             if door is not None and (
-                command.interval != COMMAND_UPDATE_INITIAL_INTERVAL
-                or (command.motion, door.door_state)
+                (command.motion, door.door_state)
                 not in (("opening", "closed"), ("closing", "open"))
             ):
                 command.motion = None
