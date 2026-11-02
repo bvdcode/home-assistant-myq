@@ -1,5 +1,5 @@
 from collections.abc import Awaitable, Callable
-from typing import Any
+from typing import Any, Literal
 
 from aiohttp import ClientError
 from homeassistant.components.cover import (
@@ -37,6 +37,8 @@ class MyQGarageDoor(MyQEntity, CoverEntity):
 
     @property
     def is_closed(self) -> bool | None:
+        if self.coordinator.command_motion(self._serial_number) is not None:
+            return False
         door = self.door
         if door is None:
             return None
@@ -44,31 +46,42 @@ class MyQGarageDoor(MyQEntity, CoverEntity):
 
     @property
     def is_opening(self) -> bool:
+        motion = self.coordinator.command_motion(self._serial_number)
+        if motion is not None:
+            return motion == "opening"
         door = self.door
         return door is not None and door.is_opening
 
     @property
     def is_closing(self) -> bool:
+        motion = self.coordinator.command_motion(self._serial_number)
+        if motion is not None:
+            return motion == "closing"
         door = self.door
         return door is not None and door.is_closing
 
     async def async_open_cover(self, **kwargs: Any) -> None:
         del kwargs
-        await self._async_command(self.coordinator.client.async_open_door)
+        await self._async_command(self.coordinator.client.async_open_door, "open")
 
     async def async_close_cover(self, **kwargs: Any) -> None:
         del kwargs
-        await self._async_command(self.coordinator.client.async_close_door)
+        await self._async_command(self.coordinator.client.async_close_door, "closed")
 
-    async def _async_command(self, command: Callable[[GarageDoor], Awaitable[None]]) -> None:
+    async def _async_command(
+        self,
+        command: Callable[[GarageDoor], Awaitable[None]],
+        target_state: Literal["open", "closed"],
+    ) -> None:
         try:
-            await command(self._required_door())
+            door = self._required_door()
+            await command(door)
         except (ClientError, MyQError) as error:
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
                 translation_key="command_failed",
             ) from error
-        await self.coordinator.async_request_refresh()
+        self.coordinator.async_schedule_command_updates(door.serial_number, target_state)
 
     def _required_door(self) -> GarageDoor:
         door = self.door

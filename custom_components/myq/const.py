@@ -42,4 +42,8 @@ APP_CHECK_DATA: Final = bytes.fromhex(
 )
 
 DEFAULT_UPDATE_INTERVAL: Final = timedelta(seconds=30)
+COMMAND_UPDATE_INITIAL_INTERVAL: Final = timedelta(seconds=1)
+COMMAND_UPDATE_INTERVAL: Final = timedelta(seconds=5)
+COMMAND_UPDATE_MIN_DURATION: Final = timedelta(seconds=30)
+COMMAND_UPDATE_TIMEOUT: Final = timedelta(minutes=1)
 TOKEN_EXPIRY_MARGIN: Final = timedelta(minutes=1)
