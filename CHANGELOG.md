@@ -2,6 +2,18 @@
 
 <!-- version list -->
 
+## v0.2.8 (2026-11-02)
+
+Camera support and improved garage door feedback
+
+• Added attached camera snapshots and experimental TC live video with shared streams and automatic session cleanup.
+• Fixed RTP sequence rollover handling for late packets.
+• Added immediate Opening/Closing feedback when polling is enabled, keeping it when the first status response still reports the previous state.
+• Added polling at intervals of 1, 2, 3, 4 and then 5 seconds for 30–60 seconds, restarting the sequence and window for each new command.
+• Added camera labels and duplicate-account setup messages in all 13 languages.
+• Enabled validation on develop and switched release versioning to GitVersion.
+
+
 ## v0.2.7 (2026-10-30)
 
 ### Bug Fixes
