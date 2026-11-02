@@ -26,6 +26,7 @@ from .tend_protocol import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+_RTP_SEQUENCE_MODULUS = 1 << 16
 
 
 @dataclass(slots=True)
@@ -252,10 +253,9 @@ class VideoTransport:
             self._received_prior = 0
             self._last_transit = None
             self._jitter = 0
-        elif seq < self._max_seq and self._max_seq - seq > 0x8000:
-            self._cycles += 0x10000
-            self._max_seq = seq
-        elif seq > self._max_seq or self._max_seq - seq > 0x8000:
+        elif 0 < (seq - self._max_seq) % _RTP_SEQUENCE_MODULUS < _RTP_SEQUENCE_MODULUS // 2:
+            if seq < self._max_seq:
+                self._cycles += _RTP_SEQUENCE_MODULUS
             self._max_seq = seq
         self._received += 1
         transit = time.monotonic() * 90000 - timestamp
