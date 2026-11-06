@@ -124,6 +124,7 @@ class TendCamera:
     aes_key: str
     local_ip: str
     opener_serial: str = ""
+    model: str = ""
 
 
 def parse_cameras(properties: dict[str, str]) -> list[TendCamera]:
@@ -145,9 +146,27 @@ def parse_cameras(properties: dict[str, str]) -> list[TendCamera]:
                 raw.get("AES", ""),
                 raw.get("LIP", ""),
                 raw.get("GSN", ""),
+                raw.get("MODEL", ""),
             )
         )
     return cameras
+
+
+def select_camera(cameras: list[TendCamera], opener_serial: str) -> TendCamera | None:
+    """Pick the camera attached to an opener, or the account's one unattached camera.
+
+    Unattached cameras (such as the Video Keypad) carry no opener serial, and the
+    Tend listing has no field that maps back to their MyQ serial, so a Video Keypad
+    model is preferred and otherwise only an unambiguous single candidate is used.
+    """
+    if opener_serial:
+        return next((c for c in cameras if c.opener_serial == opener_serial), None)
+    unattached = [c for c in cameras if not c.opener_serial]
+    keypads = [c for c in unattached if c.model.casefold().startswith("videokeypadcam")]
+    for group in (keypads, unattached):
+        if len(group) == 1:
+            return group[0]
+    return None
 
 
 @dataclass(slots=True)

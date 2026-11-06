@@ -23,6 +23,7 @@ from custom_components.myq.tend_protocol import (
     parse_cameras,
     parse_peer_packet,
     register_packet,
+    select_camera,
     store_properties,
 )
 from custom_components.myq.tend_signaling import CxsConnection
@@ -174,3 +175,34 @@ def test_video_transport_ignores_datagrams_from_unknown_hosts() -> None:
     assert transport.channels[0].connected
     transport.on_datagram(False, media, ("192.168.1.20", 9808))
     assert transport._fragments == [bytes(16)]
+
+
+def test_select_camera_prefers_opener_then_unattached_keypad() -> None:
+    listing = (
+        DEVICE_INFO_LIST
+        + "\nmyqalias:00:00:5E:00:53:03,AES=00+LIP=192.168.1.22+MODEL=VideoKeypadCam1"
+        + "\nmyqalias:00:00:5E:00:53:04,AES=00+LIP=192.168.1.23+MODEL=OtherCam"
+    )
+    cameras = parse_cameras({"device-info-list": listing})
+
+    attached = select_camera(cameras, "door-1")
+    assert attached is not None and attached.destination.endswith("53:02")
+    assert select_camera(cameras, "missing") is None
+    keypad = select_camera(cameras, "")
+    assert keypad is not None and keypad.model == "VideoKeypadCam1"
+
+
+def test_select_camera_uses_only_an_unambiguous_unattached_camera() -> None:
+    one = parse_cameras(
+        {"device-info-list": DEVICE_INFO_LIST + "\nmyqalias:00:00:5E:00:53:03,LIP=192.168.1.22"}
+    )
+    selected = select_camera(one, "")
+    assert selected is not None and selected.destination.endswith("53:03")
+    two = parse_cameras(
+        {
+            "device-info-list": "a:00:00:5E:00:53:03,LIP=192.168.1.22\n"
+            "a:00:00:5E:00:53:04,LIP=192.168.1.23"
+        }
+    )
+    assert select_camera(two, "") is None
+    assert select_camera(parse_cameras({"device-info-list": DEVICE_INFO_LIST}), "") is None

@@ -19,7 +19,7 @@ from .const import (
     USER_AGENT,
 )
 from .exceptions import MyQApiError, MyQAuthenticationError
-from .models import GarageDoor, MyQAccount, MyQCamera
+from .models import GarageDoor, MyQAccount, MyQCamera, MyQDevices
 from .oauth import MyQAuth
 
 type HeadersFn = Callable[[str], dict[str, str]]
@@ -29,6 +29,8 @@ class MyQClient:
     def __init__(self, session: ClientSession, auth: MyQAuth) -> None:
         self._session = session
         self._auth = auth
+        # Cameras attached to no door (e.g. the Video Keypad), from the last door fetch.
+        self.unattached_cameras: tuple[MyQCamera, ...] = ()
 
     async def async_access_token(self) -> str:
         """Return the current OAuth token for Tend camera signaling."""
@@ -61,11 +63,13 @@ class MyQClient:
         return tuple(accounts)
 
     async def async_get_garage_doors(self) -> tuple[GarageDoor, ...]:
+        """Return all garage doors; also refreshes ``unattached_cameras``."""
         accounts = await self.async_get_accounts()
-        door_groups = await asyncio.gather(
-            *(self._async_get_account_doors(account) for account in accounts)
+        groups = await asyncio.gather(
+            *(self._async_get_account_devices(account) for account in accounts)
         )
-        return tuple(door for group in door_groups for door in group)
+        self.unattached_cameras = tuple(camera for group in groups for camera in group.cameras)
+        return tuple(door for group in groups for door in group.doors)
 
     async def async_open_door(self, door: GarageDoor) -> None:
         await self._async_command(door, "open")
@@ -84,10 +88,10 @@ class MyQClient:
             raise MyQApiError("Tend returned a camera snapshot that is not a JPEG")
         return image
 
-    async def _async_get_account_doors(
+    async def _async_get_account_devices(
         self,
         account: MyQAccount,
-    ) -> tuple[GarageDoor, ...]:
+    ) -> MyQDevices:
         payload = await self._async_request_json(
             "GET",
             f"{DEVICES_BASE_URL}/api/v6.2/Accounts/{account.account_id}/Devices",
@@ -114,7 +118,12 @@ class MyQClient:
                             _online(item.get("state")),
                             model if isinstance(model, str) else None,
                         )
-        return tuple(_garage_door(account.account_id, item, cameras) for item in door_items)
+        doors = tuple(_garage_door(account.account_id, item, cameras) for item in door_items)
+        attached = {door.camera.serial_number for door in doors if door.camera is not None}
+        return MyQDevices(
+            doors=doors,
+            cameras=tuple(camera for serial, camera in cameras.items() if serial not in attached),
+        )
 
     async def _async_command(self, door: GarageDoor, command: str) -> None:
         url = (
