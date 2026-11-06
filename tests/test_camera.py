@@ -13,7 +13,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.myq.camera import MyQGarageCamera
+from custom_components.myq.camera import MyQCameraEntity
 from custom_components.myq.const import (
     CONF_EMAIL,
     CONF_MFA_METHOD,
@@ -220,8 +220,9 @@ async def test_setup_adds_camera_only_for_doors_with_cameras(hass: HomeAssistant
     await hass.async_block_till_done()
 
 
-def _entity(door: GarageDoor) -> tuple[MyQGarageCamera, MagicMock]:
+def _entity(door: GarageDoor) -> tuple[MyQCameraEntity, MagicMock]:
     coordinator = MagicMock()
     coordinator.data = {door.serial_number: door}
     coordinator.client.async_get_camera_image = AsyncMock(return_value=IMAGE)
-    return MyQGarageCamera(coordinator, door), coordinator
+    assert door.camera is not None
+    return MyQCameraEntity(coordinator, door.camera, door=door), coordinator

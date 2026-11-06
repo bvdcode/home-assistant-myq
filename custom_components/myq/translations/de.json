@@ -76,7 +76,7 @@
     "abort": {
       "already_configured": "Dieses MyQ-Konto ist bereits eingerichtet. Eine erneute Einrichtung ist nicht erforderlich.",
       "cannot_connect": "Die Authentifizierung war erfolgreich, aber die MyQ-Geräteerkennung war nicht erreichbar.",
-      "no_devices": "In diesem MyQ-Konto wurden keine Garagentore gefunden.",
+      "no_devices": "In diesem MyQ-Konto wurden keine Garagentore oder Kameras gefunden.",
       "reauth_successful": "MyQ wurde erfolgreich erneut verbunden.",
       "unknown": "MyQ hat eine unerwartete Antwort zurückgegeben."
     }

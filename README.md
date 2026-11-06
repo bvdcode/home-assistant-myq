@@ -23,7 +23,7 @@ The integration provides:
 - a door-open binary sensor for Alarmo and other sensor-based automations;
 - vacation mode, work-light, fault, cycle-count, and activation diagnostics
   when provided by MyQ;
-- snapshots from attached cameras and experimental live video for TC cameras;
+- snapshots from attached and standalone cameras and experimental live video for TC cameras;
 - cloud polling every 30 seconds, temporarily more frequently after a command.
 
 ## Alarmo
@@ -88,6 +88,10 @@ requests reauthentication.
 
 ## Cameras
 
+Cameras that are not attached to an opener, including the myQ Video Keypad,
+get their own device using their MyQ name. Accounts containing only cameras
+can also be added.
+
 Openers with an attached camera get a camera entity on the same device.
 Snapshots are fetched on demand from the Tend cloud using the existing MyQ
 authorization. Concurrent requests share an image request.
@@ -103,8 +107,8 @@ disconnects. Opening the camera simultaneously in the myQ app may interrupt the
 session. Audio and retrieval of cloud recordings are not implemented.
 
 The `camera_serial_prefix` attribute identifies the camera generation. Connection
-failures are logged with `TC camera live video unavailable`. Real-camera playback
-and recovery still require validation on this implementation.
+failures are logged with `TC camera live video unavailable`. Standalone camera playback
+and recovery after a network interruption still require device validation.
 
 ## Safety
 
