@@ -22,7 +22,7 @@ from custom_components.myq.const import (
     MFA_METHOD_EMAIL,
 )
 from custom_components.myq.exceptions import MyQApiError, MyQAuthenticationError
-from custom_components.myq.models import GarageDoor, MyQCamera
+from custom_components.myq.models import GarageDoor, MyQCamera, MyQDevices
 from custom_components.myq.runtime import MyQRuntimeData
 
 EMAIL = "driver@example.com"
@@ -170,7 +170,7 @@ async def test_setup_adds_camera_only_for_doors_with_cameras(hass: HomeAssistant
     entry.add_to_hass(hass)
     other_door = replace(DOOR, serial_number="door-2", name="Side garage", camera=None)
     client = MagicMock()
-    client.async_get_garage_doors = AsyncMock(return_value=(DOOR, other_door))
+    client.async_get_devices = AsyncMock(return_value=MyQDevices((DOOR, other_door)))
     client.async_get_camera_image = AsyncMock(return_value=IMAGE)
 
     with patch("custom_components.myq.MyQClient", return_value=client):
@@ -200,9 +200,11 @@ async def test_setup_adds_camera_only_for_doors_with_cameras(hass: HomeAssistant
     client.async_get_camera_image.assert_awaited_once_with(DOOR.camera)
 
     runtime = cast(MyQRuntimeData, entry.runtime_data)
-    client.async_get_garage_doors.return_value = (
-        replace(DOOR, camera=MyQCamera("TC-0005-10000001", False)),
-        other_door,
+    client.async_get_devices.return_value = MyQDevices(
+        (
+            replace(DOOR, camera=MyQCamera("TC-0005-10000001", False)),
+            other_door,
+        )
     )
     await runtime.coordinator.async_refresh()
     await hass.async_block_till_done()

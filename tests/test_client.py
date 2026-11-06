@@ -56,7 +56,7 @@ async def test_client_discovers_garage_doors() -> None:
     auth.async_access_token = AsyncMock(return_value="access")
     client = MyQClient(cast(ClientSession, session), auth)
 
-    doors = await client.async_get_garage_doors()
+    doors = (await client.async_get_devices()).doors
 
     assert doors == (
         GarageDoor(
@@ -112,7 +112,7 @@ async def test_client_attaches_cameras_to_garage_doors() -> None:
     auth.async_access_token = AsyncMock(return_value="access")
     client = MyQClient(cast(ClientSession, session), auth)
 
-    doors = await client.async_get_garage_doors()
+    doors = (await client.async_get_devices()).doors
 
     assert [(door.serial_number, door.camera) for door in doors] == [
         ("door-1", MyQCamera("TC-0005-10000001", False, "Integrated camera")),
@@ -227,3 +227,32 @@ async def test_camera_image_rejects_a_response_that_is_not_jpeg() -> None:
 
     with pytest.raises(MyQApiError):
         await client.async_get_camera_image(CAMERA)
+
+
+async def test_discovery_returns_named_cameras_without_garage_doors() -> None:
+    camera = {
+        "device_family": "camera",
+        "serial_number": "TC-0007-20000001",
+        "name": "Front entrance",
+        "device_model": "vkp-camera",
+        "state": {"online": True},
+    }
+    session = FakeSession(
+        request_responses=[
+            FakeResponse(
+                "", body=json.dumps({"accounts": [{"id": "account-1"}, {"id": "account-2"}]})
+            ),
+            FakeResponse("", body=json.dumps({"items": [camera]})),
+            FakeResponse("", body=json.dumps({"items": [camera]})),
+        ]
+    )
+    auth = MagicMock(spec=MyQAuth)
+    auth.async_access_token = AsyncMock(return_value="access")
+    client = MyQClient(cast(ClientSession, session), auth)
+
+    devices = await client.async_get_devices()
+
+    assert devices.doors == ()
+    assert devices.cameras == (MyQCamera("TC-0007-20000001", True, "vkp-camera", "Front entrance"),)
+    assert devices.standalone_cameras == devices.cameras
+    assert len(session.calls) == 3

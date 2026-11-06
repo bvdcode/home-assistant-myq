@@ -19,6 +19,7 @@ from .const import (
     DOMAIN,
 )
 from .exceptions import MyQApiError, MyQAuthenticationError
+from .models import MyQCamera
 from .runtime import MyQConfigEntry, MyQCoordinatorData
 
 _LOGGER = logging.getLogger(__name__)
@@ -47,6 +48,7 @@ class MyQDataUpdateCoordinator(DataUpdateCoordinator[MyQCoordinatorData]):
             update_interval=DEFAULT_UPDATE_INTERVAL,
         )
         self.client = client
+        self.cameras: dict[str, MyQCamera] = {}
         self._pending_commands: dict[str, _PendingCommand] = {}
 
     @callback
@@ -79,7 +81,7 @@ class MyQDataUpdateCoordinator(DataUpdateCoordinator[MyQCoordinatorData]):
     async def _async_update_data(self) -> MyQCoordinatorData:
         pending_at_request = self._pending_commands.copy()
         try:
-            doors = await self.client.async_get_garage_doors()
+            devices = await self.client.async_get_devices()
         except MyQAuthenticationError as error:
             self._stop_command_updates(pending_at_request)
             raise ConfigEntryAuthFailed(
@@ -89,7 +91,8 @@ class MyQDataUpdateCoordinator(DataUpdateCoordinator[MyQCoordinatorData]):
         except (ClientError, MyQApiError, TimeoutError) as error:
             self._stop_command_updates(pending_at_request)
             raise UpdateFailed("Unable to update MyQ garage doors") from error
-        data = {door.serial_number: door for door in doors}
+        self.cameras = {camera.serial_number: camera for camera in devices.standalone_cameras}
+        data = {door.serial_number: door for door in devices.doors}
         now = monotonic()
         for serial_number, command in pending_at_request.items():
             if self._pending_commands.get(serial_number) is not command:

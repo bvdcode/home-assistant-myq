@@ -19,7 +19,7 @@ from .const import (
     USER_AGENT,
 )
 from .exceptions import MyQApiError, MyQAuthenticationError
-from .models import GarageDoor, MyQAccount, MyQCamera
+from .models import GarageDoor, MyQAccount, MyQCamera, MyQDevices
 from .oauth import MyQAuth
 
 type HeadersFn = Callable[[str], dict[str, str]]
@@ -60,12 +60,17 @@ class MyQClient:
             )
         return tuple(accounts)
 
-    async def async_get_garage_doors(self) -> tuple[GarageDoor, ...]:
+    async def async_get_devices(self) -> MyQDevices:
+        """Discover doors and cameras together without retaining a partial result."""
         accounts = await self.async_get_accounts()
-        door_groups = await asyncio.gather(
-            *(self._async_get_account_doors(account) for account in accounts)
+        groups = await asyncio.gather(
+            *(self._async_get_account_devices(account) for account in accounts)
         )
-        return tuple(door for group in door_groups for door in group)
+        cameras = {camera.serial_number: camera for group in groups for camera in group.cameras}
+        return MyQDevices(
+            doors=tuple(door for group in groups for door in group.doors),
+            cameras=tuple(cameras.values()),
+        )
 
     async def async_open_door(self, door: GarageDoor) -> None:
         await self._async_command(door, "open")
@@ -84,10 +89,10 @@ class MyQClient:
             raise MyQApiError("Tend returned a camera snapshot that is not a JPEG")
         return image
 
-    async def _async_get_account_doors(
+    async def _async_get_account_devices(
         self,
         account: MyQAccount,
-    ) -> tuple[GarageDoor, ...]:
+    ) -> MyQDevices:
         payload = await self._async_request_json(
             "GET",
             f"{DEVICES_BASE_URL}/api/v6.2/Accounts/{account.account_id}/Devices",
@@ -107,14 +112,19 @@ class MyQClient:
                     door_items.append(item)
                 case "camera":
                     serial_number = item.get("serial_number")
-                    if isinstance(serial_number, str):
+                    if isinstance(serial_number, str) and serial_number:
                         model = item.get("device_model")
+                        name = item.get("name")
                         cameras[serial_number] = MyQCamera(
                             serial_number,
                             _online(item.get("state")),
                             model if isinstance(model, str) else None,
+                            name if isinstance(name, str) else None,
                         )
-        return tuple(_garage_door(account.account_id, item, cameras) for item in door_items)
+        return MyQDevices(
+            doors=tuple(_garage_door(account.account_id, item, cameras) for item in door_items),
+            cameras=tuple(cameras.values()),
+        )
 
     async def _async_command(self, door: GarageDoor, command: str) -> None:
         url = (
