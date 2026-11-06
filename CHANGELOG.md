@@ -2,6 +2,27 @@
 
 <!-- version list -->
 
+## v0.2.9 (2026-11-02)
+
+Preserve garage movement feedback during delayed starts
+
+• Keep Opening and Closing visible while MyQ still reports the original door state, including the warning delay before closing.
+• Use confirmed MyQ states once the status changes, with the existing error handling and 60-second timeout.
+• Verify repeated unchanged responses in coordinator and Home Assistant scheduling tests.
+
+
+## v0.2.8 (2026-11-02)
+
+Camera support and improved garage door feedback
+
+• Added attached camera snapshots and experimental TC live video with shared streams and automatic session cleanup.
+• Fixed RTP sequence rollover handling for late packets.
+• Added immediate Opening/Closing feedback when polling is enabled, keeping it when the first status response still reports the previous state.
+• Added polling at intervals of 1, 2, 3, 4 and then 5 seconds for 30–60 seconds, restarting the sequence and window for each new command.
+• Added camera labels and duplicate-account setup messages in all 13 languages.
+• Enabled validation on develop and switched release versioning to GitVersion.
+
+
 ## v0.2.7 (2026-10-30)
 
 ### Bug Fixes
