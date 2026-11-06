@@ -5,8 +5,12 @@
 [![Hassfest](https://github.com/bvdcode/home-assistant-myq/actions/workflows/hassfest.yml/badge.svg)](https://github.com/bvdcode/home-assistant-myq/actions/workflows/hassfest.yml)
 [![Support on Ko-fi](https://img.shields.io/badge/Support_on_Ko--fi-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/bvdcode)
 
+
 MyQ connects Chamberlain and LiftMaster garage-door openers to Home Assistant
 through the MyQ residential cloud service.
+
+> If this integration makes your daily life a little easier, consider
+> [supporting the project on Ko-fi](https://ko-fi.com/bvdcode)
 
 The integration provides:
 
