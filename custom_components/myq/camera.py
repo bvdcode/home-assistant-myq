@@ -21,6 +21,7 @@ from .entity import MyQEntity
 from .exceptions import MyQError
 from .models import GarageDoor, MyQCamera
 from .runtime import MyQConfigEntry
+from .tend_protocol import TendStreamError
 from .tend_stream import TendLiveStream
 
 SNAPSHOT_FRAME_INTERVAL = 5.0
@@ -105,10 +106,23 @@ class _MyQCameraMixin(Camera):
         if not self.available or camera is None or camera.serial_prefix != "TC":
             return None
         if self._live_stream is None:
-            self._live_stream = TendLiveStream(
-                self._opener_serial, self.coordinator.client.async_access_token
-            )
+            if camera.device_model == VIDEO_KEYPAD_MODEL:
+                self._live_stream = TendLiveStream(
+                    self._opener_serial,
+                    self.coordinator.client.async_access_token,
+                    prepare_session=self._prepare_keypad_stream,
+                )
+            else:
+                self._live_stream = TendLiveStream(
+                    self._opener_serial, self.coordinator.client.async_access_token
+                )
         return await self._live_stream.source_url()
+
+    async def _prepare_keypad_stream(self) -> None:
+        camera = self.camera
+        if camera is None:
+            raise TendStreamError("Keypad is no longer present")
+        await self.coordinator.client.async_prepare_keypad(camera)
 
     async def async_will_remove_from_hass(self) -> None:
         """Close the source before waiting for the stream reader to stop."""

@@ -287,3 +287,18 @@ async def test_unattached_camera_streams_without_an_opener_serial() -> None:
         stream_class.return_value.source_url = AsyncMock(return_value="http://127.0.0.1/x")
         assert await entity.stream_source() == "http://127.0.0.1/x"
     assert stream_class.call_args.args[0] == ""
+
+
+async def test_keypad_source_and_snapshot_do_not_prepare_until_live_consumer() -> None:
+    coordinator = MagicMock()
+    coordinator.cameras = {KEYPAD.serial_number: KEYPAD}
+    coordinator.client.async_get_camera_image = AsyncMock(return_value=IMAGE)
+    coordinator.client.async_prepare_keypad = AsyncMock()
+    entity = MyQStandaloneCamera(coordinator, KEYPAD)
+    assert await entity.async_camera_image() == IMAGE
+    with patch("custom_components.myq.camera.TendLiveStream") as stream_class:
+        stream_class.return_value.source_url = AsyncMock(return_value="http://127.0.0.1/video")
+        await entity.stream_source()
+    coordinator.client.async_prepare_keypad.assert_not_awaited()
+    await stream_class.call_args.kwargs["prepare_session"]()
+    coordinator.client.async_prepare_keypad.assert_awaited_once_with(KEYPAD)
