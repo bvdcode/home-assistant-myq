@@ -2,6 +2,17 @@
 
 <!-- version list -->
 
+## v0.2.10 (2026-11-06)
+
+Add standalone MyQ camera support
+
+- Discover standalone cameras, including myQ Video Keypad, and allow accounts without garage doors.
+- Add separate camera devices with snapshots and experimental TC live video.
+- Select video streams by exact camera identity and reject ambiguous matches.
+- Update setup translations, camera documentation, and regression tests.
+- Highlight project support at the top of the README.
+
+
 ## v0.2.9 (2026-11-02)
 
 Preserve garage movement feedback during delayed starts
