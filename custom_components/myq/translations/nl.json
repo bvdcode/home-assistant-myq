@@ -76,7 +76,7 @@
     "abort": {
       "already_configured": "Dit MyQ-account is al ingesteld. Opnieuw instellen is niet nodig.",
       "cannot_connect": "De authenticatie is gelukt, maar de apparaatdetectie van MyQ was niet bereikbaar.",
-      "no_devices": "Er zijn geen garagedeuren gevonden in dit MyQ-account.",
+      "no_devices": "Er zijn geen garagedeuren of camera's gevonden in dit MyQ-account.",
       "reauth_successful": "MyQ is opnieuw verbonden.",
       "unknown": "MyQ gaf een onverwacht antwoord."
     }

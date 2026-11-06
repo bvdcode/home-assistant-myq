@@ -302,7 +302,7 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         auth = MyQAuth(async_get_clientsession(self.hass), tokens, lambda _: None)
         client = MyQClient(async_get_clientsession(self.hass), auth)
         try:
-            doors = await client.async_get_garage_doors()
+            devices = await client.async_get_devices()
         except ClientError:
             self._close_login()
             return self.async_abort(reason="cannot_connect")
@@ -311,7 +311,7 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self._close_login()
             return self.async_abort(reason="unknown")
         self._close_login()
-        if not doors:
+        if not devices.doors and not devices.cameras:
             return self.async_abort(reason="no_devices")
 
         data = MyQConfigData(

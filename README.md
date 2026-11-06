@@ -5,8 +5,12 @@
 [![Hassfest](https://github.com/bvdcode/home-assistant-myq/actions/workflows/hassfest.yml/badge.svg)](https://github.com/bvdcode/home-assistant-myq/actions/workflows/hassfest.yml)
 [![Support on Ko-fi](https://img.shields.io/badge/Support_on_Ko--fi-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/bvdcode)
 
+
 MyQ connects Chamberlain and LiftMaster garage-door openers to Home Assistant
 through the MyQ residential cloud service.
+
+> If this integration makes your daily life a little easier, consider
+> [supporting the project on Ko-fi](https://ko-fi.com/bvdcode)
 
 The integration provides:
 
@@ -19,7 +23,7 @@ The integration provides:
 - a door-open binary sensor for Alarmo and other sensor-based automations;
 - vacation mode, work-light, fault, cycle-count, and activation diagnostics
   when provided by MyQ;
-- snapshots from attached cameras and experimental live video for TC cameras;
+- snapshots from attached and standalone cameras and experimental live video for TC cameras;
 - cloud polling every 30 seconds, temporarily more frequently after a command.
 
 ## Alarmo
@@ -84,6 +88,10 @@ requests reauthentication.
 
 ## Cameras
 
+Cameras that are not attached to an opener, including the myQ Video Keypad,
+get their own device using their MyQ name. Accounts containing only cameras
+can also be added.
+
 Openers with an attached camera get a camera entity on the same device.
 Snapshots are fetched on demand from the Tend cloud using the existing MyQ
 authorization. Concurrent requests share an image request.
@@ -99,8 +107,8 @@ disconnects. Opening the camera simultaneously in the myQ app may interrupt the
 session. Audio and retrieval of cloud recordings are not implemented.
 
 The `camera_serial_prefix` attribute identifies the camera generation. Connection
-failures are logged with `TC camera live video unavailable`. Real-camera playback
-and recovery still require validation on this implementation.
+failures are logged with `TC camera live video unavailable`. Standalone camera playback
+and recovery after a network interruption still require device validation.
 
 ## Safety
 

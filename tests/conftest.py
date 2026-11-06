@@ -3,6 +3,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from custom_components.myq.models import MyQDevices
+
 
 @pytest.fixture(autouse=True)
 def auto_enable_custom_integrations(
@@ -33,5 +35,5 @@ def mock_login_session() -> Generator[MagicMock]:
 def mock_myq_client() -> Generator[MagicMock]:
     with patch("custom_components.myq.config_flow.MyQClient") as client_class:
         client = client_class.return_value
-        client.async_get_garage_doors = AsyncMock()
+        client.async_get_devices = AsyncMock(return_value=MyQDevices())
         yield client

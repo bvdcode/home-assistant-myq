@@ -1,4 +1,4 @@
-"""Snapshots and live video from cameras attached to MyQ garage doors."""
+"""Snapshots and live video from attached and standalone MyQ cameras."""
 
 import asyncio
 import time
@@ -8,13 +8,15 @@ from homeassistant.components.camera import Camera, CameraEntityFeature
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import MyQDataUpdateCoordinator
-from .entity import MyQEntity
-from .exceptions import MyQError
+from .entity import myq_device_info
+from .exceptions import MyQApiError, MyQError
 from .models import GarageDoor, MyQCamera
 from .runtime import MyQConfigEntry
+from .tend_protocol import TendCameraTarget
 from .tend_stream import TendLiveStream
 
 SNAPSHOT_FRAME_INTERVAL = 5.0
@@ -25,38 +27,61 @@ async def async_setup_entry(
     entry: MyQConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Add cameras to their garage door devices."""
+    """Keep attached cameras on their doors and add standalone camera devices."""
     del hass
     coordinator = entry.runtime_data.coordinator
-    async_add_entities(
-        MyQGarageCamera(coordinator, door)
-        for door in coordinator.data.values()
-        if door.camera is not None
-    )
+    entities: list[MyQCameraEntity] = []
+    for door in coordinator.data.values():
+        if door.camera is not None:
+            entities.append(MyQCameraEntity(coordinator, door.camera, door=door))
+    entities.extend(MyQCameraEntity(coordinator, camera) for camera in coordinator.cameras.values())
+    async_add_entities(entities)
 
 
-class MyQGarageCamera(MyQEntity, Camera):
-    """An attached camera using the account's existing authorization."""
+class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
+    """One camera identified independently of its optional garage-door device."""
 
+    _attr_has_entity_name = True
     _attr_frame_interval = SNAPSHOT_FRAME_INTERVAL
     _attr_translation_key = "camera"
 
-    def __init__(self, coordinator: MyQDataUpdateCoordinator, door: GarageDoor) -> None:
-        super().__init__(coordinator, door)
+    def __init__(
+        self,
+        coordinator: MyQDataUpdateCoordinator,
+        camera: MyQCamera,
+        *,
+        door: GarageDoor | None = None,
+    ) -> None:
+        super().__init__(coordinator)
         Camera.__init__(self)
-        self._attr_unique_id = f"{door.serial_number}_camera"
+        self._camera_serial = camera.serial_number
+        self._opener_serial: str | None = None
+        if door is not None:
+            self._opener_serial = door.serial_number
+            self._attr_unique_id = f"{door.serial_number}_camera"
+            self._attr_device_info = myq_device_info(
+                door.serial_number, name=door.name, model=door.device_model
+            )
+        else:
+            self._attr_unique_id = f"{camera.serial_number}_camera"
+            self._attr_device_info = myq_device_info(
+                camera.serial_number, name=camera.name, model=camera.device_model
+            )
         self._capture_lock = asyncio.Lock()
         self._image: bytes | None = None
         self._captured_at = 0.0
         self._live_stream: TendLiveStream | None = None
-        if door.camera is not None and door.camera.serial_prefix == "TC":
+        if camera.serial_prefix == "TC":
             self._attr_supported_features = CameraEntityFeature.STREAM
             self.stream_options = {"use_wallclock_as_timestamps": True}
 
     @property
     def camera(self) -> MyQCamera | None:
         """Return the current camera metadata from discovery."""
-        return self.door.camera if self.door is not None else None
+        if self._opener_serial is None:
+            return self.coordinator.cameras.get(self._camera_serial)
+        door = self.coordinator.data.get(self._opener_serial)
+        return door.camera if door is not None else None
 
     @property
     def model(self) -> str | None:
@@ -72,7 +97,12 @@ class MyQGarageCamera(MyQEntity, Camera):
     @property
     def available(self) -> bool:
         camera = self.camera
-        return super().available and camera is not None and camera.online is not False
+        if not super().available or camera is None or camera.online is False:
+            return False
+        if self._opener_serial is not None:
+            door = self.coordinator.data.get(self._opener_serial)
+            return door is not None and door.online is not False
+        return True
 
     async def async_camera_image(
         self, width: int | None = None, height: int | None = None
@@ -102,9 +132,19 @@ class MyQGarageCamera(MyQEntity, Camera):
             return None
         if self._live_stream is None:
             self._live_stream = TendLiveStream(
-                self._serial_number, self.coordinator.client.async_access_token
+                self._async_stream_target, self.coordinator.client.async_access_token
             )
         return await self._live_stream.source_url()
+
+    async def _async_stream_target(self) -> TendCameraTarget:
+        if self._opener_serial is not None:
+            return TendCameraTarget(opener_serial=self._opener_serial)
+        camera = self.camera
+        if camera is None:
+            raise MyQApiError("Camera is no longer available")
+        return TendCameraTarget(
+            destination=await self.coordinator.client.async_get_camera_alias(camera)
+        )
 
     async def async_will_remove_from_hass(self) -> None:
         """Close the source before waiting for the stream reader to stop."""
