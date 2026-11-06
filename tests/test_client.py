@@ -256,3 +256,46 @@ async def test_discovery_returns_named_cameras_without_garage_doors() -> None:
     assert devices.cameras == (MyQCamera("TC-0007-20000001", True, "vkp-camera", "Front entrance"),)
     assert devices.standalone_cameras == devices.cameras
     assert len(session.calls) == 3
+
+
+async def test_camera_alias_is_resolved_using_its_own_tend_id() -> None:
+    session = FakeSession(
+        request_responses=[
+            FakeResponse(
+                "",
+                body=json.dumps(
+                    {"id": CAMERA.tend_device_id, "alias": "account:00:00:5e:00:53:01"}
+                ),
+            )
+        ]
+    )
+    auth = MagicMock(spec=MyQAuth)
+    auth.async_access_token = AsyncMock(return_value="access")
+    client = MyQClient(cast(ClientSession, session), auth)
+
+    assert await client.async_get_camera_alias(CAMERA) == "account:00:00:5e:00:53:01"
+    call = session.calls[0]
+    assert call.url.endswith("/devices/10000001")
+    assert call.kwargs["headers"]["partnerId"] == "myQ"
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"id": "another-camera", "alias": "account:mac"},
+        {"alias": "account:mac"},
+        {"id": CAMERA.tend_device_id},
+        {"id": CAMERA.tend_device_id, "alias": 1},
+        {"id": CAMERA.tend_device_id, "alias": "account"},
+        {"id": CAMERA.tend_device_id, "alias": ":mac"},
+        {"id": CAMERA.tend_device_id, "alias": "account:"},
+    ],
+)
+async def test_camera_alias_rejects_missing_or_wrong_identity(payload: dict[str, object]) -> None:
+    session = FakeSession(request_responses=[FakeResponse("", body=json.dumps(payload))])
+    auth = MagicMock(spec=MyQAuth)
+    auth.async_access_token = AsyncMock(return_value="access")
+    client = MyQClient(cast(ClientSession, session), auth)
+
+    with pytest.raises(MyQApiError):
+        await client.async_get_camera_alias(CAMERA)

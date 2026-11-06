@@ -89,6 +89,21 @@ class MyQClient:
             raise MyQApiError("Tend returned a camera snapshot that is not a JPEG")
         return image
 
+    async def async_get_camera_alias(self, camera: MyQCamera) -> str:
+        """Resolve one camera's signaling destination from its Tend device ID."""
+        payload = await self._async_request_json(
+            "GET", f"{TEND_API_BASE_URL}/devices/{camera.tend_device_id}", _tend_headers
+        )
+        if payload.get("id") != camera.tend_device_id:
+            raise MyQApiError("Tend returned a different camera identity")
+        alias = payload.get("alias")
+        if not isinstance(alias, str):
+            raise MyQApiError("Tend returned a camera without a signaling alias")
+        owner, separator, device = alias.partition(":")
+        if not owner or not separator or not device:
+            raise MyQApiError("Tend returned an invalid signaling alias")
+        return alias
+
     async def _async_get_account_devices(
         self,
         account: MyQAccount,
@@ -133,8 +148,10 @@ class MyQClient:
         )
         await self._async_request("PUT", url)
 
-    async def _async_request_json(self, method: str, url: str) -> dict[str, object]:
-        body = await self._async_request(method, url)
+    async def _async_request_json(
+        self, method: str, url: str, headers: HeadersFn | None = None
+    ) -> dict[str, object]:
+        body = await self._async_request(method, url, headers)
         try:
             parsed = json.loads(body)
         except (UnicodeDecodeError, json.JSONDecodeError) as error:

@@ -57,7 +57,10 @@ async def test_live_stream_is_available_only_for_tc_camera() -> None:
             return_value="http://127.0.0.1:1234/test.h264"
         )
         assert await tc_entity.stream_source() == "http://127.0.0.1:1234/test.h264"
-        stream_class.assert_called_once_with("door-1", coordinator.client.async_access_token)
+        stream_class.assert_called_once_with(
+            tc_entity._async_stream_target, coordinator.client.async_access_token
+        )
+        assert (await tc_entity._async_stream_target()).opener_serial == "door-1"
 
     other = replace(DOOR, camera=MyQCamera("GW-0005-10000001", True))
     other_entity, _ = _entity(other)

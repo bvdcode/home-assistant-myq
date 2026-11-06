@@ -15,6 +15,7 @@ from .entity import MyQEntity
 from .exceptions import MyQError
 from .models import GarageDoor, MyQCamera
 from .runtime import MyQConfigEntry
+from .tend_protocol import TendCameraTarget
 from .tend_stream import TendLiveStream
 
 SNAPSHOT_FRAME_INTERVAL = 5.0
@@ -102,9 +103,12 @@ class MyQGarageCamera(MyQEntity, Camera):
             return None
         if self._live_stream is None:
             self._live_stream = TendLiveStream(
-                self._serial_number, self.coordinator.client.async_access_token
+                self._async_stream_target, self.coordinator.client.async_access_token
             )
         return await self._live_stream.source_url()
+
+    async def _async_stream_target(self) -> TendCameraTarget:
+        return TendCameraTarget(opener_serial=self._serial_number)
 
     async def async_will_remove_from_hass(self) -> None:
         """Close the source before waiting for the stream reader to stop."""
