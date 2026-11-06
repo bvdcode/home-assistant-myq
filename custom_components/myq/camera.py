@@ -9,7 +9,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .const import DOMAIN
+from .const import CONF_CAMERA_LAN_ONLY, DOMAIN
 from .coordinator import MyQDataUpdateCoordinator
 from .entity import MyQEntity
 from .exceptions import MyQError
@@ -102,7 +102,13 @@ class MyQGarageCamera(MyQEntity, Camera):
             return None
         if self._live_stream is None:
             self._live_stream = TendLiveStream(
-                self._serial_number, self.coordinator.client.async_access_token
+                self._serial_number,
+                self.coordinator.client.async_access_token,
+                lan_only=bool(
+                    self.coordinator.config_entry.options.get(CONF_CAMERA_LAN_ONLY, False)
+                )
+                if self.coordinator.config_entry
+                else False,
             )
         return await self._live_stream.source_url()
 
