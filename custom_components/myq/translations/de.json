@@ -102,6 +102,12 @@
       },
       "active_fault": {
         "name": "Aktiver Fehler"
+      },
+      "keypad_streaming": {
+        "name": "Videoübertragung"
+      },
+      "keypad_session_problem": {
+        "name": "Sitzungsproblem"
       }
     },
     "cover": {
@@ -121,11 +127,43 @@
       },
       "last_activation_source": {
         "name": "Letzte Auslösequelle"
+      },
+      "keypad_battery": {
+        "name": "Batterie"
+      },
+      "keypad_power_state": {
+        "name": "Gemeldeter Energiezustand"
+      },
+      "keypad_power_sample_time": {
+        "name": "Zeitpunkt der Batteriemessung"
+      },
+      "keypad_session_state": {
+        "name": "Sitzungsstatus"
+      },
+      "keypad_session_errors": {
+        "name": "Sitzungsfehler"
+      },
+      "keypad_startup_time": {
+        "name": "Letzte Startdauer"
+      },
+      "keypad_active_consumers": {
+        "name": "Aktive Videoempfänger"
+      },
+      "keypad_credential_renewals": {
+        "name": "Erneuerungen der Zugangsdaten"
+      },
+      "keypad_transport": {
+        "name": "Videoübertragungsweg"
       }
     },
     "camera": {
       "camera": {
         "name": "Kamera"
+      }
+    },
+    "button": {
+      "keypad_refresh_power": {
+        "name": "Batterie- und Energiezustand aktualisieren"
       }
     }
   },
@@ -135,6 +173,9 @@
     },
     "camera_image_failed": {
       "message": "Das Standbild der MyQ-Kamera konnte nicht abgerufen werden."
+    },
+    "keypad_power_refresh_failed": {
+      "message": "Der Batterie- und Energiezustand des Tastenfelds konnte nicht aktualisiert werden."
     }
   }
 }

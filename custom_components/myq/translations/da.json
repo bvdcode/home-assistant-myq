@@ -102,6 +102,12 @@
       },
       "active_fault": {
         "name": "Aktiv fejl"
+      },
+      "keypad_streaming": {
+        "name": "Streaming"
+      },
+      "keypad_session_problem": {
+        "name": "Sessionsproblem"
       }
     },
     "cover": {
@@ -121,11 +127,43 @@
       },
       "last_activation_source": {
         "name": "Seneste aktiveringskilde"
+      },
+      "keypad_battery": {
+        "name": "Batteri"
+      },
+      "keypad_power_state": {
+        "name": "Rapporteret strømtilstand"
+      },
+      "keypad_power_sample_time": {
+        "name": "Tidspunkt for batterimåling"
+      },
+      "keypad_session_state": {
+        "name": "Sessionsstatus"
+      },
+      "keypad_session_errors": {
+        "name": "Sessionsfejl"
+      },
+      "keypad_startup_time": {
+        "name": "Seneste opstartstid"
+      },
+      "keypad_active_consumers": {
+        "name": "Aktive videomodtagere"
+      },
+      "keypad_credential_renewals": {
+        "name": "Fornyelser af loginoplysninger"
+      },
+      "keypad_transport": {
+        "name": "Videotransport"
       }
     },
     "camera": {
       "camera": {
         "name": "Kamera"
+      }
+    },
+    "button": {
+      "keypad_refresh_power": {
+        "name": "Opdater batteri- og strømstatus"
       }
     }
   },
@@ -135,6 +173,9 @@
     },
     "camera_image_failed": {
       "message": "Billedet fra MyQ-kameraet kunne ikke hentes."
+    },
+    "keypad_power_refresh_failed": {
+      "message": "Batteri- og strømstatus for tastaturet kunne ikke opdateres."
     }
   }
 }

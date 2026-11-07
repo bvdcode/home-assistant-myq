@@ -102,6 +102,12 @@
       },
       "active_fault": {
         "name": "Active fault"
+      },
+      "keypad_streaming": {
+        "name": "Streaming"
+      },
+      "keypad_session_problem": {
+        "name": "Session problem"
       }
     },
     "cover": {
@@ -121,11 +127,43 @@
       },
       "last_activation_source": {
         "name": "Last activation source"
+      },
+      "keypad_battery": {
+        "name": "Battery"
+      },
+      "keypad_power_state": {
+        "name": "Reported power state"
+      },
+      "keypad_power_sample_time": {
+        "name": "Battery sample time"
+      },
+      "keypad_session_state": {
+        "name": "Session state"
+      },
+      "keypad_session_errors": {
+        "name": "Session errors"
+      },
+      "keypad_startup_time": {
+        "name": "Last startup time"
+      },
+      "keypad_active_consumers": {
+        "name": "Active consumers"
+      },
+      "keypad_credential_renewals": {
+        "name": "Credential renewals"
+      },
+      "keypad_transport": {
+        "name": "Video transport"
       }
     },
     "camera": {
       "camera": {
         "name": "Camera"
+      }
+    },
+    "button": {
+      "keypad_refresh_power": {
+        "name": "Refresh battery and power"
       }
     }
   },
@@ -135,6 +173,9 @@
     },
     "camera_image_failed": {
       "message": "The MyQ camera snapshot could not be retrieved."
+    },
+    "keypad_power_refresh_failed": {
+      "message": "Could not refresh keypad battery and power."
     }
   }
 }

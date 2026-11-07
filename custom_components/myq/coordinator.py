@@ -1,4 +1,6 @@
+import asyncio
 import logging
+import time
 from dataclasses import dataclass
 from datetime import timedelta
 from time import monotonic
@@ -7,6 +9,7 @@ from typing import Literal
 from aiohttp import ClientError
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .client import MyQClient
@@ -19,6 +22,7 @@ from .const import (
     DOMAIN,
 )
 from .exceptions import MyQApiError, MyQAuthenticationError
+from .keypad_state import KeypadPower, KeypadState
 from .models import MyQCamera
 from .runtime import MyQConfigEntry, MyQCoordinatorData
 
@@ -50,6 +54,63 @@ class MyQDataUpdateCoordinator(DataUpdateCoordinator[MyQCoordinatorData]):
         self.client = client
         self.cameras: dict[str, MyQCamera] = {}
         self._pending_commands: dict[str, _PendingCommand] = {}
+
+        self._keypad_states: dict[str, KeypadState] = {}
+        self._credential_renewals = 0
+        self._power_lock = asyncio.Lock()
+        self._power_data: dict[str, object] = {}
+        self._power_store = Store[dict[str, object]](
+            hass, 1, f"{DOMAIN}.{entry.entry_id}.keypads", private=True
+        )
+
+    @property
+    def keypads(self) -> tuple[MyQCamera, ...]:
+        return tuple(camera for camera in self.cameras.values() if camera.is_video_keypad)
+
+    def keypad_state(self, serial: str) -> KeypadState:
+        if serial not in self._keypad_states:
+            self._keypad_states[serial] = KeypadState(credential_renewals=self._credential_renewals)
+        return self._keypad_states[serial]
+
+    async def async_load_keypad_state(self) -> None:
+        stored = await self._power_store.async_load()
+        if not isinstance(stored, dict):
+            return
+        self._power_data = stored
+        for camera in self.keypads:
+            data = stored.get(camera.serial_number)
+            if isinstance(data, dict) and isinstance(power := data.get("power"), dict):
+                self.keypad_state(camera.serial_number).power = KeypadPower.from_storage(power)
+
+    @callback
+    def async_keypad_changed(self) -> None:
+        self.async_update_listeners()
+
+    @callback
+    def async_keypad_token_refreshed(self) -> None:
+        self._credential_renewals += 1
+        for state in self._keypad_states.values():
+            state.credential_renewals = self._credential_renewals
+        self.async_keypad_changed()
+
+    async def async_refresh_keypad_power(self, serial: str) -> None:
+        """Share explicit refreshes and preserve other cached metadata when updating power."""
+        async with self._power_lock:
+            camera = self.cameras.get(serial)
+            if camera is None or not camera.is_video_keypad:
+                raise MyQApiError("Keypad is no longer present")
+            state = self.keypad_state(serial)
+            if state.power and 0 <= time.time() - state.power.sampled_at < 60:
+                return
+            power = await self.client.async_get_keypad_power(camera)
+            previous = self._power_data.get(serial)
+            metadata = previous.copy() if isinstance(previous, dict) else {}
+            metadata["power"] = power.as_dict()
+            updated = {**self._power_data, serial: metadata}
+            await self._power_store.async_save(updated)
+            self._power_data = updated
+            state.power = power
+            self.async_keypad_changed()
 
     @callback
     def async_schedule_command_updates(

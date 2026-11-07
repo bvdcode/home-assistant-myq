@@ -102,6 +102,12 @@
       },
       "active_fault": {
         "name": "Actieve storing"
+      },
+      "keypad_streaming": {
+        "name": "Videostreaming"
+      },
+      "keypad_session_problem": {
+        "name": "Sessieprobleem"
       }
     },
     "cover": {
@@ -121,11 +127,43 @@
       },
       "last_activation_source": {
         "name": "Bron van laatste activering"
+      },
+      "keypad_battery": {
+        "name": "Batterij"
+      },
+      "keypad_power_state": {
+        "name": "Gemelde energiestand"
+      },
+      "keypad_power_sample_time": {
+        "name": "Tijdstip van batterijmeting"
+      },
+      "keypad_session_state": {
+        "name": "Sessiestatus"
+      },
+      "keypad_session_errors": {
+        "name": "Sessiefouten"
+      },
+      "keypad_startup_time": {
+        "name": "Duur van laatste opstart"
+      },
+      "keypad_active_consumers": {
+        "name": "Actieve video-ontvangers"
+      },
+      "keypad_credential_renewals": {
+        "name": "Vernieuwingen van inloggegevens"
+      },
+      "keypad_transport": {
+        "name": "Videotransport"
       }
     },
     "camera": {
       "camera": {
         "name": "Camera"
+      }
+    },
+    "button": {
+      "keypad_refresh_power": {
+        "name": "Batterij- en voedingsstatus vernieuwen"
       }
     }
   },
@@ -135,6 +173,9 @@
     },
     "camera_image_failed": {
       "message": "De momentopname van de MyQ-camera kon niet worden opgehaald."
+    },
+    "keypad_power_refresh_failed": {
+      "message": "De batterij- en voedingsstatus van het toetsenpaneel kon niet worden vernieuwd."
     }
   }
 }
