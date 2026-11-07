@@ -10,7 +10,13 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from custom_components.myq.keypad_recording import _publish_recording, _reserve, record_keypad
+from custom_components.myq.keypad_recording import (
+    _checked_process,
+    _decode_timeout,
+    _publish_recording,
+    _reserve,
+    record_keypad,
+)
 from custom_components.myq.tend_protocol import TendStreamError
 from custom_components.myq.tend_stream import TendLiveStream
 
@@ -188,7 +194,7 @@ async def test_recording_reports_success_when_cancel_arrives_during_final_commit
         enrolled.append(path)
 
     probe = json.dumps(
-        {"streams": [{"codec_name": "h264", "nb_read_frames": 100}], "format": {"duration": 5}}
+        {"streams": [{"codec_name": "h264", "nb_read_packets": 100}], "format": {"duration": 5}}
     ).encode()
     with (
         patch(
@@ -198,7 +204,7 @@ async def test_recording_reports_success_when_cancel_arrives_during_final_commit
         patch(
             "custom_components.myq.keypad_recording._checked_process",
             new=AsyncMock(side_effect=[probe, b""]),
-        ),
+        ) as checked,
         patch("custom_components.myq.keypad_recording.shutil.disk_usage") as usage,
     ):
         usage.return_value.free = 10_000_000_000
@@ -212,5 +218,34 @@ async def test_recording_reports_success_when_cancel_arrives_during_final_commit
         finish.set()
         result = await asyncio.wait_for(task, 2)
     assert enrolled == [result.path]
+    # One demux-only probe, then exactly one full decode with a duration-scaled bound.
+    probe_call, decode_call = checked.await_args_list
+    assert "-count_packets" in probe_call.args and "-count_frames" not in probe_call.args
+    assert "-xerror" in decode_call.args
+    assert decode_call.kwargs["time_limit"] == _decode_timeout(5)
     assert await asyncio.to_thread(Path(result.path).exists) and not task.cancelled()
     assert await asyncio.to_thread(lambda: list(tmp_path.glob("*.partial.mp4"))) == []
+
+
+def test_decode_timeout_scales_with_clip_length() -> None:
+    # A 300 s clip must not inherit the short-clip bound; half real time is allowed.
+    assert _decode_timeout(5) >= 60
+    assert _decode_timeout(300) >= 300 * 2
+    assert _decode_timeout(300) > _decode_timeout(30)
+
+
+async def test_validation_timeout_kills_the_validator() -> None:
+    spawned: list[asyncio.subprocess.Process] = []
+    spawn = asyncio.create_subprocess_exec
+
+    async def tracked(*args: str, **kwargs: object) -> asyncio.subprocess.Process:
+        process = await spawn(*args, **kwargs)  # type: ignore[arg-type]
+        spawned.append(process)
+        return process
+
+    with (
+        patch("custom_components.myq.keypad_recording.asyncio.create_subprocess_exec", new=tracked),
+        pytest.raises(TimeoutError),
+    ):
+        await _checked_process("sleep", "30", time_limit=0.2)
+    assert len(spawned) == 1 and spawned[0].returncode is not None

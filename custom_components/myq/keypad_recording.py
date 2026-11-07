@@ -37,14 +37,23 @@ def _reserve(directory: Path, partial: Path) -> None:
     os.close(fd)
 
 
-async def _checked_process(*args: str) -> bytes:
+def _decode_timeout(seconds: int) -> float:
+    """Allow decoding at half real time plus a minute of fixed overhead.
+
+    This is a heuristic, not a measured decode rate. Raise it if slow hosts
+    report validation timeouts on clips that otherwise decode cleanly.
+    """
+    return 60 + seconds * 2
+
+
+async def _checked_process(*args: str, time_limit: float) -> bytes:
     process = await asyncio.create_subprocess_exec(
         *args,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
     try:
-        async with asyncio.timeout(90):
+        async with asyncio.timeout(time_limit):
             output, errors = await process.communicate()
         if process.returncode or errors:
             raise TendStreamError("Keypad recording validation failed")
@@ -162,29 +171,40 @@ async def record_keypad(
             await process.wait()
         if process.returncode:
             raise TendStreamError("Keypad recorder failed")
-        # No session lease remains during disk validation.
+        # No session lease remains during disk validation. Counting packets only
+        # demuxes; the single full decode below is what proves every frame is valid.
         ffprobe = str(Path(ffmpeg).with_name("ffprobe"))
         data = await _checked_process(
             ffprobe,
             "-v",
             "error",
-            "-count_frames",
+            "-count_packets",
             "-select_streams",
             "v:0",
             "-show_entries",
-            "stream=codec_name,nb_read_frames:format=duration",
+            "stream=codec_name,nb_read_packets:format=duration",
             "-of",
             "json",
             str(partial),
+            time_limit=60,
         )
         info = json.loads(data)
         video = info.get("streams", [{}])[0]
         duration = float(info.get("format", {}).get("duration", 0))
-        decoded = int(video.get("nb_read_frames", 0))
+        decoded = int(video.get("nb_read_packets", 0))
         if video.get("codec_name") != "h264" or duration < seconds - 0.2 or decoded < target - 2:
             raise TendStreamError("Keypad recording is incomplete")
         await _checked_process(
-            ffmpeg, "-v", "error", "-xerror", "-i", str(partial), "-f", "null", "-"
+            ffmpeg,
+            "-v",
+            "error",
+            "-xerror",
+            "-i",
+            str(partial),
+            "-f",
+            "null",
+            "-",
+            time_limit=_decode_timeout(seconds),
         )
         await _publish_recording(partial, destination, enroll)
         published = True
