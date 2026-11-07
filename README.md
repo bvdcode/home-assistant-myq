@@ -156,8 +156,12 @@ are not enrolled or deleted. Cleanup runs hourly and at setup.
 
 The `myq_keypad_recording_finished` event reports `completed`, `cancelled`, or
 `failed`. Completed events include the path, frame count, media duration and wall
-duration; failures include only an error type. A cancelled blocking service request
-may end before returning its normal response; use this event to observe completion.
+duration; failures include only an error type and are also logged.
+`myq.record_keypad` returns once the recording is accepted, not when it finishes:
+the camera owns the capture, so stopping the calling script or restarting its
+automation does not cancel it. Only `myq.cancel_keypad_recording` or unloading the
+integration does. To act on the result, wait for this event, for example with
+`wait_for_trigger` on `myq_keypad_recording_finished` filtered by `entity_id`.
 
 Each standalone Video Keypad also has record and cancel buttons, a recording status
 sensor and a timestamp linking to its most recent retained recording. The buttons

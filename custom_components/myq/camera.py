@@ -1,6 +1,7 @@
 """Snapshots and live video from attached and standalone MyQ cameras."""
 
 import asyncio
+import logging
 import time
 from dataclasses import asdict
 from functools import partial
@@ -26,6 +27,7 @@ from .runtime import MyQConfigEntry
 from .tend_protocol import TendCameraTarget, TendStreamError
 from .tend_stream import TendLiveStream
 
+_LOGGER = logging.getLogger(__name__)
 SNAPSHOT_FRAME_INTERVAL = 5.0
 
 
@@ -83,8 +85,7 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
             self._attr_device_info = myq_device_info(
                 camera.serial_number, name=camera.name, model=camera.device_model
             )
-        self._record_lock = asyncio.Lock()
-        self._record_task: asyncio.Task[object] | None = None
+        self._record_task: asyncio.Task[None] | None = None
         self._last_record_started: float | None = None
         self._capture_lock = asyncio.Lock()
         self._image: bytes | None = None
@@ -181,11 +182,16 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
             await super().async_will_remove_from_hass()
 
     async def async_record_keypad(self, duration: int | None = None) -> None:
-        """Record received keypad video with the existing shared camera session."""
+        """Start a recording owned by this entity and return once it is accepted.
+
+        The caller's task does not carry the recording, so a script stop or an
+        automation restart cannot cancel it. Completion is reported only by the
+        ``myq_keypad_recording_finished`` event and the recording status sensor.
+        """
         camera = self.camera
         if camera is None or camera.device_model != "vkp-camera" or self._opener_serial is not None:
             raise HomeAssistantError("Select a Video Keypad camera")
-        if self._record_lock.locked():
+        if self._record_task is not None and not self._record_task.done():
             raise HomeAssistantError("A keypad recording is already active")
         entry = self.coordinator.config_entry
         options = entry.options if entry else {}
@@ -199,53 +205,54 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
         ):
             raise HomeAssistantError("Keypad recording cooldown is active")
         self._last_record_started = time.monotonic()
-        async with self._record_lock:
-            self._record_task = asyncio.current_task()
-            self._record_status("recording")
-            try:
-                if await self.stream_source() is None or self._live_stream is None:
-                    raise TendStreamError("Keypad live stream is unavailable")
-                if not await async_setup_component(self.hass, "ffmpeg", {}):
-                    raise TendStreamError("FFmpeg setup failed")
-                result = await record_keypad(
-                    self._live_stream,
-                    duration,
-                    self.coordinator.recordings.root,
-                    get_ffmpeg_manager(self.hass).binary,
-                    enroll=partial(
-                        self.coordinator.recordings.async_add, serial=self._camera_serial
-                    ),
-                )
-                self._record_status("completed")
-                self.hass.bus.async_fire(
-                    "myq_keypad_recording_finished",
-                    {"entity_id": self.entity_id, "status": "completed", **asdict(result)},
-                )
-            except asyncio.CancelledError:
-                self._record_status("cancelled")
-                self.hass.bus.async_fire(
-                    "myq_keypad_recording_finished",
-                    {"entity_id": self.entity_id, "status": "cancelled"},
-                )
-                raise
-            except Exception as error:
-                self._record_status("failed")
-                self.hass.bus.async_fire(
-                    "myq_keypad_recording_finished",
-                    {
-                        "entity_id": self.entity_id,
-                        "status": "failed",
-                        "error": type(error).__name__,
-                    },
-                )
-                raise HomeAssistantError("Keypad recording failed") from error
-            finally:
-                self._record_task = None
+        self._record_status("recording")
+        # Not eager: the reference is stored before the recording can run or finish.
+        self._record_task = self.hass.async_create_background_task(
+            self._async_run_recording(duration),
+            f"myq keypad recording {self._camera_serial}",
+            eager_start=False,
+        )
+
+    async def _async_run_recording(self, duration: int) -> None:
+        """Record received keypad video with the existing shared camera session."""
+        try:
+            if await self.stream_source() is None or self._live_stream is None:
+                raise TendStreamError("Keypad live stream is unavailable")
+            if not await async_setup_component(self.hass, "ffmpeg", {}):
+                raise TendStreamError("FFmpeg setup failed")
+            result = await record_keypad(
+                self._live_stream,
+                duration,
+                self.coordinator.recordings.root,
+                get_ffmpeg_manager(self.hass).binary,
+                enroll=partial(self.coordinator.recordings.async_add, serial=self._camera_serial),
+            )
+        except asyncio.CancelledError:
+            self._record_status("cancelled")
+            self.hass.bus.async_fire(
+                "myq_keypad_recording_finished",
+                {"entity_id": self.entity_id, "status": "cancelled"},
+            )
+            raise
+        except Exception as error:
+            # No caller is waiting, so this log line and the event are the only report.
+            _LOGGER.warning("Keypad recording for %s failed: %r", self.entity_id, error)
+            self._record_status("failed")
+            self.hass.bus.async_fire(
+                "myq_keypad_recording_finished",
+                {"entity_id": self.entity_id, "status": "failed", "error": type(error).__name__},
+            )
+        else:
+            self._record_status("completed")
+            self.hass.bus.async_fire(
+                "myq_keypad_recording_finished",
+                {"entity_id": self.entity_id, "status": "completed", **asdict(result)},
+            )
 
     async def async_cancel_keypad_recording(self) -> None:
         """Cancel the recording consumer, preserving other live viewers."""
         task = self._record_task
-        if task is not None and task is not asyncio.current_task():
+        if task is not None and not task.done():
             if not task.cancelling():
                 task.cancel()
             await asyncio.gather(task, return_exceptions=True)

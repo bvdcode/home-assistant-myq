@@ -24,6 +24,7 @@ from custom_components.myq.const import (
 from custom_components.myq.exceptions import MyQApiError, MyQAuthenticationError
 from custom_components.myq.models import GarageDoor, MyQCamera, MyQDevices
 from custom_components.myq.runtime import MyQRuntimeData
+from custom_components.myq.tend_protocol import TendStreamError
 
 EMAIL = "driver@example.com"
 IMAGE = b"\xff\xd8\xff\xe0jpeg"
@@ -262,6 +263,8 @@ async def test_keypad_recording_enrolls_only_completed_clip_and_enforces_cooldow
 
         record.side_effect = recorded
         await entity.async_record_keypad(5)
+        assert entity._record_task is not None
+        await entity._record_task
         coordinator.recordings.async_add.assert_awaited_once_with(
             result.path, serial=KEYPAD.serial_number
         )
@@ -298,13 +301,85 @@ async def test_cancel_recording_preserves_stream_and_does_not_enroll_partial(
         patch("custom_components.myq.camera.get_ffmpeg_manager"),
         patch("custom_components.myq.camera.record_keypad", side_effect=recording),
     ):
-        task = asyncio.create_task(entity.async_record_keypad(5))
+        await entity.async_record_keypad(5)
+        task = entity._record_task
+        assert task is not None
         await started.wait()
         await entity.async_cancel_keypad_recording()
         assert task.cancelled()
     coordinator.recordings.async_add.assert_not_awaited()
     live.close.assert_not_awaited()
-    assert entity._record_task is None
+    assert coordinator.recordings.status[KEYPAD.serial_number] == "cancelled"
+
+
+def _keypad_entity(hass: HomeAssistant) -> tuple[MyQCameraEntity, MagicMock]:
+    coordinator = MagicMock()
+    coordinator.cameras = {KEYPAD.serial_number: KEYPAD}
+    coordinator.config_entry.options = {}
+    coordinator.recordings.status = {}
+    entity = MyQCameraEntity(coordinator, KEYPAD)
+    entity.hass = hass
+    entity.entity_id = "camera.test_keypad"
+    entity._live_stream = MagicMock()
+    return entity, coordinator
+
+
+async def test_record_returns_while_recording_continues_outside_caller_task(
+    hass: HomeAssistant,
+) -> None:
+    from custom_components.myq.keypad_recording import RecordingResult
+
+    entity, coordinator = _keypad_entity(hass)
+    release = asyncio.Event()
+
+    async def recording(*args: object, **kwargs: object) -> RecordingResult:
+        await release.wait()
+        return RecordingResult("/media/myq-keypad/test.mp4", 100, 5, 7)
+
+    with (
+        patch.object(entity, "stream_source", new_callable=AsyncMock, return_value="local"),
+        patch("custom_components.myq.camera.get_ffmpeg_manager"),
+        patch("custom_components.myq.camera.record_keypad", side_effect=recording),
+    ):
+        # A caller that is stopped right after the call (script stop, automation
+        # restart) must not take the recording with it.
+        caller = asyncio.create_task(entity.async_record_keypad(5))
+        await asyncio.wait_for(caller, 2)
+        task = entity._record_task
+        assert task is not None and not task.done()
+        assert caller is not task
+        assert coordinator.recordings.status[KEYPAD.serial_number] == "recording"
+        with pytest.raises(HomeAssistantError, match="already active"):
+            await entity.async_record_keypad(5)
+        release.set()
+        await asyncio.wait_for(task, 2)
+    assert coordinator.recordings.status[KEYPAD.serial_number] == "completed"
+
+
+async def test_background_failure_is_reported_by_event_not_raised(
+    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
+) -> None:
+    entity, coordinator = _keypad_entity(hass)
+    events: list[Event] = []
+    unsubscribe = hass.bus.async_listen("myq_keypad_recording_finished", events.append)
+    with (
+        patch.object(entity, "stream_source", new_callable=AsyncMock, return_value="local"),
+        patch("custom_components.myq.camera.get_ffmpeg_manager"),
+        patch(
+            "custom_components.myq.camera.record_keypad",
+            new=AsyncMock(side_effect=TendStreamError("Keypad recording is incomplete")),
+        ),
+    ):
+        await entity.async_record_keypad(5)
+        assert entity._record_task is not None
+        await entity._record_task
+    await hass.async_block_till_done()
+    assert coordinator.recordings.status[KEYPAD.serial_number] == "failed"
+    assert [event.data for event in events] == [
+        {"entity_id": "camera.test_keypad", "status": "failed", "error": "TendStreamError"}
+    ]
+    assert "Keypad recording for camera.test_keypad failed" in caplog.text
+    unsubscribe()
 
 
 async def test_recording_rejects_non_keypad_without_opening_stream() -> None:
