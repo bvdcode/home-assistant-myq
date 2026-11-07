@@ -119,18 +119,19 @@ class VideoTransport:
             probe.close()
         if self._lan_only and self.local_ip == self._lan_ip:
             raise TendStreamError("Camera LAN address points to this host")
-        bind_ip = self.local_ip if self._lan_only else "0.0.0.0"
+        # A channel registers with the broker and exchanges media with the camera.
+        # Wildcard binding lets the kernel choose a source address for each destination.
         for _ in range(100):
             media = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             control = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             try:
-                media.bind((bind_ip, 0))
+                media.bind(("0.0.0.0", 0))
                 media_port = media.getsockname()[1]
                 if media_port == 65535:
                     media.close()
                     control.close()
                     continue
-                control.bind((bind_ip, media_port + 1))
+                control.bind(("0.0.0.0", media_port + 1))
                 for sock, is_control in ((media, False), (control, True)):
 
                     def protocol_factory(control_channel: bool = is_control) -> _DatagramHandler:

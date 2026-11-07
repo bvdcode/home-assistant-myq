@@ -76,7 +76,7 @@
     "abort": {
       "already_configured": "Dit MyQ-account is al ingesteld. Opnieuw instellen is niet nodig.",
       "cannot_connect": "De authenticatie is gelukt, maar de apparaatdetectie van MyQ was niet bereikbaar.",
-      "no_devices": "Er zijn geen garagedeuren gevonden in dit MyQ-account.",
+      "no_devices": "Er zijn geen garagedeuren of camera's gevonden in dit MyQ-account.",
       "reauth_successful": "MyQ is opnieuw verbonden.",
       "unknown": "MyQ gaf een onverwacht antwoord."
     }
@@ -140,10 +140,10 @@
   "options": {
     "step": {
       "init": {
-        "title": "Camera video transport",
-        "description": "Require video to come from the camera’s private LAN address. Cloud authorization and connection setup are still required. If the LAN path is unavailable, playback fails instead of using a public candidate. Changing this option closes active camera sessions. This setting applies to live video only; snapshots still use the cloud.",
+        "title": "Videoverbinding van de camera",
+        "description": "Vereis dat livevideo afkomstig is van het privé-IP-adres van de camera op het lokale netwerk. Voor autorisatie en het opzetten van de verbinding blijft toegang tot de cloud nodig. Als de camera niet bereikbaar is op het lokale netwerk, mislukt het afspelen zonder een openbaar adres te gebruiken. Als je deze instelling wijzigt, worden actieve camerasessies gesloten. Momentopnamen komen nog steeds uit de cloud.",
         "data": {
-          "camera_lan_only": "Require LAN-only camera video"
+          "camera_lan_only": "Livevideo alleen via het lokale netwerk toestaan"
         }
       }
     }

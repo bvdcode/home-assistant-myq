@@ -9,7 +9,7 @@ from urllib.parse import urlsplit
 import pytest
 from aiohttp import ClientSession
 
-from custom_components.myq.tend_protocol import TendStreamError
+from custom_components.myq.tend_protocol import TendCameraTarget, TendStreamError
 from custom_components.myq.tend_stream import TendLiveStream, _Viewer
 
 SPS = b"\x00\x00\x00\x01\x67s"
@@ -30,7 +30,10 @@ def open_session() -> Generator[AsyncMock]:
 @pytest.fixture
 async def live(socket_enabled: None, open_session: AsyncMock) -> AsyncGenerator[TendLiveStream]:
     del socket_enabled, open_session
-    stream = TendLiveStream("door-1", AsyncMock(return_value="token"))
+    stream = TendLiveStream(
+        AsyncMock(return_value=TendCameraTarget(opener_serial="door-1")),
+        AsyncMock(return_value="token"),
+    )
     try:
         yield stream
     finally:
@@ -235,7 +238,11 @@ def test_queue_end_survives_backpressure() -> None:
 
 
 async def test_lan_only_applies_to_every_new_session(open_session: AsyncMock) -> None:
-    stream = TendLiveStream("door-1", AsyncMock(return_value="token"), lan_only=True)
+    stream = TendLiveStream(
+        AsyncMock(return_value=TendCameraTarget(opener_serial="door-1")),
+        AsyncMock(return_value="token"),
+        lan_only=True,
+    )
     try:
         await stream._subscribe()
         assert open_session.await_args is not None

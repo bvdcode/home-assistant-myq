@@ -76,7 +76,7 @@
     "abort": {
       "already_configured": "Denne MyQ-konto er allerede konfigureret. Yderligere opsætning er ikke nødvendig.",
       "cannot_connect": "Godkendelsen lykkedes, men MyQ's enhedsregistrering kunne ikke nås.",
-      "no_devices": "Der blev ikke fundet nogen garageporte på denne MyQ-konto.",
+      "no_devices": "Der blev ikke fundet nogen garageporte eller kameraer på denne MyQ-konto.",
       "reauth_successful": "MyQ blev genforbundet.",
       "unknown": "MyQ returnerede et uventet svar."
     }
@@ -140,10 +140,10 @@
   "options": {
     "step": {
       "init": {
-        "title": "Camera video transport",
-        "description": "Require video to come from the camera’s private LAN address. Cloud authorization and connection setup are still required. If the LAN path is unavailable, playback fails instead of using a public candidate. Changing this option closes active camera sessions. This setting applies to live video only; snapshots still use the cloud.",
+        "title": "Overførsel af kameravideo",
+        "description": "Kræv, at livevideo kommer fra kameraets private IP-adresse på lokalnetværket. Godkendelse og oprettelse af forbindelsen kræver stadig adgang til skyen. Hvis kameraet ikke kan nås på lokalnetværket, mislykkes afspilningen uden at bruge en offentlig adresse. Ændring af indstillingen lukker aktive kameraforbindelser. Stillbilleder hentes fortsat fra skyen.",
         "data": {
-          "camera_lan_only": "Require LAN-only camera video"
+          "camera_lan_only": "Kræv livevideo via lokalnetværket"
         }
       }
     }

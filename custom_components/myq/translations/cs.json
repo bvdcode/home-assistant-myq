@@ -76,7 +76,7 @@
     "abort": {
       "already_configured": "Tento účet MyQ už je připojen. Další nastavení není potřeba.",
       "cannot_connect": "Ověření proběhlo úspěšně, ale služba vyhledávání zařízení MyQ není dostupná.",
-      "no_devices": "V tomto účtu MyQ nebyla nalezena žádná garážová vrata.",
+      "no_devices": "V tomto účtu MyQ nebyla nalezena žádná garážová vrata ani kamery.",
       "reauth_successful": "MyQ bylo úspěšně znovu připojeno.",
       "unknown": "MyQ vrátilo neočekávanou odpověď."
     }
@@ -140,10 +140,10 @@
   "options": {
     "step": {
       "init": {
-        "title": "Camera video transport",
-        "description": "Require video to come from the camera’s private LAN address. Cloud authorization and connection setup are still required. If the LAN path is unavailable, playback fails instead of using a public candidate. Changing this option closes active camera sessions. This setting applies to live video only; snapshots still use the cloud.",
+        "title": "Přenos videa z kamery",
+        "description": "Vyžaduje příjem živého videa ze soukromé IP adresy kamery v místní síti. Ověření přístupu a navázání spojení stále probíhají přes cloud. Pokud kamera není v místní síti dostupná, přehrávání selže a veřejná adresa se nepoužije. Změna této volby ukončí aktivní spojení s kamerou. Snímky z kamery se nadále načítají z cloudu.",
         "data": {
-          "camera_lan_only": "Require LAN-only camera video"
+          "camera_lan_only": "Přijímat živé video pouze z místní sítě"
         }
       }
     }

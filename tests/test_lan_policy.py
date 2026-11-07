@@ -2,6 +2,7 @@
 
 import asyncio
 import ipaddress
+import socket
 import struct
 from unittest.mock import MagicMock, patch
 
@@ -87,3 +88,32 @@ def test_pin_applies_to_media_rtcp_and_handshake_packets() -> None:
         receiver.on_datagram(True, b"rtcp", (CAMERA_IP, 9001))
         media.assert_called_once_with(b"media")
         rtcp.assert_called_once_with(b"rtcp")
+
+
+async def test_camera_route_is_advertised_but_udp_channels_allow_destination_routing(
+    socket_enabled: None,
+) -> None:
+    del socket_enabled
+    receiver = transport()
+    receiver.channels.clear()
+    loop = asyncio.get_running_loop()
+
+    # Stand in for a camera-facing interface without requiring a second NIC on CI.
+    async def camera_route(probe: socket.socket, destination: tuple[str, int]) -> None:
+        assert destination == (CAMERA_IP, 9)
+        probe.bind(("127.0.0.1", 0))
+
+    with (
+        patch.object(
+            loop, "getaddrinfo", return_value=[(socket.AF_INET, socket.SOCK_DGRAM, 17, "", BROKER)]
+        ),
+        patch.object(loop, "sock_connect", side_effect=camera_route),
+    ):
+        try:
+            await receiver._bind()
+            assert receiver.local_ip == "127.0.0.1"
+            media, control = receiver.channels
+            assert media.transport.get_extra_info("sockname") == ("0.0.0.0", media.port)
+            assert control.transport.get_extra_info("sockname") == ("0.0.0.0", media.port + 1)
+        finally:
+            receiver.close()

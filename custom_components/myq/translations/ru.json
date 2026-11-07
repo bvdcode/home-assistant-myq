@@ -76,7 +76,7 @@
     "abort": {
       "already_configured": "Этот аккаунт MyQ уже подключён. Повторная настройка не требуется.",
       "cannot_connect": "Вход выполнен, но MyQ не отвечает при поиске устройств.",
-      "no_devices": "В этой учётной записи MyQ не найдены гаражные двери.",
+      "no_devices": "В этой учётной записи MyQ не найдены гаражные двери или камеры.",
       "reauth_successful": "MyQ успешно переподключён.",
       "unknown": "MyQ вернул неожиданный ответ."
     }
@@ -140,10 +140,10 @@
   "options": {
     "step": {
       "init": {
-        "title": "Camera video transport",
-        "description": "Require video to come from the camera’s private LAN address. Cloud authorization and connection setup are still required. If the LAN path is unavailable, playback fails instead of using a public candidate. Changing this option closes active camera sessions. This setting applies to live video only; snapshots still use the cloud.",
+        "title": "Передача видео с камеры",
+        "description": "Видео в реальном времени должно поступать с частного IP-адреса камеры в локальной сети. Для авторизации и установления соединения по-прежнему нужен доступ к облаку. Если камера недоступна в локальной сети, воспроизведение завершится ошибкой без перехода на публичный адрес. Изменение этой настройки прерывает активные сеансы связи с камерой. Снимки по-прежнему загружаются из облака.",
         "data": {
-          "camera_lan_only": "Require LAN-only camera video"
+          "camera_lan_only": "Получать видео в реальном времени только по локальной сети"
         }
       }
     }

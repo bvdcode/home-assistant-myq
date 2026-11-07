@@ -76,7 +76,7 @@
     "abort": {
       "already_configured": "Esta conta MyQ já está configurada. Não é necessário configurá-la novamente.",
       "cannot_connect": "A autenticação foi bem-sucedida, mas não foi possível acessar o serviço de descoberta de dispositivos do MyQ.",
-      "no_devices": "Nenhum portão de garagem foi encontrado nesta conta MyQ.",
+      "no_devices": "Nenhum portão de garagem ou câmera foi encontrado nesta conta MyQ.",
       "reauth_successful": "O MyQ foi reconectado com sucesso.",
       "unknown": "O MyQ retornou uma resposta inesperada."
     }
@@ -140,10 +140,10 @@
   "options": {
     "step": {
       "init": {
-        "title": "Camera video transport",
-        "description": "Require video to come from the camera’s private LAN address. Cloud authorization and connection setup are still required. If the LAN path is unavailable, playback fails instead of using a public candidate. Changing this option closes active camera sessions. This setting applies to live video only; snapshots still use the cloud.",
+        "title": "Transmissão de vídeo da câmera",
+        "description": "Exige que o vídeo ao vivo venha do endereço IP privado da câmera na rede local. A autorização e o estabelecimento da conexão ainda exigem acesso à nuvem. Se a câmera não estiver acessível pela rede local, a reprodução falhará sem usar um endereço público. Alterar esta opção encerra as sessões ativas da câmera. As imagens estáticas continuam sendo obtidas da nuvem.",
         "data": {
-          "camera_lan_only": "Require LAN-only camera video"
+          "camera_lan_only": "Usar apenas a rede local para o vídeo ao vivo"
         }
       }
     }
