@@ -108,6 +108,10 @@ async def test_explicit_power_read_is_one_get_with_no_wake() -> None:
     assert len(session.calls) == 1
     assert session.calls[0].method == "GET"
     assert "/do/wakeup" not in session.calls[0].url
+    assert session.calls[0].kwargs["allow_redirects"] is False
+    assert {"BrandId", "App-Version", "User-Agent", "partnerId"} <= session.calls[0].kwargs[
+        "headers"
+    ].keys()
 
 
 async def test_power_rejects_another_camera_report() -> None:
@@ -125,5 +129,31 @@ async def test_power_rejects_another_camera_report() -> None:
     auth = MagicMock(spec=MyQAuth)
     auth.async_access_token = AsyncMock(return_value="synthetic-access")
     with pytest.raises(MyQApiError, match="different camera"):
+        await MyQClient(cast(ClientSession, session), auth).async_get_keypad_power(KEYPAD)
+    assert len(session.calls) == 1
+
+
+@pytest.mark.parametrize(
+    ("status", "body", "message"),
+    [(302, b"", "302"), (200, b"x" * 1_024_001, "size limit")],
+    ids=["redirect", "oversized"],
+)
+async def test_explicit_power_request_rejects_redirect_or_oversized_body(
+    status: int, body: bytes, message: str
+) -> None:
+    from typing import cast
+
+    from aiohttp import ClientSession
+
+    from custom_components.myq.client import MyQClient
+    from custom_components.myq.exceptions import MyQApiError
+    from custom_components.myq.oauth import MyQAuth
+
+    from .http import FakeResponse, FakeSession
+
+    auth = MagicMock(spec=MyQAuth)
+    auth.async_access_token = AsyncMock(return_value="synthetic")
+    session = FakeSession(request_responses=[FakeResponse("", status=status, body=body)])
+    with pytest.raises(MyQApiError, match=message):
         await MyQClient(cast(ClientSession, session), auth).async_get_keypad_power(KEYPAD)
     assert len(session.calls) == 1
