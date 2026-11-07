@@ -19,6 +19,7 @@ from .const import (
     USER_AGENT,
 )
 from .exceptions import MyQApiError, MyQAuthenticationError
+from .keypad_state import KeypadPower
 from .models import GarageDoor, MyQAccount, MyQCamera, MyQDevices
 from .oauth import MyQAuth
 
@@ -89,13 +90,30 @@ class MyQClient:
             raise MyQApiError("Tend returned a camera snapshot that is not a JPEG")
         return image
 
-    async def async_get_camera_alias(self, camera: MyQCamera) -> str:
-        """Resolve one camera's signaling destination from its Tend device ID."""
+    async def _async_camera_metadata(self, camera: MyQCamera) -> dict[str, object]:
+        if not camera.tend_device_id.isdecimal():
+            raise MyQApiError("Invalid camera video identifier")
         payload = await self._async_request_json(
             "GET", f"{TEND_API_BASE_URL}/devices/{camera.tend_device_id}", _tend_headers
         )
         if payload.get("id") != camera.tend_device_id:
             raise MyQApiError("Tend returned a different camera identity")
+        return payload
+
+    async def async_get_keypad_power(self, camera: MyQCamera) -> KeypadPower:
+        """Read this keypad's reported power with one explicit metadata GET."""
+        if not camera.is_video_keypad:
+            raise MyQApiError("Camera is not a Video Keypad")
+        async with asyncio.timeout(15):
+            metadata = await self._async_camera_metadata(camera)
+        try:
+            return KeypadPower.from_device(metadata)
+        except ValueError:
+            raise MyQApiError("Keypad returned an invalid power report") from None
+
+    async def async_get_camera_alias(self, camera: MyQCamera) -> str:
+        """Resolve one camera's signaling destination from its Tend device ID."""
+        payload = await self._async_camera_metadata(camera)
         alias = payload.get("alias")
         if not isinstance(alias, str):
             raise MyQApiError("Tend returned a camera without a signaling alias")

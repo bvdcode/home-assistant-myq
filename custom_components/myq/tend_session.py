@@ -28,6 +28,10 @@ class TendSession:
         self._close_lock = asyncio.Lock()
         self.ended = False
 
+    @property
+    def media_path(self) -> str:
+        return self._transport.media_path if self._transport is not None else "unknown"
+
     @classmethod
     async def open(
         cls, target: TendCameraTarget, token: str, on_frame: Callable[[bytes], None]
