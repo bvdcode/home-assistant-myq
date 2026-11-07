@@ -1,6 +1,7 @@
 """Wake only for explicit keypad consumers and bound power polling and cancellation."""
 
 import asyncio
+import json
 from typing import cast
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -157,3 +158,29 @@ async def test_cancelled_wake_http_read_releases_response_context() -> None:
         await task
     assert closed.is_set()
     assert len(session.calls) == 1
+
+
+@pytest.mark.parametrize(
+    ("metadata", "alias", "error"),
+    [
+        ({"id": "20000001", "alias": "account:mac1"}, "account:mac1", None),
+        ({"id": "20000001"}, None, None),
+        ({"alias": "account:mac1"}, None, None),
+        ({"id": "20000002", "alias": "account:mac2"}, None, "different camera"),
+        ({"id": "20000001", "alias": "bad"}, None, "invalid signaling alias"),
+    ],
+)
+async def test_final_wake_response_reuses_only_verified_alias(
+    metadata: dict[str, str], alias: str | None, error: str | None
+) -> None:
+    body = json.dumps({**metadata, "status": {"pwr": {"sleepMode": "FP"}}})
+    session = FakeSession(request_responses=[FakeResponse(""), FakeResponse("", body=body)])
+    auth = MagicMock(spec=MyQAuth)
+    auth.async_access_token = AsyncMock(return_value="token")
+    client = MyQClient(cast(ClientSession, session), auth)
+    if error:
+        with pytest.raises(MyQApiError, match=error):
+            await client.async_prepare_keypad(KEYPAD)
+    else:
+        assert await client.async_prepare_keypad(KEYPAD) == alias
+    assert [call.method for call in session.calls] == ["POST", "GET"]

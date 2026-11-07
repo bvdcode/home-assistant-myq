@@ -21,14 +21,14 @@ from custom_components.myq.const import (
 )
 from custom_components.myq.coordinator import MyQDataUpdateCoordinator
 from custom_components.myq.exceptions import MyQApiError, MyQAuthenticationError
-from custom_components.myq.models import GarageDoor
+from custom_components.myq.models import GarageDoor, MyQCamera, MyQDevices
 
 DOOR = GarageDoor("account-1", "door-1", "Garage", None, "closed", True)
 
 
 async def test_coordinator_indexes_every_door(hass: HomeAssistant) -> None:
     client = MagicMock()
-    client.async_get_garage_doors = AsyncMock(return_value=(DOOR,))
+    client.async_get_devices = AsyncMock(return_value=MyQDevices((DOOR,)))
     coordinator = MyQDataUpdateCoordinator(hass, MockConfigEntry(), client)
 
     assert await coordinator._async_update_data() == {"door-1": DOOR}
@@ -36,7 +36,7 @@ async def test_coordinator_indexes_every_door(hass: HomeAssistant) -> None:
 
 async def test_coordinator_requests_reauthentication(hass: HomeAssistant) -> None:
     client = MagicMock()
-    client.async_get_garage_doors = AsyncMock(side_effect=MyQAuthenticationError)
+    client.async_get_devices = AsyncMock(side_effect=MyQAuthenticationError)
     coordinator = MyQDataUpdateCoordinator(hass, MockConfigEntry(), client)
 
     with pytest.raises(ConfigEntryAuthFailed):
@@ -45,7 +45,7 @@ async def test_coordinator_requests_reauthentication(hass: HomeAssistant) -> Non
 
 async def test_coordinator_translates_network_failure(hass: HomeAssistant) -> None:
     client = MagicMock()
-    client.async_get_garage_doors = AsyncMock(side_effect=ClientConnectionError)
+    client.async_get_devices = AsyncMock(side_effect=ClientConnectionError)
     coordinator = MyQDataUpdateCoordinator(hass, MockConfigEntry(), client)
 
     with pytest.raises(UpdateFailed):
@@ -57,7 +57,7 @@ async def command_updates(
     hass: HomeAssistant,
 ) -> AsyncGenerator[tuple[MyQDataUpdateCoordinator, MagicMock]]:
     client = MagicMock()
-    client.async_get_garage_doors = AsyncMock(return_value=(DOOR,))
+    client.async_get_devices = AsyncMock(return_value=MyQDevices((DOOR,)))
     coordinator = MyQDataUpdateCoordinator(hass, MockConfigEntry(), client)
     coordinator.data = {DOOR.serial_number: DOOR}
     yield coordinator, client
@@ -75,20 +75,20 @@ async def test_command_polling_waits_for_confirmed_state(
     target: Literal["open", "closed"],
 ) -> None:
     coordinator, client = command_updates
-    client.async_get_garage_doors.return_value = (replace(DOOR, door_state=initial),)
+    client.async_get_devices.return_value = MyQDevices((replace(DOOR, door_state=initial),))
     with patch("custom_components.myq.coordinator.monotonic", return_value=0) as clock:
         coordinator.async_schedule_command_updates("door-1", target)
         assert coordinator.update_interval == COMMAND_UPDATE_INITIAL_INTERVAL
-        client.async_get_garage_doors.assert_not_awaited()
+        client.async_get_devices.assert_not_awaited()
 
         await coordinator.async_refresh()
         assert coordinator.data["door-1"].door_state == initial
 
-        client.async_get_garage_doors.return_value = (replace(DOOR, door_state=moving),)
+        client.async_get_devices.return_value = MyQDevices((replace(DOOR, door_state=moving),))
         await coordinator.async_refresh()
         assert coordinator.data["door-1"].door_state == moving
 
-        client.async_get_garage_doors.return_value = (replace(DOOR, door_state=target),)
+        client.async_get_devices.return_value = MyQDevices((replace(DOOR, door_state=target),))
         await coordinator.async_refresh()
         assert coordinator.data["door-1"].door_state == target
         assert coordinator.update_interval != DEFAULT_UPDATE_INTERVAL
@@ -103,7 +103,7 @@ async def test_command_polling_gradually_increases_intervals(
 ) -> None:
     coordinator, client = command_updates
     coordinator.async_schedule_command_updates("door-1", "open")
-    client.async_get_garage_doors.assert_not_awaited()
+    client.async_get_devices.assert_not_awaited()
     for expected in (1, 2, 3, 4, 5, 5, 5):
         assert coordinator.update_interval == timedelta(seconds=expected)
         await coordinator.async_refresh()
@@ -121,7 +121,7 @@ async def test_command_polling_gradually_increases_intervals(
         ("opening", "closed", None),
     ],
 )
-async def test_first_unchanged_status_keeps_provisional_motion_once(
+async def test_unchanged_status_keeps_provisional_motion_until_status_changes(
     command_updates: tuple[MyQDataUpdateCoordinator, MagicMock],
     initial: str,
     target: Literal["open", "closed"],
@@ -130,25 +130,30 @@ async def test_first_unchanged_status_keeps_provisional_motion_once(
     coordinator, client = command_updates
     door = replace(DOOR, door_state=initial)
     coordinator.data = {door.serial_number: door}
-    client.async_get_garage_doors.return_value = (door,)
+    client.async_get_devices.return_value = MyQDevices((door,))
     listener = MagicMock()
     unsubscribe = coordinator.async_add_listener(listener)
 
     coordinator.async_schedule_command_updates(door.serial_number, target)
     assert coordinator.command_motion(door.serial_number) == motion
     assert coordinator.data[door.serial_number] is door
-    client.async_get_garage_doors.assert_not_awaited()
+    client.async_get_devices.assert_not_awaited()
     listener.assert_called_once()
 
-    await coordinator.async_refresh()
-    assert coordinator.command_motion(door.serial_number) == motion
-    assert coordinator.data[door.serial_number] is door
-    assert listener.call_count == 2
+    for poll in range(4):
+        await coordinator.async_refresh()
+        assert coordinator.command_motion(door.serial_number) == motion
+        assert coordinator.data[door.serial_number] is door
+        assert listener.call_count == poll + 2
 
+    client.async_get_devices.return_value = MyQDevices((replace(door, door_state="moving"),))
+    await coordinator.async_refresh()
+    assert coordinator.command_motion(door.serial_number) is None
+
+    client.async_get_devices.return_value = MyQDevices((door,))
     await coordinator.async_refresh()
     assert coordinator.command_motion(door.serial_number) is None
     assert coordinator.data[door.serial_number] is door
-    assert listener.call_count == 3
     unsubscribe()
 
 
@@ -170,7 +175,7 @@ async def test_first_changed_status_immediately_replaces_provisional_motion(
     coordinator, client = command_updates
     coordinator.data = {DOOR.serial_number: replace(DOOR, door_state=initial)}
     coordinator.async_schedule_command_updates(DOOR.serial_number, target)
-    client.async_get_garage_doors.return_value = (replace(DOOR, door_state=reported),)
+    client.async_get_devices.return_value = MyQDevices((replace(DOOR, door_state=reported),))
 
     await coordinator.async_refresh()
     assert coordinator.command_motion(DOOR.serial_number) is None
@@ -187,6 +192,7 @@ async def test_unchanged_state_stops_fast_polling_at_deadline(
         await coordinator.async_refresh()
     assert coordinator.update_interval == DEFAULT_UPDATE_INTERVAL
     assert coordinator.data["door-1"].door_state == "closed"
+    assert coordinator.command_motion("door-1") is None
 
 
 @pytest.mark.parametrize("doors", [(), (replace(DOOR, online=False),)])
@@ -196,9 +202,10 @@ async def test_missing_or_offline_door_stops_fast_polling(
 ) -> None:
     coordinator, client = command_updates
     coordinator.async_schedule_command_updates("door-1", "open")
-    client.async_get_garage_doors.return_value = doors
+    client.async_get_devices.return_value = MyQDevices(doors)
     await coordinator.async_refresh()
     assert coordinator.update_interval == DEFAULT_UPDATE_INTERVAL
+    assert coordinator.command_motion("door-1") is None
 
 
 @pytest.mark.parametrize(
@@ -217,7 +224,7 @@ async def test_poll_failure_stops_fast_polling(
 ) -> None:
     coordinator, client = command_updates
     coordinator.async_schedule_command_updates("door-1", "open")
-    client.async_get_garage_doors.side_effect = error
+    client.async_get_devices.side_effect = error
     with pytest.raises(expected):
         await coordinator._async_update_data()
     assert coordinator.update_interval == DEFAULT_UPDATE_INTERVAL
@@ -236,18 +243,18 @@ async def test_new_command_replaces_previous_target_and_deadline(
             await coordinator.async_refresh()
         assert coordinator.update_interval == COMMAND_UPDATE_INTERVAL
         clock.return_value = previous_window.total_seconds() - 1
-        client.async_get_garage_doors.return_value = (replace(DOOR, door_state="opening"),)
+        client.async_get_devices.return_value = MyQDevices((replace(DOOR, door_state="opening"),))
         coordinator.async_schedule_command_updates("door-1", "closed")
         assert coordinator.update_interval == COMMAND_UPDATE_INITIAL_INTERVAL
         clock.return_value = previous_window.total_seconds()
-        client.async_get_garage_doors.return_value = (replace(DOOR, door_state="open"),)
+        client.async_get_devices.return_value = MyQDevices((replace(DOOR, door_state="open"),))
         await coordinator.async_refresh()
         assert coordinator.update_interval == timedelta(seconds=2)
-        client.async_get_garage_doors.return_value = (replace(DOOR, door_state="closing"),)
+        client.async_get_devices.return_value = MyQDevices((replace(DOOR, door_state="closing"),))
         await coordinator.async_refresh()
         assert coordinator.data["door-1"].is_closing
         assert coordinator.update_interval == timedelta(seconds=3)
-        client.async_get_garage_doors.return_value = (DOOR,)
+        client.async_get_devices.return_value = MyQDevices((DOOR,))
         await coordinator.async_refresh()
         assert coordinator.update_interval != DEFAULT_UPDATE_INTERVAL
         clock.return_value = (
@@ -262,20 +269,24 @@ async def test_each_door_keeps_its_own_command_target(
 ) -> None:
     coordinator, client = command_updates
     other = replace(DOOR, serial_number="door-2", door_state="open")
-    client.async_get_garage_doors.return_value = (DOOR, other)
+    client.async_get_devices.return_value = MyQDevices((DOOR, other))
     with patch("custom_components.myq.coordinator.monotonic", return_value=0) as clock:
         coordinator.async_schedule_command_updates("door-1", "open")
         coordinator.async_schedule_command_updates("door-2", "closed")
-        client.async_get_garage_doors.return_value = (
-            replace(DOOR, door_state="open"),
-            replace(other, door_state="closing"),
+        client.async_get_devices.return_value = MyQDevices(
+            (
+                replace(DOOR, door_state="open"),
+                replace(other, door_state="closing"),
+            )
         )
         clock.return_value = COMMAND_UPDATE_MIN_DURATION.total_seconds()
         await coordinator.async_refresh()
         assert coordinator.update_interval == timedelta(seconds=2)
-        client.async_get_garage_doors.return_value = (
-            replace(DOOR, door_state="open"),
-            replace(other, door_state="closed"),
+        client.async_get_devices.return_value = MyQDevices(
+            (
+                replace(DOOR, door_state="open"),
+                replace(other, door_state="closed"),
+            )
         )
         await coordinator.async_refresh()
     assert coordinator.update_interval == DEFAULT_UPDATE_INTERVAL
@@ -290,16 +301,16 @@ async def test_old_refresh_cannot_complete_new_command(
     requested = asyncio.Event()
     release = asyncio.Event()
 
-    async def delayed_read() -> tuple[GarageDoor, ...]:
+    async def delayed_read() -> MyQDevices:
         requested.set()
         await release.wait()
         if fails:
             raise ClientConnectionError("Old request failed")
-        return (replace(DOOR, door_state="open"),)
+        return MyQDevices((replace(DOOR, door_state="open"),))
 
     with patch("custom_components.myq.coordinator.monotonic", return_value=0) as clock:
         coordinator.async_schedule_command_updates("door-1", "closed")
-        client.async_get_garage_doors.side_effect = delayed_read
+        client.async_get_devices.side_effect = delayed_read
         old_refresh = asyncio.create_task(coordinator.async_refresh())
         await requested.wait()
         clock.return_value = COMMAND_UPDATE_MIN_DURATION.total_seconds()
@@ -309,14 +320,38 @@ async def test_old_refresh_cannot_complete_new_command(
         assert coordinator.update_interval == COMMAND_UPDATE_INITIAL_INTERVAL
         assert coordinator.command_motion("door-1") == "opening"
 
-        client.async_get_garage_doors.side_effect = None
-        client.async_get_garage_doors.return_value = (replace(DOOR, door_state="opening"),)
+        client.async_get_devices.side_effect = None
+        client.async_get_devices.return_value = MyQDevices((replace(DOOR, door_state="opening"),))
         await coordinator.async_refresh()
         assert coordinator.data["door-1"].is_opening
         assert coordinator.update_interval == timedelta(seconds=2)
         assert coordinator.command_motion("door-1") is None
 
         clock.return_value += COMMAND_UPDATE_MIN_DURATION.total_seconds()
-        client.async_get_garage_doors.return_value = (replace(DOOR, door_state="open"),)
+        client.async_get_devices.return_value = MyQDevices((replace(DOOR, door_state="open"),))
         await coordinator.async_refresh()
     assert coordinator.update_interval == DEFAULT_UPDATE_INTERVAL
+
+
+async def test_camera_inventory_updates_without_door_changes(hass: HomeAssistant) -> None:
+    camera = MyQCamera("TC-0007-20000001", True)
+    client = MagicMock()
+    client.async_get_devices = AsyncMock(return_value=MyQDevices(cameras=(camera,)))
+    coordinator = MyQDataUpdateCoordinator(hass, MockConfigEntry(), client)
+    listener = MagicMock()
+    unsubscribe = coordinator.async_add_listener(listener)
+    try:
+        await coordinator.async_refresh()
+        assert coordinator.data == {}
+        assert coordinator.cameras == {camera.serial_number: camera}
+        client.async_get_devices.return_value = MyQDevices(cameras=(replace(camera, online=False),))
+        await coordinator.async_refresh()
+        assert coordinator.cameras[camera.serial_number].online is False
+        assert listener.call_count == 2
+        client.async_get_devices.side_effect = ClientConnectionError
+        await coordinator.async_refresh()
+        assert coordinator.last_update_success is False
+        assert coordinator.cameras[camera.serial_number].online is False
+    finally:
+        unsubscribe()
+        await coordinator.async_shutdown()

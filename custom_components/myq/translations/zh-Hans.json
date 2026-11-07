@@ -76,7 +76,7 @@
     "abort": {
       "already_configured": "该 MyQ 账户已配置，无需重复设置。",
       "cannot_connect": "身份验证成功，但无法访问 MyQ 设备发现服务。",
-      "no_devices": "此 MyQ 账户中未找到车库门。",
+      "no_devices": "此 MyQ 账户中未找到车库门或摄像头。",
       "reauth_successful": "MyQ 已成功重新连接。",
       "unknown": "MyQ 返回了意外的响应。"
     }

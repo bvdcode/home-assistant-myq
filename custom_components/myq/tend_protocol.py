@@ -124,7 +124,33 @@ class TendCamera:
     aes_key: str
     local_ip: str
     opener_serial: str = ""
-    model: str = ""
+
+
+@dataclass(frozen=True, slots=True)
+class TendCameraTarget:
+    """Identify exactly one camera by its opener or resolved signaling destination."""
+
+    opener_serial: str | None = None
+    destination: str | None = None
+
+    def __post_init__(self) -> None:
+        if (self.opener_serial is None) == (self.destination is None):
+            raise ValueError("Provide exactly one camera identity")
+        value = self.opener_serial if self.opener_serial is not None else self.destination
+        if not value:
+            raise ValueError("Camera identity must not be empty")
+
+    def select(self, cameras: list[TendCamera]) -> TendCamera:
+        """Reject missing or ambiguous destinations instead of selecting another camera."""
+        if self.destination is not None:
+            matches = [camera for camera in cameras if camera.destination == self.destination]
+        else:
+            matches = [camera for camera in cameras if camera.opener_serial == self.opener_serial]
+        if not matches:
+            raise TendStreamError("TC camera was not listed by Tend signaling")
+        if len(matches) != 1:
+            raise TendStreamError("TC camera identity is ambiguous in Tend signaling")
+        return matches[0]
 
 
 def parse_cameras(properties: dict[str, str]) -> list[TendCamera]:
@@ -146,27 +172,9 @@ def parse_cameras(properties: dict[str, str]) -> list[TendCamera]:
                 raw.get("AES", ""),
                 raw.get("LIP", ""),
                 raw.get("GSN", ""),
-                raw.get("MODEL", ""),
             )
         )
     return cameras
-
-
-def select_camera(cameras: list[TendCamera], opener_serial: str) -> TendCamera | None:
-    """Pick the camera attached to an opener, or the account's one unattached camera.
-
-    Unattached cameras (such as the Video Keypad) carry no opener serial, and the
-    Tend listing has no field that maps back to their MyQ serial, so a Video Keypad
-    model is preferred and otherwise only an unambiguous single candidate is used.
-    """
-    if opener_serial:
-        return next((c for c in cameras if c.opener_serial == opener_serial), None)
-    unattached = [c for c in cameras if not c.opener_serial]
-    keypads = [c for c in unattached if c.model.casefold().startswith("videokeypadcam")]
-    for group in (keypads, unattached):
-        if len(group) == 1:
-            return group[0]
-    return None
 
 
 @dataclass(slots=True)

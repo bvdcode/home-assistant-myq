@@ -76,7 +76,7 @@
     "abort": {
       "already_configured": "Tento účet MyQ už je připojen. Další nastavení není potřeba.",
       "cannot_connect": "Ověření proběhlo úspěšně, ale služba vyhledávání zařízení MyQ není dostupná.",
-      "no_devices": "V tomto účtu MyQ nebyla nalezena žádná garážová vrata.",
+      "no_devices": "V tomto účtu MyQ nebyla nalezena žádná garážová vrata ani kamery.",
       "reauth_successful": "MyQ bylo úspěšně znovu připojeno.",
       "unknown": "MyQ vrátilo neočekávanou odpověď."
     }

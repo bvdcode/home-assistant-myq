@@ -9,7 +9,7 @@ from urllib.parse import urlsplit
 import pytest
 from aiohttp import ClientSession
 
-from custom_components.myq.tend_protocol import TendStreamError
+from custom_components.myq.tend_protocol import TendCameraTarget, TendStreamError
 from custom_components.myq.tend_stream import TendLiveStream, _Viewer
 
 SPS = b"\x00\x00\x00\x01\x67s"
@@ -30,7 +30,10 @@ def open_session() -> Generator[AsyncMock]:
 @pytest.fixture
 async def live(socket_enabled: None, open_session: AsyncMock) -> AsyncGenerator[TendLiveStream]:
     del socket_enabled, open_session
-    stream = TendLiveStream("door-1", AsyncMock(return_value="token"))
+    stream = TendLiveStream(
+        AsyncMock(return_value=TendCameraTarget(opener_serial="door-1")),
+        AsyncMock(return_value="token"),
+    )
     try:
         yield stream
     finally:
@@ -240,12 +243,13 @@ async def test_prepare_runs_once_for_concurrent_consumers_and_again_for_reconnec
     entered = asyncio.Event()
     release = asyncio.Event()
 
-    async def prepare() -> None:
+    async def prepare() -> TendCameraTarget:
         entered.set()
         await release.wait()
+        return TendCameraTarget(destination="alias:mac1")
 
     preparation = AsyncMock(side_effect=prepare)
-    stream = TendLiveStream("", AsyncMock(return_value="token"), prepare_session=preparation)
+    stream = TendLiveStream(preparation, AsyncMock(return_value="token"))
     try:
         first = asyncio.create_task(stream._subscribe())
         await entered.wait()
@@ -274,7 +278,7 @@ async def test_preparation_is_passive_until_a_consumer_subscribes(
     del socket_enabled
     prepare = AsyncMock()
     token = AsyncMock(return_value="token")
-    stream = TendLiveStream("", token, prepare_session=prepare)
+    stream = TendLiveStream(prepare, token)
     try:
         assert (await stream.source_url()).startswith("http://127.0.0.1:")
         prepare.assert_not_awaited()
@@ -290,22 +294,23 @@ async def test_close_cancels_pending_wake_before_token_or_camera_session(
     started = asyncio.Event()
     stopped = asyncio.Event()
 
-    async def prepare() -> None:
+    async def prepare() -> TendCameraTarget:
         started.set()
         try:
             await asyncio.Event().wait()
         finally:
             stopped.set()
+        return TendCameraTarget(destination="alias:mac1")
 
     token = AsyncMock(return_value="token")
-    stream = TendLiveStream("", token, prepare_session=prepare)
+    stream = TendLiveStream(prepare, token)
     subscribe = asyncio.create_task(stream._subscribe())
     await started.wait()
     await asyncio.wait_for(stream.close(), 1)
     with pytest.raises(asyncio.CancelledError):
         await subscribe
     assert stopped.is_set()
-    assert stream._prepare_task is None
+    assert stream._target_task is None
     token.assert_not_awaited()
     open_session.assert_not_awaited()
 
@@ -316,18 +321,19 @@ async def test_cancelled_subscriber_allows_next_consumer_to_prepare(
     started = asyncio.Event()
     release = asyncio.Event()
 
-    async def prepare() -> None:
+    async def prepare() -> TendCameraTarget:
         started.set()
         await release.wait()
+        return TendCameraTarget(destination="alias:mac1")
 
     preparation = AsyncMock(side_effect=prepare)
-    stream = TendLiveStream("", AsyncMock(return_value="token"), prepare_session=preparation)
+    stream = TendLiveStream(preparation, AsyncMock(return_value="token"))
     first = asyncio.create_task(stream._subscribe())
     await started.wait()
     first.cancel()
     with pytest.raises(asyncio.CancelledError):
         await first
-    assert stream._prepare_task is None
+    assert stream._target_task is None
     open_session.assert_not_awaited()
     try:
         release.set()
@@ -344,9 +350,7 @@ async def test_failed_preparation_is_sanitized_and_does_not_open_video(
     from custom_components.myq.exceptions import MyQApiError
 
     token = AsyncMock(return_value="token")
-    stream = TendLiveStream(
-        "", token, prepare_session=AsyncMock(side_effect=MyQApiError("private"))
-    )
+    stream = TendLiveStream(AsyncMock(side_effect=MyQApiError("private")), token)
     try:
         with pytest.raises(TendStreamError, match="prepare for live video") as error:
             await stream._subscribe()
@@ -369,7 +373,7 @@ async def test_close_during_old_session_cleanup_prevents_reconnect_wake(
 
     prepare = AsyncMock()
     token = AsyncMock(return_value="token")
-    stream = TendLiveStream("", token, prepare_session=prepare)
+    stream = TendLiveStream(prepare, token)
     stream._session = MagicMock(ended=True, close=AsyncMock(side_effect=cleanup))
     subscribe = asyncio.create_task(stream._subscribe())
     await cleanup_started.wait()

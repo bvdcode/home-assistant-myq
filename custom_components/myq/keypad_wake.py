@@ -16,7 +16,7 @@ _POLL_INTERVAL = 1
 type WakeRequest = Callable[[str, str, dict[str, object] | None], Awaitable[bytes]]
 
 
-async def async_wake_keypad(device_id: str, request: WakeRequest) -> None:
+async def async_wake_keypad(device_id: str, request: WakeRequest) -> dict[str, object]:
     """Use the caller's authenticated request lifecycle to reach full power."""
     if not device_id.isdecimal():
         raise MyQApiError("Invalid keypad video identifier")
@@ -37,7 +37,7 @@ async def async_wake_keypad(device_id: str, request: WakeRequest) -> None:
                 status = device.get("status")
                 power = status.get("pwr") if isinstance(status, dict) else None
                 if isinstance(power, dict) and power.get("sleepMode") == "FP":
-                    return
+                    return device
                 await asyncio.sleep(_POLL_INTERVAL)
     except TimeoutError:
         raise MyQApiError("Keypad did not reach full power in time") from None
