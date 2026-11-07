@@ -60,6 +60,7 @@ class TendLiveStream:
         token_supplier: Callable[[], Awaitable[str]],
     ) -> None:
         self._target_supplier = target_supplier
+        self._target_task: asyncio.Future[TendCameraTarget] | None = None
         self._token_supplier = token_supplier
         self._runner: web.AppRunner | None = None
         self._url: str | None = None
@@ -109,9 +110,24 @@ class TendLiveStream:
                 self._idle_timer = None
             if self._session is None or self._session.ended:
                 await self._close_session()
-                self._session = await TendSession.open(
-                    await self._target_supplier(), await self._token_supplier(), self._on_frame
-                )
+                if bool(self._closed):
+                    raise TendStreamError("Camera stream is closed")
+                self._target_task = asyncio.ensure_future(self._target_supplier())
+                try:
+                    target = await self._target_task
+                except ClientError, MyQError, OSError, TimeoutError:
+                    raise TendStreamError("Camera could not prepare for live video") from None
+                finally:
+                    self._target_task = None
+                if bool(self._closed):
+                    raise TendStreamError("Camera stream is closed")
+                token = await self._token_supplier()
+                if bool(self._closed):
+                    raise TendStreamError("Camera stream is closed")
+                self._session = await TendSession.open(target, token, self._on_frame)
+                if bool(self._closed):
+                    await self._close_session()
+                    raise TendStreamError("Camera stream is closed")
             viewer = _Viewer()
             self._viewers.add(viewer)
             return viewer
@@ -204,6 +220,8 @@ class TendLiveStream:
         """Finish cleanup even when the caller cancels entity removal."""
         if self._shutdown_task is None:
             self._closed = True
+            if self._target_task is not None:
+                self._target_task.cancel()
             self._shutdown_task = asyncio.create_task(self._shutdown())
         try:
             await asyncio.shield(self._shutdown_task)

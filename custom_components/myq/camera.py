@@ -137,14 +137,17 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
         return await self._live_stream.source_url()
 
     async def _async_stream_target(self) -> TendCameraTarget:
-        if self._opener_serial is not None:
-            return TendCameraTarget(opener_serial=self._opener_serial)
         camera = self.camera
         if camera is None:
             raise MyQApiError("Camera is no longer available")
-        return TendCameraTarget(
-            destination=await self.coordinator.client.async_get_camera_alias(camera)
-        )
+        alias = None
+        if camera.device_model == "vkp-camera":
+            alias = await self.coordinator.client.async_prepare_keypad(camera)
+        if self._opener_serial is not None:
+            return TendCameraTarget(opener_serial=self._opener_serial)
+        if alias is None:
+            alias = await self.coordinator.client.async_get_camera_alias(camera)
+        return TendCameraTarget(destination=alias)
 
     async def async_will_remove_from_hass(self) -> None:
         """Close the source before waiting for the stream reader to stop."""
