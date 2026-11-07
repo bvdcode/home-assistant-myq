@@ -151,6 +151,9 @@
       },
       "keypad_credential_renewals": {
         "name": "Erneuerungen der Zugangsdaten"
+      },
+      "keypad_transport": {
+        "name": "Videoübertragungsweg"
       }
     },
     "camera": {

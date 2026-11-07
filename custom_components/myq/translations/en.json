@@ -151,6 +151,9 @@
       },
       "keypad_credential_renewals": {
         "name": "Credential renewals"
+      },
+      "keypad_transport": {
+        "name": "Video transport"
       }
     },
     "camera": {

@@ -151,6 +151,9 @@
       },
       "keypad_credential_renewals": {
         "name": "Обновления учётных данных"
+      },
+      "keypad_transport": {
+        "name": "Способ передачи видео"
       }
     },
     "camera": {

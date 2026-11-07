@@ -151,6 +151,9 @@
       },
       "keypad_credential_renewals": {
         "name": "凭据续期次数"
+      },
+      "keypad_transport": {
+        "name": "视频传输方式"
       }
     },
     "camera": {

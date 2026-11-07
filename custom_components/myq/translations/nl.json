@@ -151,6 +151,9 @@
       },
       "keypad_credential_renewals": {
         "name": "Vernieuwingen van inloggegevens"
+      },
+      "keypad_transport": {
+        "name": "Videotransport"
       }
     },
     "camera": {

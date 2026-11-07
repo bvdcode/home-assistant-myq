@@ -151,6 +151,9 @@
       },
       "keypad_credential_renewals": {
         "name": "Renovações de credenciais"
+      },
+      "keypad_transport": {
+        "name": "Transporte de vídeo"
       }
     },
     "camera": {

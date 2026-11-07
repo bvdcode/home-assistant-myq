@@ -151,6 +151,9 @@
       },
       "keypad_credential_renewals": {
         "name": "Obnovení přihlašovacích údajů"
+      },
+      "keypad_transport": {
+        "name": "Přenos videa"
       }
     },
     "camera": {
