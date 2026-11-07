@@ -76,7 +76,7 @@
     "abort": {
       "already_configured": "Questo account MyQ è già configurato. Non è necessario configurarlo di nuovo.",
       "cannot_connect": "Autenticazione riuscita, ma il servizio di rilevamento dei dispositivi MyQ non è raggiungibile.",
-      "no_devices": "Nessuna porta del garage trovata in questo account MyQ.",
+      "no_devices": "Nessuna porta del garage o telecamera trovata in questo account MyQ.",
       "reauth_successful": "MyQ è stato riconnesso correttamente.",
       "unknown": "MyQ ha restituito una risposta imprevista."
     }
@@ -121,11 +121,25 @@
       },
       "last_activation_source": {
         "name": "Origine dell'ultima attivazione"
+      },
+      "keypad_recording_status": {
+        "name": "Stato della registrazione"
+      },
+      "keypad_last_clip": {
+        "name": "Ultima registrazione"
       }
     },
     "camera": {
       "camera": {
         "name": "Telecamera"
+      }
+    },
+    "button": {
+      "keypad_record": {
+        "name": "Registra clip"
+      },
+      "keypad_cancel_recording": {
+        "name": "Annulla registrazione"
       }
     }
   },
@@ -140,15 +154,30 @@
   "options": {
     "step": {
       "init": {
-        "title": "Keypad recording settings",
-        "description": "Recording defaults for Video Keypads. Only newly managed clips expire; existing files are preserved. Set retention to 0 to keep managed clips indefinitely. Longer recordings and frequent triggers use more battery.",
+        "title": "Impostazioni di registrazione del tastierino",
+        "description": "Scegli le impostazioni predefinite per le registrazioni del tastierino video. Il periodo di conservazione si applica alle nuove clip. Imposta 0 per conservarle a tempo indeterminato. Registrazioni più lunghe o frequenti consumano più batteria.",
         "data": {
-          "recording_duration": "Default recording duration (seconds)",
-          "recording_cooldown": "Minimum time between recording starts (seconds)",
-          "retention_days": "Delete managed clips after (days; 0 disables deletion)"
+          "recording_duration": "Durata predefinita della registrazione (secondi)",
+          "recording_cooldown": "Intervallo minimo tra gli avvii delle registrazioni (secondi)",
+          "retention_days": "Elimina le clip dopo questo numero di giorni (0 per conservarle a tempo indeterminato)"
         }
       }
     }
   },
-  "services": {}
+  "services": {
+    "record_keypad": {
+      "name": "Registra dal tastierino video",
+      "description": "Salva il video ricevuto nei contenuti multimediali locali dopo aver verificato la clip.",
+      "fields": {
+        "duration": {
+          "name": "Durata del video",
+          "description": "Secondi di video ricevuto. Le interruzioni della connessione possono prolungare il tempo totale."
+        }
+      }
+    },
+    "cancel_keypad_recording": {
+      "name": "Annulla la registrazione dal tastierino video",
+      "description": "Interrompe la registrazione o la verifica mantenendo connessi gli altri spettatori. Una clip già in fase di finalizzazione viene salvata per il periodo di conservazione impostato."
+    }
+  }
 }

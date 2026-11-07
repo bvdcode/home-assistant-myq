@@ -1,7 +1,13 @@
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import UTC, datetime
 
-from homeassistant.components.sensor import SensorEntity, SensorEntityDescription, SensorStateClass
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorEntityDescription,
+    SensorStateClass,
+)
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -10,6 +16,7 @@ from homeassistant.helpers.typing import StateType
 from .coordinator import MyQDataUpdateCoordinator
 from .entity import MyQEntity
 from .models import GarageDoor
+from .recording_entity import KeypadRecordingEntity
 from .runtime import MyQConfigEntry
 
 type ValueFn = Callable[[GarageDoor], StateType]
@@ -71,6 +78,44 @@ async def async_setup_entry(
         for description in SENSOR_DESCRIPTIONS
         if description.exists_fn(door)
     )
+
+    async_add_entities(
+        entity(coordinator, camera, key)
+        for camera in coordinator.cameras.values()
+        if camera.device_model == "vkp-camera"
+        for entity, key in (
+            (RecordingStatusSensor, "recording_status"),
+            (LastRecordingSensor, "last_clip"),
+        )
+    )
+
+
+class RecordingStatusSensor(KeypadRecordingEntity, SensorEntity):
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    @property
+    def native_value(self) -> str:
+        return self.coordinator.recordings.status.get(self._serial, "idle")
+
+
+class LastRecordingSensor(KeypadRecordingEntity, SensorEntity):
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+
+    @property
+    def native_value(self) -> datetime | None:
+        clip = self.coordinator.recordings.latest(self._serial)
+        return datetime.fromtimestamp(clip[0], UTC) if clip else None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, str] | None:
+        clip = self.coordinator.recordings.latest(self._serial)
+        if clip is None:
+            return None
+        return {
+            "media_content_id": "media-source://media_source/local/myq-keypad/" + clip[1],
+            "media_content_type": "video/mp4",
+        }
 
 
 class MyQSensor(MyQEntity, SensorEntity):

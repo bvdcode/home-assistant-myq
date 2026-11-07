@@ -27,6 +27,7 @@ from .runtime import (
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 PLATFORMS: tuple[Platform, ...] = (
     Platform.BINARY_SENSOR,
+    Platform.BUTTON,
     Platform.CAMERA,
     Platform.COVER,
     Platform.SENSOR,
@@ -75,6 +76,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyQConfigEntry) -> bool:
 
     async def cleanup_recordings(now: datetime) -> None:
         await coordinator.recordings.async_cleanup(int(entry.options.get("retention_days", 30)))
+        coordinator.async_update_listeners()
 
     entry.async_on_unload(async_track_time_interval(hass, cleanup_recordings, timedelta(hours=1)))
     await coordinator.recordings.async_cleanup(int(entry.options.get("retention_days", 30)))

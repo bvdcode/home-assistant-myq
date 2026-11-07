@@ -23,7 +23,7 @@ from custom_components.myq.exceptions import (
     MyQInvalidMfaError,
     MyQUnsupportedAuthPageError,
 )
-from custom_components.myq.models import GarageDoor, OAuthTokens
+from custom_components.myq.models import GarageDoor, MyQCamera, MyQDevices, OAuthTokens
 
 EMAIL = "driver@example.com"
 PASSWORD = "secret"
@@ -38,7 +38,7 @@ async def test_user_flow_creates_token_backed_entry_after_email_mfa(
 ) -> None:
     mock_login_session.async_start.return_value = None
     mock_login_session.async_submit_mfa.return_value = TOKENS
-    mock_myq_client.async_get_garage_doors.return_value = (DOOR,)
+    mock_myq_client.async_get_devices.return_value = MyQDevices((DOOR,))
 
     result = await _submit_credentials(hass, mfa_method=MFA_METHOD_EMAIL)
 
@@ -174,7 +174,7 @@ async def test_browser_callback_creates_entry(
 ) -> None:
     mock_login_session.async_start.side_effect = MyQCloudflareChallengeError
     mock_login_session.async_complete_browser.return_value = TOKENS
-    mock_myq_client.async_get_garage_doors.return_value = (DOOR,)
+    mock_myq_client.async_get_devices.return_value = MyQDevices((DOOR,))
     result = await _submit_credentials(hass)
 
     result = await hass.config_entries.flow.async_configure(
@@ -326,7 +326,7 @@ async def test_reauthentication_updates_tokens_and_mfa_method(
     )
     entry.add_to_hass(hass)
     mock_login_session.async_start.return_value = TOKENS
-    mock_myq_client.async_get_garage_doors.return_value = (DOOR,)
+    mock_myq_client.async_get_devices.return_value = MyQDevices((DOOR,))
 
     result = await entry.start_reauth_flow(hass)
     result = await hass.config_entries.flow.async_configure(
@@ -357,7 +357,7 @@ async def test_reauthentication_retries_mfa_without_replacing_entry(
     entry.add_to_hass(hass)
     mock_login_session.async_start.return_value = None
     mock_login_session.async_submit_mfa.side_effect = [MyQInvalidMfaError, TOKENS]
-    mock_myq_client.async_get_garage_doors.return_value = (DOOR,)
+    mock_myq_client.async_get_devices.return_value = MyQDevices((DOOR,))
 
     result = await entry.start_reauth_flow(hass)
     result = await hass.config_entries.flow.async_configure(
@@ -486,6 +486,26 @@ def _entry_data() -> dict[str, object]:
             "expires_at": 0.0,
         },
     }
+
+
+@pytest.mark.parametrize("has_camera", [False, True])
+async def test_setup_accepts_camera_only_accounts_and_rejects_empty_accounts(
+    hass: HomeAssistant,
+    mock_login_session: MagicMock,
+    mock_myq_client: MagicMock,
+    has_camera: bool,
+) -> None:
+    mock_login_session.async_start.return_value = TOKENS
+    cameras = (MyQCamera("TC-0007-20000001"),) if has_camera else ()
+    mock_myq_client.async_get_devices.return_value = MyQDevices(cameras=cameras)
+
+    result = await _submit_credentials(hass)
+
+    if has_camera:
+        assert result["type"] is data_entry_flow.FlowResultType.CREATE_ENTRY
+    else:
+        assert result["type"] is data_entry_flow.FlowResultType.ABORT
+        assert result["reason"] == "no_devices"
 
 
 async def test_recording_options_preserve_unrelated_privacy_policy(hass: HomeAssistant) -> None:

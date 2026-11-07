@@ -76,7 +76,7 @@
     "abort": {
       "already_configured": "Этот аккаунт MyQ уже подключён. Повторная настройка не требуется.",
       "cannot_connect": "Вход выполнен, но MyQ не отвечает при поиске устройств.",
-      "no_devices": "В этой учётной записи MyQ не найдены гаражные двери.",
+      "no_devices": "В этой учётной записи MyQ не найдены гаражные двери или камеры.",
       "reauth_successful": "MyQ успешно переподключён.",
       "unknown": "MyQ вернул неожиданный ответ."
     }
@@ -121,11 +121,25 @@
       },
       "last_activation_source": {
         "name": "Последний источник активации"
+      },
+      "keypad_recording_status": {
+        "name": "Состояние записи"
+      },
+      "keypad_last_clip": {
+        "name": "Последняя запись"
       }
     },
     "camera": {
       "camera": {
         "name": "Камера"
+      }
+    },
+    "button": {
+      "keypad_record": {
+        "name": "Записать клип"
+      },
+      "keypad_cancel_recording": {
+        "name": "Отменить запись"
       }
     }
   },
@@ -140,15 +154,30 @@
   "options": {
     "step": {
       "init": {
-        "title": "Keypad recording settings",
-        "description": "Recording defaults for Video Keypads. Only newly managed clips expire; existing files are preserved. Set retention to 0 to keep managed clips indefinitely. Longer recordings and frequent triggers use more battery.",
+        "title": "Настройки записи с клавиатуры",
+        "description": "Выберите параметры записи видео с клавиатуры по умолчанию. Срок хранения действует для новых клипов. Укажите 0, чтобы хранить их бессрочно. Более длительная или частая запись увеличивает расход заряда батареи.",
         "data": {
-          "recording_duration": "Default recording duration (seconds)",
-          "recording_cooldown": "Minimum time between recording starts (seconds)",
-          "retention_days": "Delete managed clips after (days; 0 disables deletion)"
+          "recording_duration": "Длительность записи по умолчанию (секунды)",
+          "recording_cooldown": "Минимальное время между запусками записи (секунды)",
+          "retention_days": "Удалять записи через указанное число дней (0 — хранить бессрочно)"
         }
       }
     }
   },
-  "services": {}
+  "services": {
+    "record_keypad": {
+      "name": "Записать видео с клавиатуры",
+      "description": "Сохраняет полученное видео в локальной медиатеке после проверки клипа.",
+      "fields": {
+        "duration": {
+          "name": "Длительность видео",
+          "description": "Длительность полученного видео в секундах. Перебои со связью могут увеличить общее время."
+        }
+      }
+    },
+    "cancel_keypad_recording": {
+      "name": "Отменить запись с клавиатуры",
+      "description": "Останавливает запись или проверку, сохраняя подключение остальных зрителей. Если сохранение клипа уже завершается, он будет сохранён на заданный срок."
+    }
+  }
 }

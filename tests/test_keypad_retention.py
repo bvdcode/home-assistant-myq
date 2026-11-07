@@ -74,3 +74,20 @@ async def test_failed_enrollment_does_not_mutate_ownership_ledger(
     restored = KeypadRecordings(hass, "retention-save-failure")
     await restored.async_load()
     assert restored._clips == previous
+
+
+async def test_last_retained_clip_is_durable_and_scoped_to_camera(
+    hass: HomeAssistant, tmp_path: Path
+) -> None:
+    store = KeypadRecordings(hass, "mixed-cameras")
+    store.root = tmp_path
+    paths = [tmp_path / (str(i) * 32 + ".mp4") for i in range(3)]
+    for path, serial in zip(paths, ("first", "second", None), strict=True):
+        path.write_bytes(b"video")
+        await store.async_add(str(path), serial=serial)
+    reloaded = KeypadRecordings(hass, "mixed-cameras")
+    await reloaded.async_load()
+    first, second = reloaded.latest("first"), reloaded.latest("second")
+    assert first is not None and first[1] == paths[0].name
+    assert second is not None and second[1] == paths[1].name
+    assert reloaded.latest("third") is None

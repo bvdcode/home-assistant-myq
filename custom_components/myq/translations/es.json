@@ -76,7 +76,7 @@
     "abort": {
       "already_configured": "Esta cuenta de MyQ ya está configurada. No es necesario volver a configurarla.",
       "cannot_connect": "La autenticación se ha completado, pero no se ha podido acceder al servicio de detección de dispositivos de MyQ.",
-      "no_devices": "No se han encontrado puertas de garaje en esta cuenta de MyQ.",
+      "no_devices": "No se han encontrado puertas de garaje ni cámaras en esta cuenta de MyQ.",
       "reauth_successful": "MyQ se ha reconectado correctamente.",
       "unknown": "MyQ ha devuelto una respuesta inesperada."
     }
@@ -121,11 +121,25 @@
       },
       "last_activation_source": {
         "name": "Origen de la última activación"
+      },
+      "keypad_recording_status": {
+        "name": "Estado de la grabación"
+      },
+      "keypad_last_clip": {
+        "name": "Última grabación"
       }
     },
     "camera": {
       "camera": {
         "name": "Cámara"
+      }
+    },
+    "button": {
+      "keypad_record": {
+        "name": "Grabar un clip"
+      },
+      "keypad_cancel_recording": {
+        "name": "Cancelar grabación"
       }
     }
   },
@@ -140,15 +154,30 @@
   "options": {
     "step": {
       "init": {
-        "title": "Keypad recording settings",
-        "description": "Recording defaults for Video Keypads. Only newly managed clips expire; existing files are preserved. Set retention to 0 to keep managed clips indefinitely. Longer recordings and frequent triggers use more battery.",
+        "title": "Ajustes de grabación del teclado",
+        "description": "Elige los valores predeterminados para las grabaciones del teclado con cámara. El plazo de conservación se aplica a los nuevos clips. Usa 0 para conservarlos indefinidamente. Las grabaciones más largas o frecuentes consumen más batería.",
         "data": {
-          "recording_duration": "Default recording duration (seconds)",
-          "recording_cooldown": "Minimum time between recording starts (seconds)",
-          "retention_days": "Delete managed clips after (days; 0 disables deletion)"
+          "recording_duration": "Duración predeterminada de la grabación (segundos)",
+          "recording_cooldown": "Tiempo mínimo entre inicios de grabación (segundos)",
+          "retention_days": "Eliminar los clips después de este número de días (0 para conservarlos indefinidamente)"
         }
       }
     }
   },
-  "services": {}
+  "services": {
+    "record_keypad": {
+      "name": "Grabar vídeo del teclado",
+      "description": "Guarda el vídeo recibido en los medios locales tras validar el clip.",
+      "fields": {
+        "duration": {
+          "name": "Duración del vídeo",
+          "description": "Segundos de vídeo recibido. Las interrupciones de la conexión pueden prolongar el tiempo total."
+        }
+      }
+    },
+    "cancel_keypad_recording": {
+      "name": "Cancelar la grabación del teclado",
+      "description": "Detiene la grabación o la validación y mantiene conectados a los demás espectadores. Si el clip ya se está guardando, se conserva durante el plazo configurado."
+    }
+  }
 }

@@ -76,7 +76,7 @@
     "abort": {
       "already_configured": "Ce compte MyQ est déjà configuré. Il n’est pas nécessaire de le configurer à nouveau.",
       "cannot_connect": "L'authentification a réussi, mais le service de découverte des appareils MyQ est injoignable.",
-      "no_devices": "Aucune porte de garage n'a été trouvée sur ce compte MyQ.",
+      "no_devices": "Aucune porte de garage ni caméra n'a été trouvée sur ce compte MyQ.",
       "reauth_successful": "MyQ a été reconnecté avec succès.",
       "unknown": "MyQ a renvoyé une réponse inattendue."
     }
@@ -121,11 +121,25 @@
       },
       "last_activation_source": {
         "name": "Source de la dernière activation"
+      },
+      "keypad_recording_status": {
+        "name": "État de l’enregistrement"
+      },
+      "keypad_last_clip": {
+        "name": "Dernier enregistrement"
       }
     },
     "camera": {
       "camera": {
         "name": "Caméra"
+      }
+    },
+    "button": {
+      "keypad_record": {
+        "name": "Enregistrer un extrait"
+      },
+      "keypad_cancel_recording": {
+        "name": "Annuler l’enregistrement"
       }
     }
   },
@@ -140,15 +154,30 @@
   "options": {
     "step": {
       "init": {
-        "title": "Keypad recording settings",
-        "description": "Recording defaults for Video Keypads. Only newly managed clips expire; existing files are preserved. Set retention to 0 to keep managed clips indefinitely. Longer recordings and frequent triggers use more battery.",
+        "title": "Paramètres d’enregistrement du clavier",
+        "description": "Choisissez les paramètres par défaut des enregistrements du clavier vidéo. La durée de conservation s’applique aux nouveaux extraits. Saisissez 0 pour les conserver indéfiniment. Des enregistrements plus longs ou plus fréquents consomment davantage de batterie.",
         "data": {
-          "recording_duration": "Default recording duration (seconds)",
-          "recording_cooldown": "Minimum time between recording starts (seconds)",
-          "retention_days": "Delete managed clips after (days; 0 disables deletion)"
+          "recording_duration": "Durée d’enregistrement par défaut (secondes)",
+          "recording_cooldown": "Délai minimal entre deux débuts d’enregistrement (secondes)",
+          "retention_days": "Supprimer les enregistrements après ce nombre de jours (0 pour les conserver indéfiniment)"
         }
       }
     }
   },
-  "services": {}
+  "services": {
+    "record_keypad": {
+      "name": "Enregistrer la vidéo du clavier",
+      "description": "Enregistre la vidéo reçue dans les médias locaux après vérification de l’extrait.",
+      "fields": {
+        "duration": {
+          "name": "Durée de la vidéo",
+          "description": "Nombre de secondes de vidéo reçue. Les interruptions de connexion peuvent prolonger la durée totale."
+        }
+      }
+    },
+    "cancel_keypad_recording": {
+      "name": "Annuler l’enregistrement du clavier vidéo",
+      "description": "Arrête l’enregistrement ou la vérification. Les autres spectateurs restent connectés. Un extrait déjà en cours de finalisation est sauvegardé pour la durée de conservation prévue."
+    }
+  }
 }

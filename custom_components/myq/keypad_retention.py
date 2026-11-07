@@ -40,14 +40,17 @@ class KeypadRecordings:
         self.root = (
             Path(hass.config.media_dirs.get("local", hass.config.path("media"))) / "myq-keypad"
         )
-        self._store = Store[dict[str, dict[str, object]]](hass, 1, f"myq.{entry_id}.recordings")
+        self._store = Store[dict[str, dict[str, object]]](
+            hass, 1, f"myq.{entry_id}.recordings", private=True
+        )
         self._clips: dict[str, dict[str, object]] = {}
+        self.status: dict[str, str] = {}
         self._lock = asyncio.Lock()
 
     async def async_load(self) -> None:
         self._clips = await self._store.async_load() or {}
 
-    async def async_add(self, path: str) -> None:
+    async def async_add(self, path: str, *, serial: str | None = None) -> None:
         candidate = Path(path)
         if candidate.parent != self.root or not _NAME.fullmatch(candidate.name):
             raise ValueError("Unexpected managed recording path")
@@ -55,11 +58,24 @@ class KeypadRecordings:
         async with self._lock:
             updated = {
                 **self._clips,
-                candidate.name: {"created_at": time.time(), "identity": identity},
+                candidate.name: {"created_at": time.time(), "identity": identity, "serial": serial},
             }
             # A failed save must not enroll a failed publication in the in-memory ledger.
             await self._store.async_save(updated)
             self._clips = updated
+
+    def latest(self, serial: str) -> tuple[float, str] | None:
+        """Look up only durably enrolled recordings attributable to this keypad."""
+        return max(
+            (
+                (float(created), name)
+                for name, metadata in self._clips.items()
+                if metadata.get("serial") == serial
+                and _NAME.fullmatch(name)
+                and isinstance(created := metadata.get("created_at"), (int, float))
+            ),
+            default=None,
+        )
 
     async def async_cleanup(self, days: int) -> None:
         if days <= 0:

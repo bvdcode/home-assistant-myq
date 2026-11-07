@@ -76,7 +76,7 @@
     "abort": {
       "already_configured": "To konto MyQ jest już skonfigurowane. Ponowna konfiguracja nie jest potrzebna.",
       "cannot_connect": "Uwierzytelnianie powiodło się, ale usługa wykrywania urządzeń MyQ jest niedostępna.",
-      "no_devices": "Na tym koncie MyQ nie znaleziono bram garażowych.",
+      "no_devices": "Na tym koncie MyQ nie znaleziono bram garażowych ani kamer.",
       "reauth_successful": "Ponowne połączenie z MyQ powiodło się.",
       "unknown": "MyQ zwrócił nieoczekiwaną odpowiedź."
     }
@@ -121,11 +121,25 @@
       },
       "last_activation_source": {
         "name": "Źródło ostatniego uruchomienia"
+      },
+      "keypad_recording_status": {
+        "name": "Stan nagrywania"
+      },
+      "keypad_last_clip": {
+        "name": "Ostatnie nagranie"
       }
     },
     "camera": {
       "camera": {
         "name": "Kamera"
+      }
+    },
+    "button": {
+      "keypad_record": {
+        "name": "Nagraj klip"
+      },
+      "keypad_cancel_recording": {
+        "name": "Anuluj nagrywanie"
       }
     }
   },
@@ -140,15 +154,30 @@
   "options": {
     "step": {
       "init": {
-        "title": "Keypad recording settings",
-        "description": "Recording defaults for Video Keypads. Only newly managed clips expire; existing files are preserved. Set retention to 0 to keep managed clips indefinitely. Longer recordings and frequent triggers use more battery.",
+        "title": "Ustawienia nagrywania z klawiatury",
+        "description": "Wybierz domyślne ustawienia nagrań z klawiatury z kamerą. Okres przechowywania dotyczy nowych klipów. Ustaw 0, aby zachować je bezterminowo. Dłuższe lub częstsze nagrywanie zwiększa zużycie baterii.",
         "data": {
-          "recording_duration": "Default recording duration (seconds)",
-          "recording_cooldown": "Minimum time between recording starts (seconds)",
-          "retention_days": "Delete managed clips after (days; 0 disables deletion)"
+          "recording_duration": "Domyślny czas nagrywania (sekundy)",
+          "recording_cooldown": "Minimalny odstęp między rozpoczęciem kolejnych nagrań (sekundy)",
+          "retention_days": "Usuń nagrania po tylu dniach (0, aby zachować je bezterminowo)"
         }
       }
     }
   },
-  "services": {}
+  "services": {
+    "record_keypad": {
+      "name": "Nagraj wideo z klawiatury",
+      "description": "Po sprawdzeniu klipu zapisuje odebrane wideo w lokalnych multimediach.",
+      "fields": {
+        "duration": {
+          "name": "Czas trwania wideo",
+          "description": "Liczba sekund odebranego wideo. Przerwy w połączeniu mogą wydłużyć całkowity czas."
+        }
+      }
+    },
+    "cancel_keypad_recording": {
+      "name": "Anuluj nagrywanie z klawiatury",
+      "description": "Zatrzymuje nagrywanie lub sprawdzanie klipu. Pozostali widzowie nadal mają połączenie. Klip, którego zapis jest już finalizowany, zostanie zachowany zgodnie z ustawionym okresem przechowywania."
+    }
+  }
 }

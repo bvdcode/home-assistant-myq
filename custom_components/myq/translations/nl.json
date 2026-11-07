@@ -76,7 +76,7 @@
     "abort": {
       "already_configured": "Dit MyQ-account is al ingesteld. Opnieuw instellen is niet nodig.",
       "cannot_connect": "De authenticatie is gelukt, maar de apparaatdetectie van MyQ was niet bereikbaar.",
-      "no_devices": "Er zijn geen garagedeuren gevonden in dit MyQ-account.",
+      "no_devices": "Er zijn geen garagedeuren of camera's gevonden in dit MyQ-account.",
       "reauth_successful": "MyQ is opnieuw verbonden.",
       "unknown": "MyQ gaf een onverwacht antwoord."
     }
@@ -121,11 +121,25 @@
       },
       "last_activation_source": {
         "name": "Bron van laatste activering"
+      },
+      "keypad_recording_status": {
+        "name": "Opnamestatus"
+      },
+      "keypad_last_clip": {
+        "name": "Laatste opname"
       }
     },
     "camera": {
       "camera": {
         "name": "Camera"
+      }
+    },
+    "button": {
+      "keypad_record": {
+        "name": "Clip opnemen"
+      },
+      "keypad_cancel_recording": {
+        "name": "Opname annuleren"
       }
     }
   },
@@ -140,15 +154,30 @@
   "options": {
     "step": {
       "init": {
-        "title": "Keypad recording settings",
-        "description": "Recording defaults for Video Keypads. Only newly managed clips expire; existing files are preserved. Set retention to 0 to keep managed clips indefinitely. Longer recordings and frequent triggers use more battery.",
+        "title": "Opname-instellingen voor het toetsenpaneel",
+        "description": "Kies de standaardinstellingen voor opnamen van het videotoetsenpaneel. De bewaartermijn geldt voor nieuwe clips. Kies 0 om ze onbeperkt te bewaren. Langere of frequentere opnamen verbruiken meer batterij.",
         "data": {
-          "recording_duration": "Default recording duration (seconds)",
-          "recording_cooldown": "Minimum time between recording starts (seconds)",
-          "retention_days": "Delete managed clips after (days; 0 disables deletion)"
+          "recording_duration": "Standaard opnameduur (seconden)",
+          "recording_cooldown": "Minimumtijd tussen het starten van twee opnamen (seconden)",
+          "retention_days": "Opnamen verwijderen na dit aantal dagen (0 voor onbeperkt bewaren)"
         }
       }
     }
   },
-  "services": {}
+  "services": {
+    "record_keypad": {
+      "name": "Video van het toetsenpaneel opnemen",
+      "description": "Slaat de ontvangen video na controle van de clip op in de lokale media.",
+      "fields": {
+        "duration": {
+          "name": "Videoduur",
+          "description": "Aantal seconden ontvangen video. Verbindingsonderbrekingen kunnen de totale duur verlengen."
+        }
+      }
+    },
+    "cancel_keypad_recording": {
+      "name": "Opname van het videotoetsenpaneel annuleren",
+      "description": "Stopt de opname of de controle. Andere kijkers blijven verbonden. Een clip die al wordt afgerond, wordt opgeslagen met de ingestelde bewaartermijn."
+    }
+  }
 }

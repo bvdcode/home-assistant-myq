@@ -76,7 +76,7 @@
     "abort": {
       "already_configured": "This MyQ account is already configured. No additional setup is needed.",
       "cannot_connect": "Authentication succeeded, but MyQ device discovery could not be reached.",
-      "no_devices": "No garage doors were found on this MyQ account.",
+      "no_devices": "No garage doors or cameras were found on this MyQ account.",
       "reauth_successful": "MyQ was reconnected successfully.",
       "unknown": "MyQ returned an unexpected response."
     }
@@ -121,11 +121,25 @@
       },
       "last_activation_source": {
         "name": "Last activation source"
+      },
+      "keypad_recording_status": {
+        "name": "Recording status"
+      },
+      "keypad_last_clip": {
+        "name": "Last recording"
       }
     },
     "camera": {
       "camera": {
         "name": "Camera"
+      }
+    },
+    "button": {
+      "keypad_record": {
+        "name": "Record clip"
+      },
+      "keypad_cancel_recording": {
+        "name": "Cancel recording"
       }
     }
   },
@@ -141,14 +155,29 @@
     "step": {
       "init": {
         "title": "Keypad recording settings",
-        "description": "Recording defaults for Video Keypads. Only newly managed clips expire; existing files are preserved. Set retention to 0 to keep managed clips indefinitely. Longer recordings and frequent triggers use more battery.",
+        "description": "Choose the defaults for Video Keypad recordings. Retention applies to newly recorded clips. Set retention to 0 to keep them indefinitely. Longer or more frequent recordings use more battery.",
         "data": {
           "recording_duration": "Default recording duration (seconds)",
           "recording_cooldown": "Minimum time between recording starts (seconds)",
-          "retention_days": "Delete managed clips after (days; 0 disables deletion)"
+          "retention_days": "Delete recorded clips after (days, 0 to keep indefinitely)"
         }
       }
     }
   },
-  "services": {}
+  "services": {
+    "record_keypad": {
+      "name": "Record Video Keypad",
+      "description": "Save received video to local media after validating the clip.",
+      "fields": {
+        "duration": {
+          "name": "Video duration",
+          "description": "Seconds of received video. Connection interruptions may extend the elapsed time."
+        }
+      }
+    },
+    "cancel_keypad_recording": {
+      "name": "Cancel Video Keypad recording",
+      "description": "Stop recording or validation and keep other viewers connected. A clip already being finalized is saved with the configured retention."
+    }
+  }
 }

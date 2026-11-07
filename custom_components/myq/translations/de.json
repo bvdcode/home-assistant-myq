@@ -76,7 +76,7 @@
     "abort": {
       "already_configured": "Dieses MyQ-Konto ist bereits eingerichtet. Eine erneute Einrichtung ist nicht erforderlich.",
       "cannot_connect": "Die Authentifizierung war erfolgreich, aber die MyQ-Geräteerkennung war nicht erreichbar.",
-      "no_devices": "In diesem MyQ-Konto wurden keine Garagentore gefunden.",
+      "no_devices": "In diesem MyQ-Konto wurden keine Garagentore oder Kameras gefunden.",
       "reauth_successful": "MyQ wurde erfolgreich erneut verbunden.",
       "unknown": "MyQ hat eine unerwartete Antwort zurückgegeben."
     }
@@ -121,11 +121,25 @@
       },
       "last_activation_source": {
         "name": "Letzte Auslösequelle"
+      },
+      "keypad_recording_status": {
+        "name": "Aufnahmestatus"
+      },
+      "keypad_last_clip": {
+        "name": "Letzte Aufnahme"
       }
     },
     "camera": {
       "camera": {
         "name": "Kamera"
+      }
+    },
+    "button": {
+      "keypad_record": {
+        "name": "Clip aufnehmen"
+      },
+      "keypad_cancel_recording": {
+        "name": "Aufnahme abbrechen"
       }
     }
   },
@@ -140,15 +154,30 @@
   "options": {
     "step": {
       "init": {
-        "title": "Keypad recording settings",
-        "description": "Recording defaults for Video Keypads. Only newly managed clips expire; existing files are preserved. Set retention to 0 to keep managed clips indefinitely. Longer recordings and frequent triggers use more battery.",
+        "title": "Aufnahmeeinstellungen für das Tastenfeld",
+        "description": "Lege die Standardwerte für Aufnahmen des Video-Tastenfelds fest. Die Aufbewahrungsdauer gilt für neue Clips. Mit 0 bleiben sie unbegrenzt erhalten. Längere oder häufigere Aufnahmen verbrauchen mehr Batterie.",
         "data": {
-          "recording_duration": "Default recording duration (seconds)",
-          "recording_cooldown": "Minimum time between recording starts (seconds)",
-          "retention_days": "Delete managed clips after (days; 0 disables deletion)"
+          "recording_duration": "Standardaufnahmedauer (Sekunden)",
+          "recording_cooldown": "Mindestabstand zwischen Aufnahmestarts (Sekunden)",
+          "retention_days": "Aufnahmen nach dieser Anzahl Tage löschen (0 für unbegrenzte Aufbewahrung)"
         }
       }
     }
   },
-  "services": {}
+  "services": {
+    "record_keypad": {
+      "name": "Video vom Tastenfeld aufnehmen",
+      "description": "Speichert das empfangene Video nach Prüfung des Clips in den lokalen Medien.",
+      "fields": {
+        "duration": {
+          "name": "Videodauer",
+          "description": "Dauer des empfangenen Videos in Sekunden. Verbindungsabbrüche können die Gesamtdauer verlängern."
+        }
+      }
+    },
+    "cancel_keypad_recording": {
+      "name": "Aufnahme vom Video-Tastenfeld abbrechen",
+      "description": "Beendet die Aufnahme oder Prüfung. Andere Zuschauer bleiben verbunden. Wird ein Clip bereits gespeichert, wird der Vorgang mit der eingestellten Aufbewahrungsdauer abgeschlossen."
+    }
+  }
 }

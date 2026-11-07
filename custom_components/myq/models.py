@@ -28,6 +28,7 @@ class MyQCamera:
     serial_number: str
     online: bool | None = None
     device_model: str | None = None
+    name: str | None = None
 
     @property
     def serial_prefix(self) -> str | None:
@@ -94,7 +95,13 @@ class GarageDoor:
 
 @dataclass(frozen=True, slots=True)
 class MyQDevices:
-    """Garage doors plus cameras that are not attached to any door."""
+    """One discovery result containing doors and cameras from all accounts."""
 
-    doors: tuple[GarageDoor, ...]
+    doors: tuple[GarageDoor, ...] = ()
     cameras: tuple[MyQCamera, ...] = ()
+
+    @property
+    def standalone_cameras(self) -> tuple[MyQCamera, ...]:
+        """Return cameras that are not already represented by a door."""
+        attached = {door.camera.serial_number for door in self.doors if door.camera is not None}
+        return tuple(camera for camera in self.cameras if camera.serial_number not in attached)

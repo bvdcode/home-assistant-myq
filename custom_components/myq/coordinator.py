@@ -50,8 +50,8 @@ class MyQDataUpdateCoordinator(DataUpdateCoordinator[MyQCoordinatorData]):
         )
         self.client = client
         self.recordings = KeypadRecordings(hass, entry.entry_id)
-        self._pending_commands: dict[str, _PendingCommand] = {}
         self.cameras: dict[str, MyQCamera] = {}
+        self._pending_commands: dict[str, _PendingCommand] = {}
 
     @callback
     def async_schedule_command_updates(
@@ -83,7 +83,7 @@ class MyQDataUpdateCoordinator(DataUpdateCoordinator[MyQCoordinatorData]):
     async def _async_update_data(self) -> MyQCoordinatorData:
         pending_at_request = self._pending_commands.copy()
         try:
-            doors = await self.client.async_get_garage_doors()
+            devices = await self.client.async_get_devices()
         except MyQAuthenticationError as error:
             self._stop_command_updates(pending_at_request)
             raise ConfigEntryAuthFailed(
@@ -93,8 +93,8 @@ class MyQDataUpdateCoordinator(DataUpdateCoordinator[MyQCoordinatorData]):
         except (ClientError, MyQApiError, TimeoutError) as error:
             self._stop_command_updates(pending_at_request)
             raise UpdateFailed("Unable to update MyQ garage doors") from error
-        self.cameras = {camera.serial_number: camera for camera in self.client.unattached_cameras}
-        data = {door.serial_number: door for door in doors}
+        self.cameras = {camera.serial_number: camera for camera in devices.standalone_cameras}
+        data = {door.serial_number: door for door in devices.doors}
         now = monotonic()
         for serial_number, command in pending_at_request.items():
             if self._pending_commands.get(serial_number) is not command:
@@ -102,8 +102,7 @@ class MyQDataUpdateCoordinator(DataUpdateCoordinator[MyQCoordinatorData]):
             elapsed = now - command.started_at
             door = data.get(serial_number)
             if door is not None and (
-                command.interval != COMMAND_UPDATE_INITIAL_INTERVAL
-                or (command.motion, door.door_state)
+                (command.motion, door.door_state)
                 not in (("opening", "closed"), ("closing", "open"))
             ):
                 command.motion = None

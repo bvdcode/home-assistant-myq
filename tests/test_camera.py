@@ -13,7 +13,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.myq.camera import MyQGarageCamera, MyQStandaloneCamera
+from custom_components.myq.camera import MyQCameraEntity
 from custom_components.myq.const import (
     CONF_EMAIL,
     CONF_MFA_METHOD,
@@ -22,7 +22,7 @@ from custom_components.myq.const import (
     MFA_METHOD_EMAIL,
 )
 from custom_components.myq.exceptions import MyQApiError, MyQAuthenticationError
-from custom_components.myq.models import GarageDoor, MyQCamera
+from custom_components.myq.models import GarageDoor, MyQCamera, MyQDevices
 from custom_components.myq.runtime import MyQRuntimeData
 
 EMAIL = "driver@example.com"
@@ -57,7 +57,10 @@ async def test_live_stream_is_available_only_for_tc_camera() -> None:
             return_value="http://127.0.0.1:1234/test.h264"
         )
         assert await tc_entity.stream_source() == "http://127.0.0.1:1234/test.h264"
-        stream_class.assert_called_once_with("door-1", coordinator.client.async_access_token)
+        stream_class.assert_called_once_with(
+            tc_entity._async_stream_target, coordinator.client.async_access_token
+        )
+        assert (await tc_entity._async_stream_target()).opener_serial == "door-1"
 
     other = replace(DOOR, camera=MyQCamera("GW-0005-10000001", True))
     other_entity, _ = _entity(other)
@@ -170,7 +173,7 @@ async def test_setup_adds_camera_only_for_doors_with_cameras(hass: HomeAssistant
     entry.add_to_hass(hass)
     other_door = replace(DOOR, serial_number="door-2", name="Side garage", camera=None)
     client = MagicMock()
-    client.async_get_garage_doors = AsyncMock(return_value=(DOOR, other_door))
+    client.async_get_devices = AsyncMock(return_value=MyQDevices((DOOR, other_door)))
     client.async_get_camera_image = AsyncMock(return_value=IMAGE)
 
     with patch("custom_components.myq.MyQClient", return_value=client):
@@ -200,9 +203,11 @@ async def test_setup_adds_camera_only_for_doors_with_cameras(hass: HomeAssistant
     client.async_get_camera_image.assert_awaited_once_with(DOOR.camera)
 
     runtime = cast(MyQRuntimeData, entry.runtime_data)
-    client.async_get_garage_doors.return_value = (
-        replace(DOOR, camera=MyQCamera("TC-0005-10000001", False)),
-        other_door,
+    client.async_get_devices.return_value = MyQDevices(
+        (
+            replace(DOOR, camera=MyQCamera("TC-0005-10000001", False)),
+            other_door,
+        )
     )
     await runtime.coordinator.async_refresh()
     await hass.async_block_till_done()
@@ -215,78 +220,15 @@ async def test_setup_adds_camera_only_for_doors_with_cameras(hass: HomeAssistant
     await hass.async_block_till_done()
 
 
-def _entity(door: GarageDoor) -> tuple[MyQGarageCamera, MagicMock]:
+def _entity(door: GarageDoor) -> tuple[MyQCameraEntity, MagicMock]:
     coordinator = MagicMock()
     coordinator.data = {door.serial_number: door}
     coordinator.client.async_get_camera_image = AsyncMock(return_value=IMAGE)
-    return MyQGarageCamera(coordinator, door), coordinator
+    assert door.camera is not None
+    return MyQCameraEntity(coordinator, door.camera, door=door), coordinator
 
 
 KEYPAD = MyQCamera("TC-0007-20000001", True, "vkp-camera")
-
-
-async def test_unattached_camera_gets_its_own_device(hass: HomeAssistant) -> None:
-    entry = MockConfigEntry(
-        domain=DOMAIN,
-        unique_id=EMAIL,
-        data={
-            CONF_EMAIL: EMAIL,
-            CONF_MFA_METHOD: MFA_METHOD_EMAIL,
-            CONF_TOKENS: {
-                "access_token": "access",
-                "refresh_token": "refresh",
-                "expires_at": 9876543210.0,
-            },
-        },
-    )
-    entry.add_to_hass(hass)
-    client = MagicMock()
-    client.async_get_garage_doors = AsyncMock(return_value=(replace(DOOR, camera=None),))
-    client.unattached_cameras = (KEYPAD,)
-    client.async_get_camera_image = AsyncMock(return_value=IMAGE)
-
-    with patch("custom_components.myq.MyQClient", return_value=client):
-        assert await hass.config_entries.async_setup(entry.entry_id)
-        await hass.async_block_till_done()
-
-    registry = er.async_get(hass)
-    camera_id = registry.async_get_entity_id("camera", DOMAIN, "TC-0007-20000001_camera")
-    assert camera_id is not None
-    camera_entry = registry.async_get(camera_id)
-    assert camera_entry is not None
-    device = dr.async_get(hass).async_get_device(identifiers={(DOMAIN, "TC-0007-20000001")})
-    assert device is not None
-    assert device.name == "Video Keypad"
-    assert camera_entry.device_id == device.id
-    state = hass.states.get(camera_id)
-    assert state is not None
-    assert state.state == "idle"
-    assert state.attributes["friendly_name"] == "Video Keypad Camera"
-
-    image = await async_get_image(hass, camera_id)
-    assert image.content == IMAGE
-    client.async_get_camera_image.assert_awaited_once_with(KEYPAD)
-
-    client.unattached_cameras = (replace(KEYPAD, online=False),)
-    await cast(MyQRuntimeData, entry.runtime_data).coordinator.async_refresh()
-    await hass.async_block_till_done()
-    state = hass.states.get(camera_id)
-    assert state is not None
-    assert state.state == STATE_UNAVAILABLE
-
-    assert await hass.config_entries.async_unload(entry.entry_id)
-    await hass.async_block_till_done()
-
-
-async def test_unattached_camera_streams_without_an_opener_serial() -> None:
-    coordinator = MagicMock()
-    coordinator.cameras = {KEYPAD.serial_number: KEYPAD}
-    entity = MyQStandaloneCamera(coordinator, KEYPAD)
-    assert entity.supported_features == CameraEntityFeature.STREAM
-    with patch("custom_components.myq.camera.TendLiveStream") as stream_class:
-        stream_class.return_value.source_url = AsyncMock(return_value="http://127.0.0.1/x")
-        assert await entity.stream_source() == "http://127.0.0.1/x"
-    assert stream_class.call_args.args[0] == ""
 
 
 async def test_keypad_recording_enrolls_only_completed_clip_and_enforces_cooldown(
@@ -297,8 +239,9 @@ async def test_keypad_recording_enrolls_only_completed_clip_and_enforces_cooldow
     coordinator = MagicMock()
     coordinator.cameras = {KEYPAD.serial_number: KEYPAD}
     coordinator.config_entry.options = {"recording_cooldown": 60}
+    coordinator.recordings.status = {}
     coordinator.recordings.async_add = AsyncMock()
-    entity = MyQStandaloneCamera(coordinator, KEYPAD)
+    entity = MyQCameraEntity(coordinator, KEYPAD)
     entity.hass = hass
     entity.entity_id = "camera.test_keypad"
     live = MagicMock()
@@ -314,16 +257,18 @@ async def test_keypad_recording_enrolls_only_completed_clip_and_enforces_cooldow
         manager.return_value.binary = "ffmpeg"
 
         async def recorded(*args: object, **kwargs: object) -> RecordingResult:
-            await coordinator.recordings.async_add(result.path)
+            await record.call_args.kwargs["enroll"](result.path)
             return result
 
         record.side_effect = recorded
         await entity.async_record_keypad(5)
-        coordinator.recordings.async_add.assert_awaited_once_with(result.path)
+        coordinator.recordings.async_add.assert_awaited_once_with(
+            result.path, serial=KEYPAD.serial_number
+        )
         with pytest.raises(HomeAssistantError, match="cooldown"):
             await entity.async_record_keypad(5)
         record.assert_awaited_once()
-        assert record.call_args.kwargs["enroll"] is coordinator.recordings.async_add
+        assert coordinator.recordings.status[KEYPAD.serial_number] == "completed"
     await hass.async_block_till_done()
     assert len(events) == 1 and events[0].data["status"] == "completed"
     unsubscribe()
@@ -335,8 +280,9 @@ async def test_cancel_recording_preserves_stream_and_does_not_enroll_partial(
     coordinator = MagicMock()
     coordinator.cameras = {KEYPAD.serial_number: KEYPAD}
     coordinator.config_entry.options = {}
+    coordinator.recordings.status = {}
     coordinator.recordings.async_add = AsyncMock()
-    entity = MyQStandaloneCamera(coordinator, KEYPAD)
+    entity = MyQCameraEntity(coordinator, KEYPAD)
     entity.hass = hass
     entity.entity_id = "camera.test_keypad"
     live = MagicMock(close=AsyncMock())
