@@ -76,7 +76,7 @@
     "abort": {
       "already_configured": "Esta cuenta de MyQ ya está configurada. No es necesario volver a configurarla.",
       "cannot_connect": "La autenticación se ha completado, pero no se ha podido acceder al servicio de detección de dispositivos de MyQ.",
-      "no_devices": "No se han encontrado puertas de garaje en esta cuenta de MyQ.",
+      "no_devices": "No se han encontrado puertas de garaje ni cámaras en esta cuenta de MyQ.",
       "reauth_successful": "MyQ se ha reconectado correctamente.",
       "unknown": "MyQ ha devuelto una respuesta inesperada."
     }
@@ -121,6 +121,9 @@
       },
       "last_activation_source": {
         "name": "Origen de la última activación"
+      },
+      "keypad_snapshot_time": {
+        "name": "Hora de la captura"
       }
     },
     "camera": {

@@ -76,7 +76,7 @@
     "abort": {
       "already_configured": "This MyQ account is already configured. No additional setup is needed.",
       "cannot_connect": "Authentication succeeded, but MyQ device discovery could not be reached.",
-      "no_devices": "No garage doors were found on this MyQ account.",
+      "no_devices": "No garage doors or cameras were found on this MyQ account.",
       "reauth_successful": "MyQ was reconnected successfully.",
       "unknown": "MyQ returned an unexpected response."
     }
@@ -121,6 +121,9 @@
       },
       "last_activation_source": {
         "name": "Last activation source"
+      },
+      "keypad_snapshot_time": {
+        "name": "Snapshot time"
       }
     },
     "camera": {

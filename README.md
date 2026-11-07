@@ -5,8 +5,12 @@
 [![Hassfest](https://github.com/bvdcode/home-assistant-myq/actions/workflows/hassfest.yml/badge.svg)](https://github.com/bvdcode/home-assistant-myq/actions/workflows/hassfest.yml)
 [![Support on Ko-fi](https://img.shields.io/badge/Support_on_Ko--fi-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/bvdcode)
 
+
 MyQ connects Chamberlain and LiftMaster garage-door openers to Home Assistant
 through the MyQ residential cloud service.
+
+> If this integration makes your daily life a little easier, consider
+> [supporting the project on Ko-fi](https://ko-fi.com/bvdcode)
 
 The integration provides:
 
@@ -19,7 +23,7 @@ The integration provides:
 - a door-open binary sensor for Alarmo and other sensor-based automations;
 - vacation mode, work-light, fault, cycle-count, and activation diagnostics
   when provided by MyQ;
-- snapshots from attached cameras and experimental live video for TC cameras;
+- snapshots from attached and standalone cameras and experimental live video for TC cameras;
 - cloud polling every 30 seconds, temporarily more frequently after a command.
 
 ## Alarmo
@@ -28,7 +32,7 @@ Each garage door includes a **Door open** binary sensor with the `garage_door` d
 
 The sensor is on whenever the door is known to be not closed, including while it is moving. Unknown states remain unknown, and offline or missing doors are unavailable. The sensor shares cloud polling with the cover.
 
-After an accepted open or close command, the integration waits 1 second before checking the status. The intervals then increase to 2, 3, 4, and 5 seconds and remain at 5 seconds. Polling continues for at least 30 seconds, even if the requested state is reported earlier, and for up to 60 seconds while waiting for it. A new command restarts the sequence and polling window for that door. After an accepted command from a fully closed or open door, the cover immediately shows Opening or Closing. If the first status response still reports the original state, the cover keeps this provisional movement until the next response. A changed status replaces it immediately; from the second response onward, the cover always uses the state reported by MyQ. All sensors continue to use confirmed MyQ data. Polling returns to the normal 30-second interval when tracking finishes, the door becomes unavailable, or an update fails. If polling is disabled in Home Assistant system options, commands keep the last confirmed state without provisional movement or automatic status requests; manual updates still work.
+After an accepted open or close command, the integration waits 1 second before checking the status. The intervals then increase to 2, 3, 4, and 5 seconds and remain at 5 seconds. Polling continues for at least 30 seconds, even if the requested state is reported earlier, and for up to 60 seconds while waiting for it. A new command restarts the sequence and polling window for that door. After an accepted command from a fully closed or open door, the cover immediately shows Opening or Closing. The cover keeps this provisional movement while MyQ still reports the original state, until a different state arrives or the 60-second tracking timeout is reached. After a different state is reported, the cover follows all subsequent MyQ states, including a reversal. All sensors continue to use confirmed MyQ data. Polling returns to the normal 30-second interval when tracking finishes, the door becomes unavailable, or an update fails. If polling is disabled in Home Assistant system options, commands keep the last confirmed state without provisional movement or automatic status requests; manual updates still work.
 
 ## Requirements
 
@@ -84,6 +88,10 @@ requests reauthentication.
 
 ## Cameras
 
+Cameras that are not attached to an opener, including the myQ Video Keypad,
+get their own device using their MyQ name. Accounts containing only cameras
+can also be added.
+
 Openers with an attached camera get a camera entity on the same device.
 Snapshots are fetched on demand from the Tend cloud using the existing MyQ
 authorization. Concurrent requests share an image request.
@@ -99,8 +107,8 @@ disconnects. Opening the camera simultaneously in the myQ app may interrupt the
 session. Audio and retrieval of cloud recordings are not implemented.
 
 The `camera_serial_prefix` attribute identifies the camera generation. Connection
-failures are logged with `TC camera live video unavailable`. Real-camera playback
-and recovery still require validation on this implementation.
+failures are logged with `TC camera live video unavailable`. Standalone camera playback
+and recovery after a network interruption still require device validation.
 
 ## Safety
 
@@ -132,8 +140,8 @@ are trademarks of their respective owners.
 The Video Keypad preview is passive: opening an idle dashboard does not fetch a
 cloud image or start live video. It shows the most recent keyframe received during
 an explicit live session, saved locally and restored after integration reload or
-Home Assistant restart. Before the first live view there is no preview. The
-`preview_updated` camera attribute gives its capture time; the image may be stale.
+Home Assistant restart. Before the first live view there is no preview. The **Snapshot time** diagnostic sensor and the `preview_updated` camera attribute
+show when the preview was captured.
 
 Keypad video uses a 20-second idle grace period after the final internal consumer
 leaves (Home Assistant's own stream worker may remain attached longer). Ordinary

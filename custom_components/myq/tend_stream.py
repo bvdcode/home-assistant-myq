@@ -10,7 +10,7 @@ from collections.abc import Awaitable, Callable
 from aiohttp import ClientError, web
 
 from .exceptions import MyQError
-from .tend_protocol import TendStreamError
+from .tend_protocol import TendCameraTarget, TendStreamError
 from .tend_session import TendSession
 
 _LOGGER = logging.getLogger(__name__)
@@ -56,7 +56,7 @@ class TendLiveStream:
 
     def __init__(
         self,
-        opener_serial: str,
+        target_supplier: Callable[[], Awaitable[TendCameraTarget]],
         token_supplier: Callable[[], Awaitable[str]],
         *,
         idle_seconds: float = _IDLE_SECONDS,
@@ -65,7 +65,7 @@ class TendLiveStream:
         self._idle_seconds = idle_seconds
         self._on_snapshot = on_snapshot
         self._snapshot_frame: bytes | None = None
-        self._opener_serial = opener_serial
+        self._target_supplier = target_supplier
         self._token_supplier = token_supplier
         self._runner: web.AppRunner | None = None
         self._url: str | None = None
@@ -82,7 +82,7 @@ class TendLiveStream:
 
     @property
     def snapshot_frame(self) -> bytes | None:
-        """Return the latest complete keyframe without opening a camera session."""
+        """Last complete frame retained for a preview-enabled camera."""
         return self._snapshot_frame
 
     async def source_url(self) -> str:
@@ -121,7 +121,7 @@ class TendLiveStream:
             if self._session is None or self._session.ended:
                 await self._close_session()
                 self._session = await TendSession.open(
-                    self._opener_serial, await self._token_supplier(), self._on_frame
+                    await self._target_supplier(), await self._token_supplier(), self._on_frame
                 )
             viewer = _Viewer()
             self._viewers.add(viewer)
@@ -141,13 +141,18 @@ class TendLiveStream:
                 self._sps = nal
             elif kind == 8:
                 self._pps = nal
-        if 5 in types and self._sps is not None and self._pps is not None:
-            snapshot = self._sps if 7 not in types else b""
-            snapshot += (self._pps if 8 not in types else b"") + frame
+        if self._on_snapshot is not None and 5 in types and self._sps and self._pps:
+            snapshot = (
+                (self._sps if 7 not in types else b"")
+                + (self._pps if 8 not in types else b"")
+                + frame
+            )
             if len(snapshot) <= 3_000_000:
                 self._snapshot_frame = snapshot
-                if self._on_snapshot is not None:
+                try:
                     self._on_snapshot(snapshot)
+                except Exception as error:
+                    _LOGGER.debug("Camera preview callback failed: %s", type(error).__name__)
         for viewer in self._viewers:
             if not viewer.ready:
                 if 5 not in types or self._sps is None or self._pps is None:

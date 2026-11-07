@@ -17,12 +17,8 @@ class MyQEntity(CoordinatorEntity[MyQDataUpdateCoordinator]):
         super().__init__(coordinator)
         self._serial_number = door.serial_number
         self._attr_unique_id = door.serial_number
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, door.serial_number)},
-            manufacturer=MANUFACTURER,
-            model=door.device_model,
-            name=door.name,
-            serial_number=door.serial_number,
+        self._attr_device_info = myq_device_info(
+            door.serial_number, name=door.name, model=door.device_model
         )
 
     @property
@@ -35,3 +31,14 @@ class MyQEntity(CoordinatorEntity[MyQDataUpdateCoordinator]):
             return False
         door = self.door
         return door is not None and door.online is not False
+
+
+def myq_device_info(serial_number: str, *, name: str | None, model: str | None) -> DeviceInfo:
+    """Describe a MyQ device consistently across entity platforms."""
+    return DeviceInfo(
+        identifiers={(DOMAIN, serial_number)},
+        manufacturer=MANUFACTURER,
+        model=model,
+        name=name,
+        serial_number=serial_number,
+    )

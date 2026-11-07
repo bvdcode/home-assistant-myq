@@ -32,8 +32,8 @@ class KeypadPreview:
         self._lock = asyncio.Lock()
 
     @property
-    def captured_at(self) -> str | None:
-        return datetime.fromtimestamp(self._frame_at, UTC).isoformat() if self._frame_at else None
+    def captured_at(self) -> datetime | None:
+        return datetime.fromtimestamp(self._frame_at, UTC) if self._frame_at else None
 
     def received(self, frame: bytes) -> None:
         if not frame or len(frame) > _MAX_FRAME:

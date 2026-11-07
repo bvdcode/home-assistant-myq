@@ -29,8 +29,6 @@ class MyQClient:
     def __init__(self, session: ClientSession, auth: MyQAuth) -> None:
         self._session = session
         self._auth = auth
-        # Cameras attached to no door (e.g. the Video Keypad), from the last door fetch.
-        self.unattached_cameras: tuple[MyQCamera, ...] = ()
 
     async def async_access_token(self) -> str:
         """Return the current OAuth token for Tend camera signaling."""
@@ -62,14 +60,17 @@ class MyQClient:
             )
         return tuple(accounts)
 
-    async def async_get_garage_doors(self) -> tuple[GarageDoor, ...]:
-        """Return all garage doors; also refreshes ``unattached_cameras``."""
+    async def async_get_devices(self) -> MyQDevices:
+        """Discover doors and cameras together without retaining a partial result."""
         accounts = await self.async_get_accounts()
         groups = await asyncio.gather(
             *(self._async_get_account_devices(account) for account in accounts)
         )
-        self.unattached_cameras = tuple(camera for group in groups for camera in group.cameras)
-        return tuple(door for group in groups for door in group.doors)
+        cameras = {camera.serial_number: camera for group in groups for camera in group.cameras}
+        return MyQDevices(
+            doors=tuple(door for group in groups for door in group.doors),
+            cameras=tuple(cameras.values()),
+        )
 
     async def async_open_door(self, door: GarageDoor) -> None:
         await self._async_command(door, "open")
@@ -87,6 +88,21 @@ class MyQClient:
         if not image.startswith(b"\xff\xd8"):
             raise MyQApiError("Tend returned a camera snapshot that is not a JPEG")
         return image
+
+    async def async_get_camera_alias(self, camera: MyQCamera) -> str:
+        """Resolve one camera's signaling destination from its Tend device ID."""
+        payload = await self._async_request_json(
+            "GET", f"{TEND_API_BASE_URL}/devices/{camera.tend_device_id}", _tend_headers
+        )
+        if payload.get("id") != camera.tend_device_id:
+            raise MyQApiError("Tend returned a different camera identity")
+        alias = payload.get("alias")
+        if not isinstance(alias, str):
+            raise MyQApiError("Tend returned a camera without a signaling alias")
+        owner, separator, device = alias.partition(":")
+        if not owner or not separator or not device:
+            raise MyQApiError("Tend returned an invalid signaling alias")
+        return alias
 
     async def _async_get_account_devices(
         self,
@@ -111,18 +127,18 @@ class MyQClient:
                     door_items.append(item)
                 case "camera":
                     serial_number = item.get("serial_number")
-                    if isinstance(serial_number, str):
+                    if isinstance(serial_number, str) and serial_number:
                         model = item.get("device_model")
+                        name = item.get("name")
                         cameras[serial_number] = MyQCamera(
                             serial_number,
                             _online(item.get("state")),
                             model if isinstance(model, str) else None,
+                            name if isinstance(name, str) else None,
                         )
-        doors = tuple(_garage_door(account.account_id, item, cameras) for item in door_items)
-        attached = {door.camera.serial_number for door in doors if door.camera is not None}
         return MyQDevices(
-            doors=doors,
-            cameras=tuple(camera for serial, camera in cameras.items() if serial not in attached),
+            doors=tuple(_garage_door(account.account_id, item, cameras) for item in door_items),
+            cameras=tuple(cameras.values()),
         )
 
     async def _async_command(self, door: GarageDoor, command: str) -> None:
@@ -132,8 +148,10 @@ class MyQClient:
         )
         await self._async_request("PUT", url)
 
-    async def _async_request_json(self, method: str, url: str) -> dict[str, object]:
-        body = await self._async_request(method, url)
+    async def _async_request_json(
+        self, method: str, url: str, headers: HeadersFn | None = None
+    ) -> dict[str, object]:
+        body = await self._async_request(method, url, headers)
         try:
             parsed = json.loads(body)
         except (UnicodeDecodeError, json.JSONDecodeError) as error:

@@ -76,7 +76,7 @@
     "abort": {
       "already_configured": "To konto MyQ jest już skonfigurowane. Ponowna konfiguracja nie jest potrzebna.",
       "cannot_connect": "Uwierzytelnianie powiodło się, ale usługa wykrywania urządzeń MyQ jest niedostępna.",
-      "no_devices": "Na tym koncie MyQ nie znaleziono bram garażowych.",
+      "no_devices": "Na tym koncie MyQ nie znaleziono bram garażowych ani kamer.",
       "reauth_successful": "Ponowne połączenie z MyQ powiodło się.",
       "unknown": "MyQ zwrócił nieoczekiwaną odpowiedź."
     }
@@ -121,6 +121,9 @@
       },
       "last_activation_source": {
         "name": "Źródło ostatniego uruchomienia"
+      },
+      "keypad_snapshot_time": {
+        "name": "Czas wykonania migawki"
       }
     },
     "camera": {

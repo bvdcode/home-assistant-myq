@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from homeassistant.core import HomeAssistant
 
-from custom_components.myq.camera import MyQStandaloneCamera
+from custom_components.myq.camera import MyQCameraEntity
 from custom_components.myq.keypad_preview import KeypadPreview
 from custom_components.myq.models import MyQCamera
 from custom_components.myq.tend_stream import TendLiveStream
@@ -27,7 +27,7 @@ async def test_keypad_preview_requests_do_not_authorize_poll_or_start_live(
     coordinator.cameras = {KEYPAD.serial_number: KEYPAD}
     coordinator.client.async_get_camera_image = AsyncMock()
     coordinator.client.async_access_token = AsyncMock()
-    camera = MyQStandaloneCamera(coordinator, KEYPAD)
+    camera = MyQCameraEntity(coordinator, KEYPAD)
     for _ in range(3):
         assert await camera.async_camera_image() is None
     assert camera._live_stream is None
@@ -38,7 +38,7 @@ async def test_keypad_preview_requests_do_not_authorize_poll_or_start_live(
 async def test_keyframe_cache_has_parameter_sets_and_does_not_subscribe() -> None:
     callback = MagicMock()
     token = AsyncMock()
-    stream = TendLiveStream("", token, idle_seconds=20, on_snapshot=callback)
+    stream = TendLiveStream(AsyncMock(), token, idle_seconds=20, on_snapshot=callback)
     assert not bool(stream.snapshot_frame)
     stream._on_frame(IDR)
     stream._on_frame(SPS)
