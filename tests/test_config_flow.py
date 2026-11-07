@@ -495,12 +495,13 @@ async def test_lan_only_option_is_opt_in_and_preserves_other_options(hass: HomeA
     assert result["type"] is data_entry_flow.FlowResultType.FORM
     schema = result["data_schema"]
     assert schema is not None
-    assert schema({}) == {"camera_lan_only": False}
+    # Scoped to this option so later options can join the same form.
+    assert schema({})["camera_lan_only"] is False
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {"camera_lan_only": True}
     )
     assert result["type"] is data_entry_flow.FlowResultType.CREATE_ENTRY
-    assert entry.options == {"unrelated": 7, "camera_lan_only": True}
+    assert entry.options["unrelated"] == 7 and entry.options["camera_lan_only"] is True
 
 
 @pytest.mark.parametrize("has_camera", [False, True])
