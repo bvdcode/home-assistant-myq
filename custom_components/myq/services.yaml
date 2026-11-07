@@ -1,0 +1,18 @@
+cancel_keypad_recording:
+  target:
+    entity:
+      domain: camera
+      integration: myq
+record_keypad:
+  target:
+    entity:
+      domain: camera
+      integration: myq
+  fields:
+    duration:
+      default: 30
+      selector:
+        number:
+          min: 5
+          max: 300
+          unit_of_measurement: seconds

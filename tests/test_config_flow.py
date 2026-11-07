@@ -506,3 +506,20 @@ async def test_setup_accepts_camera_only_accounts_and_rejects_empty_accounts(
     else:
         assert result["type"] is data_entry_flow.FlowResultType.ABORT
         assert result["reason"] == "no_devices"
+
+
+async def test_recording_options_preserve_unrelated_privacy_policy(hass: HomeAssistant) -> None:
+    entry = MockConfigEntry(domain=DOMAIN, data={}, options={"camera_lan_only": True})
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {"recording_duration": 15, "recording_cooldown": 90, "retention_days": 30},
+    )
+    assert result["type"] is data_entry_flow.FlowResultType.CREATE_ENTRY
+    assert entry.options == {
+        "camera_lan_only": True,
+        "recording_duration": 15,
+        "recording_cooldown": 90,
+        "retention_days": 30,
+    }

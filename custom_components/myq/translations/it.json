@@ -121,11 +121,25 @@
       },
       "last_activation_source": {
         "name": "Origine dell'ultima attivazione"
+      },
+      "keypad_recording_status": {
+        "name": "Stato della registrazione"
+      },
+      "keypad_last_clip": {
+        "name": "Ultima registrazione"
       }
     },
     "camera": {
       "camera": {
         "name": "Telecamera"
+      }
+    },
+    "button": {
+      "keypad_record": {
+        "name": "Registra clip"
+      },
+      "keypad_cancel_recording": {
+        "name": "Annulla registrazione"
       }
     }
   },
@@ -135,6 +149,35 @@
     },
     "camera_image_failed": {
       "message": "Impossibile recuperare un’immagine dalla telecamera MyQ."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Impostazioni di registrazione del tastierino",
+        "description": "Scegli le impostazioni predefinite per le registrazioni del tastierino video. Il periodo di conservazione si applica alle nuove clip. Imposta 0 per conservarle a tempo indeterminato. Registrazioni più lunghe o frequenti consumano più batteria.",
+        "data": {
+          "recording_duration": "Durata predefinita della registrazione (secondi)",
+          "recording_cooldown": "Intervallo minimo tra gli avvii delle registrazioni (secondi)",
+          "retention_days": "Elimina le clip dopo questo numero di giorni (0 per conservarle a tempo indeterminato)"
+        }
+      }
+    }
+  },
+  "services": {
+    "record_keypad": {
+      "name": "Registra dal tastierino video",
+      "description": "Salva il video ricevuto nei contenuti multimediali locali dopo aver verificato la clip.",
+      "fields": {
+        "duration": {
+          "name": "Durata del video",
+          "description": "Secondi di video ricevuto. Le interruzioni della connessione possono prolungare il tempo totale."
+        }
+      }
+    },
+    "cancel_keypad_recording": {
+      "name": "Annulla la registrazione dal tastierino video",
+      "description": "Interrompe la registrazione o la verifica mantenendo connessi gli altri spettatori. Una clip già in fase di finalizzazione viene salvata per il periodo di conservazione impostato."
     }
   }
 }

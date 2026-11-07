@@ -121,11 +121,25 @@
       },
       "last_activation_source": {
         "name": "Source de la dernière activation"
+      },
+      "keypad_recording_status": {
+        "name": "État de l’enregistrement"
+      },
+      "keypad_last_clip": {
+        "name": "Dernier enregistrement"
       }
     },
     "camera": {
       "camera": {
         "name": "Caméra"
+      }
+    },
+    "button": {
+      "keypad_record": {
+        "name": "Enregistrer un extrait"
+      },
+      "keypad_cancel_recording": {
+        "name": "Annuler l’enregistrement"
       }
     }
   },
@@ -135,6 +149,35 @@
     },
     "camera_image_failed": {
       "message": "Impossible de récupérer une image de la caméra MyQ."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Paramètres d’enregistrement du clavier",
+        "description": "Choisissez les paramètres par défaut des enregistrements du clavier vidéo. La durée de conservation s’applique aux nouveaux extraits. Saisissez 0 pour les conserver indéfiniment. Des enregistrements plus longs ou plus fréquents consomment davantage de batterie.",
+        "data": {
+          "recording_duration": "Durée d’enregistrement par défaut (secondes)",
+          "recording_cooldown": "Délai minimal entre deux débuts d’enregistrement (secondes)",
+          "retention_days": "Supprimer les enregistrements après ce nombre de jours (0 pour les conserver indéfiniment)"
+        }
+      }
+    }
+  },
+  "services": {
+    "record_keypad": {
+      "name": "Enregistrer la vidéo du clavier",
+      "description": "Enregistre la vidéo reçue dans les médias locaux après vérification de l’extrait.",
+      "fields": {
+        "duration": {
+          "name": "Durée de la vidéo",
+          "description": "Nombre de secondes de vidéo reçue. Les interruptions de connexion peuvent prolonger la durée totale."
+        }
+      }
+    },
+    "cancel_keypad_recording": {
+      "name": "Annuler l’enregistrement du clavier vidéo",
+      "description": "Arrête l’enregistrement ou la vérification. Les autres spectateurs restent connectés. Un extrait déjà en cours de finalisation est sauvegardé pour la durée de conservation prévue."
     }
   }
 }

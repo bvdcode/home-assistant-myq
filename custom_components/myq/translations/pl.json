@@ -121,11 +121,25 @@
       },
       "last_activation_source": {
         "name": "Źródło ostatniego uruchomienia"
+      },
+      "keypad_recording_status": {
+        "name": "Stan nagrywania"
+      },
+      "keypad_last_clip": {
+        "name": "Ostatnie nagranie"
       }
     },
     "camera": {
       "camera": {
         "name": "Kamera"
+      }
+    },
+    "button": {
+      "keypad_record": {
+        "name": "Nagraj klip"
+      },
+      "keypad_cancel_recording": {
+        "name": "Anuluj nagrywanie"
       }
     }
   },
@@ -135,6 +149,35 @@
     },
     "camera_image_failed": {
       "message": "Nie udało się pobrać zdjęcia z kamery MyQ."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Ustawienia nagrywania z klawiatury",
+        "description": "Wybierz domyślne ustawienia nagrań z klawiatury z kamerą. Okres przechowywania dotyczy nowych klipów. Ustaw 0, aby zachować je bezterminowo. Dłuższe lub częstsze nagrywanie zwiększa zużycie baterii.",
+        "data": {
+          "recording_duration": "Domyślny czas nagrywania (sekundy)",
+          "recording_cooldown": "Minimalny odstęp między rozpoczęciem kolejnych nagrań (sekundy)",
+          "retention_days": "Usuń nagrania po tylu dniach (0, aby zachować je bezterminowo)"
+        }
+      }
+    }
+  },
+  "services": {
+    "record_keypad": {
+      "name": "Nagraj wideo z klawiatury",
+      "description": "Po sprawdzeniu klipu zapisuje odebrane wideo w lokalnych multimediach.",
+      "fields": {
+        "duration": {
+          "name": "Czas trwania wideo",
+          "description": "Liczba sekund odebranego wideo. Przerwy w połączeniu mogą wydłużyć całkowity czas."
+        }
+      }
+    },
+    "cancel_keypad_recording": {
+      "name": "Anuluj nagrywanie z klawiatury",
+      "description": "Zatrzymuje nagrywanie lub sprawdzanie klipu. Pozostali widzowie nadal mają połączenie. Klip, którego zapis jest już finalizowany, zostanie zachowany zgodnie z ustawionym okresem przechowywania."
     }
   }
 }

@@ -121,11 +121,25 @@
       },
       "last_activation_source": {
         "name": "Letzte Auslösequelle"
+      },
+      "keypad_recording_status": {
+        "name": "Aufnahmestatus"
+      },
+      "keypad_last_clip": {
+        "name": "Letzte Aufnahme"
       }
     },
     "camera": {
       "camera": {
         "name": "Kamera"
+      }
+    },
+    "button": {
+      "keypad_record": {
+        "name": "Clip aufnehmen"
+      },
+      "keypad_cancel_recording": {
+        "name": "Aufnahme abbrechen"
       }
     }
   },
@@ -135,6 +149,35 @@
     },
     "camera_image_failed": {
       "message": "Das Standbild der MyQ-Kamera konnte nicht abgerufen werden."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Aufnahmeeinstellungen für das Tastenfeld",
+        "description": "Lege die Standardwerte für Aufnahmen des Video-Tastenfelds fest. Die Aufbewahrungsdauer gilt für neue Clips. Mit 0 bleiben sie unbegrenzt erhalten. Längere oder häufigere Aufnahmen verbrauchen mehr Batterie.",
+        "data": {
+          "recording_duration": "Standardaufnahmedauer (Sekunden)",
+          "recording_cooldown": "Mindestabstand zwischen Aufnahmestarts (Sekunden)",
+          "retention_days": "Aufnahmen nach dieser Anzahl Tage löschen (0 für unbegrenzte Aufbewahrung)"
+        }
+      }
+    }
+  },
+  "services": {
+    "record_keypad": {
+      "name": "Video vom Tastenfeld aufnehmen",
+      "description": "Speichert das empfangene Video nach Prüfung des Clips in den lokalen Medien.",
+      "fields": {
+        "duration": {
+          "name": "Videodauer",
+          "description": "Dauer des empfangenen Videos in Sekunden. Verbindungsabbrüche können die Gesamtdauer verlängern."
+        }
+      }
+    },
+    "cancel_keypad_recording": {
+      "name": "Aufnahme vom Video-Tastenfeld abbrechen",
+      "description": "Beendet die Aufnahme oder Prüfung. Andere Zuschauer bleiben verbunden. Wird ein Clip bereits gespeichert, wird der Vorgang mit der eingestellten Aufbewahrungsdauer abgeschlossen."
     }
   }
 }

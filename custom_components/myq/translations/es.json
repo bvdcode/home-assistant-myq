@@ -121,11 +121,25 @@
       },
       "last_activation_source": {
         "name": "Origen de la última activación"
+      },
+      "keypad_recording_status": {
+        "name": "Estado de la grabación"
+      },
+      "keypad_last_clip": {
+        "name": "Última grabación"
       }
     },
     "camera": {
       "camera": {
         "name": "Cámara"
+      }
+    },
+    "button": {
+      "keypad_record": {
+        "name": "Grabar un clip"
+      },
+      "keypad_cancel_recording": {
+        "name": "Cancelar grabación"
       }
     }
   },
@@ -135,6 +149,35 @@
     },
     "camera_image_failed": {
       "message": "No se pudo obtener la imagen de la cámara MyQ."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Ajustes de grabación del teclado",
+        "description": "Elige los valores predeterminados para las grabaciones del teclado con cámara. El plazo de conservación se aplica a los nuevos clips. Usa 0 para conservarlos indefinidamente. Las grabaciones más largas o frecuentes consumen más batería.",
+        "data": {
+          "recording_duration": "Duración predeterminada de la grabación (segundos)",
+          "recording_cooldown": "Tiempo mínimo entre inicios de grabación (segundos)",
+          "retention_days": "Eliminar los clips después de este número de días (0 para conservarlos indefinidamente)"
+        }
+      }
+    }
+  },
+  "services": {
+    "record_keypad": {
+      "name": "Grabar vídeo del teclado",
+      "description": "Guarda el vídeo recibido en los medios locales tras validar el clip.",
+      "fields": {
+        "duration": {
+          "name": "Duración del vídeo",
+          "description": "Segundos de vídeo recibido. Las interrupciones de la conexión pueden prolongar el tiempo total."
+        }
+      }
+    },
+    "cancel_keypad_recording": {
+      "name": "Cancelar la grabación del teclado",
+      "description": "Detiene la grabación o la validación y mantiene conectados a los demás espectadores. Si el clip ya se está guardando, se conserva durante el plazo configurado."
     }
   }
 }

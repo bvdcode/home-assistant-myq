@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from homeassistant.components.camera import async_get_image
 from homeassistant.const import STATE_UNAVAILABLE
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -107,6 +107,32 @@ async def test_setup_preserves_devices_and_updates_cameras_without_extra_polling
         state = hass.states.get(entity_id)
         assert state is not None and state.attributes["friendly_name"] == f"{camera.name} Camera"
         assert (await async_get_image(hass, entity_id)).content == IMAGE
+    # Controls resolve the current registry ID, not a guessed name or the first camera.
+    renamed = "camera.renamed_side_entrance"
+    registry.async_update_entity(ids[1], new_entity_id=renamed)
+    await hass.async_block_till_done()
+    ids[1] = renamed
+    calls: list[str] = []
+
+    async def observed(call: ServiceCall) -> None:
+        calls.append(call.data["entity_id"])
+
+    for key, service in (
+        ("record", "record_keypad"),
+        ("cancel_recording", "cancel_keypad_recording"),
+    ):
+        button = registry.async_get_entity_id(
+            "button", DOMAIN, f"{SECOND.serial_number}_keypad_{key}"
+        )
+        assert button is not None
+        hass.services.async_register(DOMAIN, service, observed)
+        await hass.services.async_call("button", "press", {"entity_id": button}, blocking=True)
+        assert calls.pop() == renamed
+        assert not calls
+    assert (
+        registry.async_get_entity_id("button", DOMAIN, f"{ATTACHED.serial_number}_keypad_record")
+        is None
+    )
     assert client.async_get_camera_image.await_args_list[0].args == (FIRST,)
     assert client.async_get_camera_image.await_args_list[1].args == (SECOND,)
     if with_door:

@@ -121,11 +121,25 @@
       },
       "last_activation_source": {
         "name": "Senaste aktiveringskälla"
+      },
+      "keypad_recording_status": {
+        "name": "Inspelningsstatus"
+      },
+      "keypad_last_clip": {
+        "name": "Senaste inspelning"
       }
     },
     "camera": {
       "camera": {
         "name": "Kamera"
+      }
+    },
+    "button": {
+      "keypad_record": {
+        "name": "Spela in klipp"
+      },
+      "keypad_cancel_recording": {
+        "name": "Avbryt inspelning"
       }
     }
   },
@@ -135,6 +149,35 @@
     },
     "camera_image_failed": {
       "message": "Det gick inte att hämta en stillbild från MyQ-kameran."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Inspelningsinställningar för knappsatsen",
+        "description": "Välj standardinställningar för inspelningar från videoknappsatsen. Lagringstiden gäller för nya klipp. Ange 0 för att behålla dem på obestämd tid. Längre eller tätare inspelningar förbrukar mer batteri.",
+        "data": {
+          "recording_duration": "Standardlängd för inspelningar (sekunder)",
+          "recording_cooldown": "Minsta tid mellan inspelningsstarter (sekunder)",
+          "retention_days": "Ta bort inspelningar efter detta antal dagar (0 för obegränsad lagring)"
+        }
+      }
+    }
+  },
+  "services": {
+    "record_keypad": {
+      "name": "Spela in video från knappsatsen",
+      "description": "Sparar mottagen video i lokala medier efter att klippet har kontrollerats.",
+      "fields": {
+        "duration": {
+          "name": "Videolängd",
+          "description": "Antal sekunder mottagen video. Anslutningsavbrott kan förlänga den totala tiden."
+        }
+      }
+    },
+    "cancel_keypad_recording": {
+      "name": "Avbryt inspelning från videoknappsatsen",
+      "description": "Stoppar inspelningen eller kontrollen och låter andra tittare vara anslutna. Ett klipp som redan håller på att färdigställas sparas med den valda lagringstiden."
     }
   }
 }

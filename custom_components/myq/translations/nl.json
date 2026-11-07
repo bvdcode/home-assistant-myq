@@ -121,11 +121,25 @@
       },
       "last_activation_source": {
         "name": "Bron van laatste activering"
+      },
+      "keypad_recording_status": {
+        "name": "Opnamestatus"
+      },
+      "keypad_last_clip": {
+        "name": "Laatste opname"
       }
     },
     "camera": {
       "camera": {
         "name": "Camera"
+      }
+    },
+    "button": {
+      "keypad_record": {
+        "name": "Clip opnemen"
+      },
+      "keypad_cancel_recording": {
+        "name": "Opname annuleren"
       }
     }
   },
@@ -135,6 +149,35 @@
     },
     "camera_image_failed": {
       "message": "De momentopname van de MyQ-camera kon niet worden opgehaald."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opname-instellingen voor het toetsenpaneel",
+        "description": "Kies de standaardinstellingen voor opnamen van het videotoetsenpaneel. De bewaartermijn geldt voor nieuwe clips. Kies 0 om ze onbeperkt te bewaren. Langere of frequentere opnamen verbruiken meer batterij.",
+        "data": {
+          "recording_duration": "Standaard opnameduur (seconden)",
+          "recording_cooldown": "Minimumtijd tussen het starten van twee opnamen (seconden)",
+          "retention_days": "Opnamen verwijderen na dit aantal dagen (0 voor onbeperkt bewaren)"
+        }
+      }
+    }
+  },
+  "services": {
+    "record_keypad": {
+      "name": "Video van het toetsenpaneel opnemen",
+      "description": "Slaat de ontvangen video na controle van de clip op in de lokale media.",
+      "fields": {
+        "duration": {
+          "name": "Videoduur",
+          "description": "Aantal seconden ontvangen video. Verbindingsonderbrekingen kunnen de totale duur verlengen."
+        }
+      }
+    },
+    "cancel_keypad_recording": {
+      "name": "Opname van het videotoetsenpaneel annuleren",
+      "description": "Stopt de opname of de controle. Andere kijkers blijven verbonden. Een clip die al wordt afgerond, wordt opgeslagen met de ingestelde bewaartermijn."
     }
   }
 }

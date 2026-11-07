@@ -10,6 +10,7 @@ import voluptuous as vol
 from aiohttp import ClientError, ClientSession, CookieJar
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigFlowResult
+from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import (
     async_create_clientsession,
     async_get_clientsession,
@@ -63,6 +64,11 @@ class LoginAttempt:
 
 class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: MyQConfigEntry) -> MyQOptionsFlow:
+        return MyQOptionsFlow()
 
     def __init__(self) -> None:
         self._email: str | None = None
@@ -394,3 +400,33 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if self._login is None:
             raise RuntimeError("The MyQ config flow has no login session")
         return self._login
+
+
+class MyQOptionsFlow(config_entries.OptionsFlow):
+    async def async_step_init(
+        self, user_input: dict[str, object] | None = None
+    ) -> ConfigFlowResult:
+        if user_input is not None:
+            return self.async_create_entry(
+                title="", data={**self.config_entry.options, **user_input}
+            )
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    # Battery-conscious recording defaults, adjustable without reauthorization.
+                    vol.Required(
+                        "recording_duration",
+                        default=self.config_entry.options.get("recording_duration", 30),
+                    ): vol.All(vol.Coerce(int), vol.Range(min=5, max=300)),
+                    vol.Required(
+                        "recording_cooldown",
+                        default=self.config_entry.options.get("recording_cooldown", 60),
+                    ): vol.All(vol.Coerce(int), vol.Range(min=0, max=3600)),
+                    vol.Required(
+                        "retention_days",
+                        default=self.config_entry.options.get("retention_days", 30),
+                    ): vol.All(vol.Coerce(int), vol.Range(min=0, max=365)),
+                }
+            ),
+        )
