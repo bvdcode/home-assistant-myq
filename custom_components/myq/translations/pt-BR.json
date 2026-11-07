@@ -121,6 +121,9 @@
       },
       "last_activation_source": {
         "name": "Origem da última ativação"
+      },
+      "keypad_snapshot_time": {
+        "name": "Horário da captura"
       }
     },
     "camera": {

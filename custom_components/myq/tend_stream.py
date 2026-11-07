@@ -58,7 +58,13 @@ class TendLiveStream:
         self,
         target_supplier: Callable[[], Awaitable[TendCameraTarget]],
         token_supplier: Callable[[], Awaitable[str]],
+        *,
+        idle_seconds: float = _IDLE_SECONDS,
+        on_snapshot: Callable[[bytes], None] | None = None,
     ) -> None:
+        self._idle_seconds = idle_seconds
+        self._on_snapshot = on_snapshot
+        self._snapshot_frame: bytes | None = None
         self._target_supplier = target_supplier
         self._token_supplier = token_supplier
         self._runner: web.AppRunner | None = None
@@ -73,6 +79,11 @@ class TendLiveStream:
         self._idle_task: asyncio.Task[None] | None = None
         self._shutdown_task: asyncio.Task[None] | None = None
         self._closed = False
+
+    @property
+    def snapshot_frame(self) -> bytes | None:
+        """Last complete frame retained for a preview-enabled camera."""
+        return self._snapshot_frame
 
     async def source_url(self) -> str:
         """Start a loopback-only server with an unguessable stream path."""
@@ -130,6 +141,18 @@ class TendLiveStream:
                 self._sps = nal
             elif kind == 8:
                 self._pps = nal
+        if self._on_snapshot is not None and 5 in types and self._sps and self._pps:
+            snapshot = (
+                (self._sps if 7 not in types else b"")
+                + (self._pps if 8 not in types else b"")
+                + frame
+            )
+            if len(snapshot) <= 3_000_000:
+                self._snapshot_frame = snapshot
+                try:
+                    self._on_snapshot(snapshot)
+                except Exception as error:
+                    _LOGGER.debug("Camera preview callback failed: %s", type(error).__name__)
         for viewer in self._viewers:
             if not viewer.ready:
                 if 5 not in types or self._sps is None or self._pps is None:
@@ -177,7 +200,7 @@ class TendLiveStream:
             if viewer is not None:
                 self._viewers.discard(viewer)
                 if not self._viewers and not self._closed:
-                    delay = _IDLE_SECONDS
+                    delay = self._idle_seconds
                     if self._session is not None and self._session.ended:
                         delay = 0
                     self._idle_timer = asyncio.get_running_loop().call_later(

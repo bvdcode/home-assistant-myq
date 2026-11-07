@@ -121,6 +121,9 @@
       },
       "last_activation_source": {
         "name": "Źródło ostatniego uruchomienia"
+      },
+      "keypad_snapshot_time": {
+        "name": "Czas wykonania migawki"
       }
     },
     "camera": {

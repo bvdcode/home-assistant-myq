@@ -121,6 +121,9 @@
       },
       "last_activation_source": {
         "name": "Senaste aktiveringskälla"
+      },
+      "keypad_snapshot_time": {
+        "name": "Tidpunkt för ögonblicksbild"
       }
     },
     "camera": {
