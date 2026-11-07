@@ -13,7 +13,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.myq.camera import MyQGarageCamera
+from custom_components.myq.camera import MyQCameraEntity
 from custom_components.myq.const import (
     CONF_EMAIL,
     CONF_MFA_METHOD,
@@ -22,7 +22,7 @@ from custom_components.myq.const import (
     MFA_METHOD_EMAIL,
 )
 from custom_components.myq.exceptions import MyQApiError, MyQAuthenticationError
-from custom_components.myq.models import GarageDoor, MyQCamera
+from custom_components.myq.models import GarageDoor, MyQCamera, MyQDevices
 from custom_components.myq.runtime import MyQRuntimeData
 
 EMAIL = "driver@example.com"
@@ -57,7 +57,10 @@ async def test_live_stream_is_available_only_for_tc_camera() -> None:
             return_value="http://127.0.0.1:1234/test.h264"
         )
         assert await tc_entity.stream_source() == "http://127.0.0.1:1234/test.h264"
-        stream_class.assert_called_once_with("door-1", coordinator.client.async_access_token)
+        stream_class.assert_called_once_with(
+            tc_entity._async_stream_target, coordinator.client.async_access_token
+        )
+        assert (await tc_entity._async_stream_target()).opener_serial == "door-1"
 
     other = replace(DOOR, camera=MyQCamera("GW-0005-10000001", True))
     other_entity, _ = _entity(other)
@@ -170,7 +173,7 @@ async def test_setup_adds_camera_only_for_doors_with_cameras(hass: HomeAssistant
     entry.add_to_hass(hass)
     other_door = replace(DOOR, serial_number="door-2", name="Side garage", camera=None)
     client = MagicMock()
-    client.async_get_garage_doors = AsyncMock(return_value=(DOOR, other_door))
+    client.async_get_devices = AsyncMock(return_value=MyQDevices((DOOR, other_door)))
     client.async_get_camera_image = AsyncMock(return_value=IMAGE)
 
     with patch("custom_components.myq.MyQClient", return_value=client):
@@ -200,9 +203,11 @@ async def test_setup_adds_camera_only_for_doors_with_cameras(hass: HomeAssistant
     client.async_get_camera_image.assert_awaited_once_with(DOOR.camera)
 
     runtime = cast(MyQRuntimeData, entry.runtime_data)
-    client.async_get_garage_doors.return_value = (
-        replace(DOOR, camera=MyQCamera("TC-0005-10000001", False)),
-        other_door,
+    client.async_get_devices.return_value = MyQDevices(
+        (
+            replace(DOOR, camera=MyQCamera("TC-0005-10000001", False)),
+            other_door,
+        )
     )
     await runtime.coordinator.async_refresh()
     await hass.async_block_till_done()
@@ -215,8 +220,9 @@ async def test_setup_adds_camera_only_for_doors_with_cameras(hass: HomeAssistant
     await hass.async_block_till_done()
 
 
-def _entity(door: GarageDoor) -> tuple[MyQGarageCamera, MagicMock]:
+def _entity(door: GarageDoor) -> tuple[MyQCameraEntity, MagicMock]:
     coordinator = MagicMock()
     coordinator.data = {door.serial_number: door}
     coordinator.client.async_get_camera_image = AsyncMock(return_value=IMAGE)
-    return MyQGarageCamera(coordinator, door), coordinator
+    assert door.camera is not None
+    return MyQCameraEntity(coordinator, door.camera, door=door), coordinator

@@ -76,7 +76,7 @@
     "abort": {
       "already_configured": "Denne MyQ-konto er allerede konfigureret. Yderligere opsætning er ikke nødvendig.",
       "cannot_connect": "Godkendelsen lykkedes, men MyQ's enhedsregistrering kunne ikke nås.",
-      "no_devices": "Der blev ikke fundet nogen garageporte på denne MyQ-konto.",
+      "no_devices": "Der blev ikke fundet nogen garageporte eller kameraer på denne MyQ-konto.",
       "reauth_successful": "MyQ blev genforbundet.",
       "unknown": "MyQ returnerede et uventet svar."
     }

@@ -126,6 +126,33 @@ class TendCamera:
     opener_serial: str = ""
 
 
+@dataclass(frozen=True, slots=True)
+class TendCameraTarget:
+    """Identify exactly one camera by its opener or resolved signaling destination."""
+
+    opener_serial: str | None = None
+    destination: str | None = None
+
+    def __post_init__(self) -> None:
+        if (self.opener_serial is None) == (self.destination is None):
+            raise ValueError("Provide exactly one camera identity")
+        value = self.opener_serial if self.opener_serial is not None else self.destination
+        if not value:
+            raise ValueError("Camera identity must not be empty")
+
+    def select(self, cameras: list[TendCamera]) -> TendCamera:
+        """Reject missing or ambiguous destinations instead of selecting another camera."""
+        if self.destination is not None:
+            matches = [camera for camera in cameras if camera.destination == self.destination]
+        else:
+            matches = [camera for camera in cameras if camera.opener_serial == self.opener_serial]
+        if not matches:
+            raise TendStreamError("TC camera was not listed by Tend signaling")
+        if len(matches) != 1:
+            raise TendStreamError("TC camera identity is ambiguous in Tend signaling")
+        return matches[0]
+
+
 def parse_cameras(properties: dict[str, str]) -> list[TendCamera]:
     """Read the camera capabilities supplied by the Tend broker.
 

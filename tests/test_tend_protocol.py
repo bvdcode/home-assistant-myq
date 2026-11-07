@@ -14,6 +14,7 @@ from custom_components.myq.tend_media import VideoTransport, _Channel
 from custom_components.myq.tend_protocol import (
     CxsPacket,
     TendCamera,
+    TendCameraTarget,
     TendStreamError,
     VideoOffer,
     _sdnk,
@@ -183,3 +184,27 @@ def test_malformed_payload_never_returns_a_valid_prefix() -> None:
         body = bytes(4) + prefix + suffix
         payload = b"w1" + struct.pack("<I", len(body)) + body
         assert decode_video_payload(payload, "0123456789abcdef") == []
+
+
+@pytest.mark.parametrize(
+    "target",
+    [
+        TendCameraTarget(opener_serial="door-1"),
+        TendCameraTarget(destination="alias:mac1"),
+    ],
+)
+def test_duplicate_camera_identity_is_rejected(target: TendCameraTarget) -> None:
+    camera = TendCamera("alias", "alias:mac1", "key", "192.0.2.1", "door-1")
+    with pytest.raises(TendStreamError, match="ambiguous"):
+        target.select([camera, camera])
+
+
+@pytest.mark.parametrize(
+    "opener,destination",
+    [(None, None), ("", None), (None, ""), ("door", "alias:mac"), ("door", "")],
+)
+def test_stream_target_requires_exactly_one_identity(
+    opener: str | None, destination: str | None
+) -> None:
+    with pytest.raises(ValueError):
+        TendCameraTarget(opener, destination)

@@ -10,7 +10,7 @@ from collections.abc import Awaitable, Callable
 from aiohttp import ClientError, web
 
 from .exceptions import MyQError
-from .tend_protocol import TendStreamError, _nals
+from .tend_protocol import TendCameraTarget, TendStreamError, _nals
 from .tend_session import TendSession
 
 _LOGGER = logging.getLogger(__name__)
@@ -40,8 +40,12 @@ class _Viewer:
 class TendLiveStream:
     """Expose one TC camera session to multiple local stream consumers."""
 
-    def __init__(self, opener_serial: str, token_supplier: Callable[[], Awaitable[str]]) -> None:
-        self._opener_serial = opener_serial
+    def __init__(
+        self,
+        target_supplier: Callable[[], Awaitable[TendCameraTarget]],
+        token_supplier: Callable[[], Awaitable[str]],
+    ) -> None:
+        self._target_supplier = target_supplier
         self._token_supplier = token_supplier
         self._runner: web.AppRunner | None = None
         self._url: str | None = None
@@ -92,7 +96,7 @@ class TendLiveStream:
             if self._session is None or self._session.ended:
                 await self._close_session()
                 self._session = await TendSession.open(
-                    self._opener_serial, await self._token_supplier(), self._on_frame
+                    await self._target_supplier(), await self._token_supplier(), self._on_frame
                 )
             viewer = _Viewer()
             self._viewers.add(viewer)
