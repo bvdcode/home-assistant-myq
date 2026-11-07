@@ -10,7 +10,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN
+from .const import CONF_CAMERA_LAN_ONLY, DOMAIN
 from .coordinator import MyQDataUpdateCoordinator
 from .entity import myq_device_info
 from .exceptions import MyQApiError, MyQError
@@ -132,7 +132,13 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
             return None
         if self._live_stream is None:
             self._live_stream = TendLiveStream(
-                self._async_stream_target, self.coordinator.client.async_access_token
+                self._async_stream_target,
+                self.coordinator.client.async_access_token,
+                lan_only=bool(
+                    self.coordinator.config_entry.options.get(CONF_CAMERA_LAN_ONLY, False)
+                )
+                if self.coordinator.config_entry
+                else False,
             )
         return await self._live_stream.source_url()
 

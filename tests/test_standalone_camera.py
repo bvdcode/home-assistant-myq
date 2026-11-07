@@ -150,6 +150,7 @@ async def test_two_live_streams_keep_distinct_camera_targets(socket_enabled: Non
 
     del socket_enabled
     coordinator = MagicMock()
+    coordinator.config_entry = None
     coordinator.data = {}
     coordinator.cameras = {camera.serial_number: camera for camera in (FIRST, SECOND)}
     coordinator.client.async_get_camera_alias = AsyncMock(
@@ -160,8 +161,9 @@ async def test_two_live_streams_keep_distinct_camera_targets(socket_enabled: Non
     sessions: list[MagicMock] = []
 
     async def open_session(
-        target: TendCameraTarget, token: str, on_frame: Callable[[bytes], None]
+        target: TendCameraTarget, token: str, on_frame: Callable[[bytes], None], *, lan_only: bool
     ) -> MagicMock:
+        assert not lan_only
         assert token == "token"
         assert target.destination is not None
         callbacks[target.destination] = on_frame

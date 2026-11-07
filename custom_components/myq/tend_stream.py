@@ -58,8 +58,11 @@ class TendLiveStream:
         self,
         target_supplier: Callable[[], Awaitable[TendCameraTarget]],
         token_supplier: Callable[[], Awaitable[str]],
+        *,
+        lan_only: bool = False,
     ) -> None:
         self._target_supplier = target_supplier
+        self._lan_only = lan_only
         self._token_supplier = token_supplier
         self._runner: web.AppRunner | None = None
         self._url: str | None = None
@@ -110,7 +113,10 @@ class TendLiveStream:
             if self._session is None or self._session.ended:
                 await self._close_session()
                 self._session = await TendSession.open(
-                    await self._target_supplier(), await self._token_supplier(), self._on_frame
+                    await self._target_supplier(),
+                    await self._token_supplier(),
+                    self._on_frame,
+                    lan_only=self._lan_only,
                 )
             viewer = _Viewer()
             self._viewers.add(viewer)
