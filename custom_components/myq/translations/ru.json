@@ -102,6 +102,12 @@
       },
       "active_fault": {
         "name": "Активная неисправность"
+      },
+      "keypad_streaming": {
+        "name": "Трансляция видео"
+      },
+      "keypad_session_problem": {
+        "name": "Проблема с сеансом"
       }
     },
     "cover": {
@@ -121,11 +127,40 @@
       },
       "last_activation_source": {
         "name": "Последний источник активации"
+      },
+      "keypad_battery": {
+        "name": "Батарея"
+      },
+      "keypad_power_state": {
+        "name": "Переданный режим питания"
+      },
+      "keypad_power_sample_time": {
+        "name": "Время измерения заряда батареи"
+      },
+      "keypad_session_state": {
+        "name": "Состояние сеанса"
+      },
+      "keypad_session_errors": {
+        "name": "Ошибки сеанса"
+      },
+      "keypad_startup_time": {
+        "name": "Длительность последнего запуска"
+      },
+      "keypad_active_consumers": {
+        "name": "Активные получатели видео"
+      },
+      "keypad_credential_renewals": {
+        "name": "Обновления учётных данных"
       }
     },
     "camera": {
       "camera": {
         "name": "Камера"
+      }
+    },
+    "button": {
+      "keypad_refresh_power": {
+        "name": "Обновить состояние батареи и питания"
       }
     }
   },
@@ -135,6 +170,9 @@
     },
     "camera_image_failed": {
       "message": "Не удалось получить снимок с камеры MyQ."
+    },
+    "keypad_power_refresh_failed": {
+      "message": "Не удалось обновить состояние батареи и питания клавиатуры."
     }
   }
 }

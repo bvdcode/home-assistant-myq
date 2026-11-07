@@ -102,6 +102,12 @@
       },
       "active_fault": {
         "name": "Falha ativa"
+      },
+      "keypad_streaming": {
+        "name": "Transmissão de vídeo"
+      },
+      "keypad_session_problem": {
+        "name": "Problema na sessão"
       }
     },
     "cover": {
@@ -121,11 +127,40 @@
       },
       "last_activation_source": {
         "name": "Origem da última ativação"
+      },
+      "keypad_battery": {
+        "name": "Bateria"
+      },
+      "keypad_power_state": {
+        "name": "Estado de energia informado"
+      },
+      "keypad_power_sample_time": {
+        "name": "Horário da medição da bateria"
+      },
+      "keypad_session_state": {
+        "name": "Estado da sessão"
+      },
+      "keypad_session_errors": {
+        "name": "Erros de sessão"
+      },
+      "keypad_startup_time": {
+        "name": "Duração da última inicialização"
+      },
+      "keypad_active_consumers": {
+        "name": "Receptores de vídeo ativos"
+      },
+      "keypad_credential_renewals": {
+        "name": "Renovações de credenciais"
       }
     },
     "camera": {
       "camera": {
         "name": "Câmera"
+      }
+    },
+    "button": {
+      "keypad_refresh_power": {
+        "name": "Atualizar bateria e energia"
       }
     }
   },
@@ -135,6 +170,9 @@
     },
     "camera_image_failed": {
       "message": "Não foi possível obter uma imagem da câmera MyQ."
+    },
+    "keypad_power_refresh_failed": {
+      "message": "Não foi possível atualizar o estado da bateria e da alimentação do teclado."
     }
   }
 }

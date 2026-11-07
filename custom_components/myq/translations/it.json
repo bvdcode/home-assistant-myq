@@ -102,6 +102,12 @@
       },
       "active_fault": {
         "name": "Guasto attivo"
+      },
+      "keypad_streaming": {
+        "name": "Trasmissione video"
+      },
+      "keypad_session_problem": {
+        "name": "Problema di sessione"
       }
     },
     "cover": {
@@ -121,11 +127,40 @@
       },
       "last_activation_source": {
         "name": "Origine dell'ultima attivazione"
+      },
+      "keypad_battery": {
+        "name": "Batteria"
+      },
+      "keypad_power_state": {
+        "name": "Stato di alimentazione segnalato"
+      },
+      "keypad_power_sample_time": {
+        "name": "Ora del rilevamento della batteria"
+      },
+      "keypad_session_state": {
+        "name": "Stato della sessione"
+      },
+      "keypad_session_errors": {
+        "name": "Errori di sessione"
+      },
+      "keypad_startup_time": {
+        "name": "Durata dell’ultimo avvio"
+      },
+      "keypad_active_consumers": {
+        "name": "Destinatari video attivi"
+      },
+      "keypad_credential_renewals": {
+        "name": "Rinnovi delle credenziali"
       }
     },
     "camera": {
       "camera": {
         "name": "Telecamera"
+      }
+    },
+    "button": {
+      "keypad_refresh_power": {
+        "name": "Aggiorna batteria e alimentazione"
       }
     }
   },
@@ -135,6 +170,9 @@
     },
     "camera_image_failed": {
       "message": "Impossibile recuperare un’immagine dalla telecamera MyQ."
+    },
+    "keypad_power_refresh_failed": {
+      "message": "Impossibile aggiornare lo stato della batteria e dell’alimentazione del tastierino."
     }
   }
 }

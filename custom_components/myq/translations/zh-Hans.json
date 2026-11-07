@@ -102,6 +102,12 @@
       },
       "active_fault": {
         "name": "当前故障"
+      },
+      "keypad_streaming": {
+        "name": "视频传输中"
+      },
+      "keypad_session_problem": {
+        "name": "会话异常"
       }
     },
     "cover": {
@@ -121,11 +127,40 @@
       },
       "last_activation_source": {
         "name": "上次触发来源"
+      },
+      "keypad_battery": {
+        "name": "电池"
+      },
+      "keypad_power_state": {
+        "name": "设备报告的电源状态"
+      },
+      "keypad_power_sample_time": {
+        "name": "电池采样时间"
+      },
+      "keypad_session_state": {
+        "name": "会话状态"
+      },
+      "keypad_session_errors": {
+        "name": "会话错误次数"
+      },
+      "keypad_startup_time": {
+        "name": "上次启动耗时"
+      },
+      "keypad_active_consumers": {
+        "name": "活动视频接收端数"
+      },
+      "keypad_credential_renewals": {
+        "name": "凭据续期次数"
       }
     },
     "camera": {
       "camera": {
         "name": "摄像头"
+      }
+    },
+    "button": {
+      "keypad_refresh_power": {
+        "name": "刷新电池和电源状态"
       }
     }
   },
@@ -135,6 +170,9 @@
     },
     "camera_image_failed": {
       "message": "无法获取 MyQ 摄像头的快照。"
+    },
+    "keypad_power_refresh_failed": {
+      "message": "无法刷新键盘的电池和电源状态。"
     }
   }
 }

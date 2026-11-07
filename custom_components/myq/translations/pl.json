@@ -102,6 +102,12 @@
       },
       "active_fault": {
         "name": "Aktywna usterka"
+      },
+      "keypad_streaming": {
+        "name": "Transmisja wideo"
+      },
+      "keypad_session_problem": {
+        "name": "Problem z sesją"
       }
     },
     "cover": {
@@ -121,11 +127,40 @@
       },
       "last_activation_source": {
         "name": "Źródło ostatniego uruchomienia"
+      },
+      "keypad_battery": {
+        "name": "Bateria"
+      },
+      "keypad_power_state": {
+        "name": "Zgłoszony stan zasilania"
+      },
+      "keypad_power_sample_time": {
+        "name": "Czas pomiaru baterii"
+      },
+      "keypad_session_state": {
+        "name": "Stan sesji"
+      },
+      "keypad_session_errors": {
+        "name": "Błędy sesji"
+      },
+      "keypad_startup_time": {
+        "name": "Czas trwania ostatniego uruchomienia"
+      },
+      "keypad_active_consumers": {
+        "name": "Aktywni odbiorcy wideo"
+      },
+      "keypad_credential_renewals": {
+        "name": "Odnowienia danych uwierzytelniających"
       }
     },
     "camera": {
       "camera": {
         "name": "Kamera"
+      }
+    },
+    "button": {
+      "keypad_refresh_power": {
+        "name": "Odśwież stan baterii i zasilania"
       }
     }
   },
@@ -135,6 +170,9 @@
     },
     "camera_image_failed": {
       "message": "Nie udało się pobrać zdjęcia z kamery MyQ."
+    },
+    "keypad_power_refresh_failed": {
+      "message": "Nie udało się odświeżyć stanu baterii i zasilania klawiatury."
     }
   }
 }

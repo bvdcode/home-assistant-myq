@@ -102,6 +102,12 @@
       },
       "active_fault": {
         "name": "Aktivní porucha"
+      },
+      "keypad_streaming": {
+        "name": "Přenos videa"
+      },
+      "keypad_session_problem": {
+        "name": "Problém s relací"
       }
     },
     "cover": {
@@ -121,11 +127,40 @@
       },
       "last_activation_source": {
         "name": "Zdroj poslední aktivace"
+      },
+      "keypad_battery": {
+        "name": "Baterie"
+      },
+      "keypad_power_state": {
+        "name": "Hlášený stav napájení"
+      },
+      "keypad_power_sample_time": {
+        "name": "Čas měření baterie"
+      },
+      "keypad_session_state": {
+        "name": "Stav relace"
+      },
+      "keypad_session_errors": {
+        "name": "Chyby relace"
+      },
+      "keypad_startup_time": {
+        "name": "Doba posledního spuštění"
+      },
+      "keypad_active_consumers": {
+        "name": "Aktivní odběratelé videa"
+      },
+      "keypad_credential_renewals": {
+        "name": "Obnovení přihlašovacích údajů"
       }
     },
     "camera": {
       "camera": {
         "name": "Kamera"
+      }
+    },
+    "button": {
+      "keypad_refresh_power": {
+        "name": "Aktualizovat stav baterie a napájení"
       }
     }
   },
@@ -135,6 +170,9 @@
     },
     "camera_image_failed": {
       "message": "Snímek z kamery MyQ se nepodařilo načíst."
+    },
+    "keypad_power_refresh_failed": {
+      "message": "Stav baterie a napájení klávesnice se nepodařilo aktualizovat."
     }
   }
 }
