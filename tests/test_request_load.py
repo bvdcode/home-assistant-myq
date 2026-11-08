@@ -114,3 +114,31 @@ async def test_failed_account_refresh_does_not_extend_the_cache() -> None:
         assert (await client.async_get_accounts())[0].account_id == "account-3"
 
     assert len(session.calls) == 3
+
+
+@pytest.mark.parametrize("account_count", [1, 2])
+async def test_idle_request_budget_over_one_day(account_count: int) -> None:
+    session = MagicMock(spec=ClientSession)
+
+    def respond(method: str, url: str, *, headers: dict[str, str]) -> FakeResponse:
+        del method, headers
+        if url.endswith("/accounts"):
+            return FakeResponse(
+                "", body=json.dumps({"accounts": [{"id": str(i)} for i in range(account_count)]})
+            )
+        return FakeResponse("", body='{"items":[]}')
+
+    session.request.side_effect = respond
+    auth = MagicMock(spec=MyQAuth)
+    auth.async_access_token = AsyncMock(return_value="access")
+    client = MyQClient(session, auth)
+    with patch("custom_components.myq.client.monotonic", return_value=0) as clock:
+        for elapsed in range(0, 86400, int(DEFAULT_UPDATE_INTERVAL.total_seconds())):
+            clock.return_value = elapsed
+            await client.async_get_devices()
+
+    account_requests = sum(
+        call.args[1].endswith("/accounts") for call in session.request.call_args_list
+    )
+    assert account_requests == 90
+    assert session.request.call_count == 90 + 720 * account_count

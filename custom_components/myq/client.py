@@ -23,6 +23,7 @@ from .const import (
 from .exceptions import MyQApiError, MyQAuthenticationError
 from .models import GarageDoor, MyQAccount, MyQCamera, MyQDevices
 from .oauth import MyQAuth
+from .request_limits import RequestCooldown
 
 type HeadersFn = Callable[[str], dict[str, str]]
 
@@ -34,6 +35,7 @@ class MyQClient:
         self._accounts: tuple[MyQAccount, ...] | None = None
         self._accounts_updated_at = 0.0
         self._accounts_lock = asyncio.Lock()
+        self._request_cooldown = RequestCooldown()
 
     async def async_access_token(self) -> str:
         """Return the current OAuth token for Tend camera signaling."""
@@ -185,13 +187,16 @@ class MyQClient:
         url: str,
         headers: HeadersFn | None = None,
     ) -> bytes:
+        self._request_cooldown.check(url)
         access_token = await self._auth.async_access_token()
+        self._request_cooldown.check(url)
         async with self._session.request(
             method,
             url,
             headers=(headers or _api_headers)(access_token),
         ) as response:
             body = await response.read()
+            self._request_cooldown.check_response(url, response.status, response.headers)
             if response.status in {401, 403}:
                 raise MyQAuthenticationError(f"MyQ returned HTTP {response.status}")
             if response.status >= 400:
