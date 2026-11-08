@@ -13,7 +13,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.myq.camera import MyQCameraEntity
+from custom_components.myq.camera import SNAPSHOT_FRAME_INTERVAL, MyQCameraEntity
 from custom_components.myq.const import (
     CONF_EMAIL,
     CONF_MFA_METHOD,
@@ -105,7 +105,36 @@ async def test_concurrent_snapshot_requests_share_one_capture() -> None:
     assert [await first, await second] == [IMAGE, IMAGE]
     coordinator.client.async_get_camera_image.assert_awaited_once()
     assert await entity.async_camera_image() == IMAGE
-    assert coordinator.client.async_get_camera_image.await_count == 2
+    coordinator.client.async_get_camera_image.assert_awaited_once()
+
+
+async def test_snapshot_viewers_share_one_capture_per_frame_interval() -> None:
+    entity, coordinator = _entity(DOOR)
+    with patch("custom_components.myq.camera.time.monotonic", return_value=100) as clock:
+        assert await entity.async_camera_image() == IMAGE
+        clock.return_value = 100 + SNAPSHOT_FRAME_INTERVAL - 0.1
+        assert await entity.async_camera_image() == IMAGE
+        coordinator.client.async_get_camera_image.assert_awaited_once()
+
+        clock.return_value = 100 + SNAPSHOT_FRAME_INTERVAL
+        coordinator.client.async_get_camera_image.return_value = IMAGE + b"new"
+        assert await entity.async_camera_image() == IMAGE + b"new"
+        assert coordinator.client.async_get_camera_image.await_count == 2
+
+
+async def test_expired_snapshot_does_not_hide_a_capture_failure() -> None:
+    entity, coordinator = _entity(DOOR)
+    with patch("custom_components.myq.camera.time.monotonic", return_value=100) as clock:
+        assert await entity.async_camera_image() == IMAGE
+        clock.return_value = 100 + SNAPSHOT_FRAME_INTERVAL
+        coordinator.client.async_get_camera_image.side_effect = MyQApiError("Snapshot unavailable")
+        with pytest.raises(HomeAssistantError):
+            await entity.async_camera_image()
+
+        coordinator.client.async_get_camera_image.side_effect = None
+        coordinator.client.async_get_camera_image.return_value = IMAGE + b"recovered"
+        assert await entity.async_camera_image() == IMAGE + b"recovered"
+        assert coordinator.client.async_get_camera_image.await_count == 3
 
 
 @pytest.mark.parametrize("error_type", [MyQApiError, MyQAuthenticationError, ClientConnectionError])
