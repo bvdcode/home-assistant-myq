@@ -42,6 +42,7 @@ APP_CHECK_DATA: Final = bytes.fromhex(
 )
 
 DEFAULT_UPDATE_INTERVAL: Final = timedelta(seconds=30)
+ACCOUNT_DISCOVERY_INTERVAL: Final = timedelta(minutes=15)
 COMMAND_UPDATE_INITIAL_INTERVAL: Final = timedelta(seconds=1)
 COMMAND_UPDATE_INTERVAL: Final = timedelta(seconds=5)
 COMMAND_UPDATE_MIN_DURATION: Final = timedelta(seconds=30)
