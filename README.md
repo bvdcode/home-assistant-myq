@@ -24,15 +24,15 @@ The integration provides:
 - vacation mode, work-light, fault, cycle-count, and activation diagnostics
   when provided by MyQ;
 - snapshots from attached and standalone cameras and experimental live video for TC cameras;
-- cloud polling every 30 seconds, temporarily more frequently after a command.
+- cloud polling every 2 minutes, temporarily more frequently after a command.
 
 ## Alarmo
 
 Each garage door includes a **Door open** binary sensor with the `garage_door` device class. Add this sensor in Alarmo's **Sensors** tab. The existing cover provides the open and close controls.
 
-The sensor is on whenever the door is known to be not closed, including while it is moving. Unknown states remain unknown, and offline or missing doors are unavailable. The sensor shares cloud polling with the cover.
+The sensor is on whenever the door is known to be not closed, including while it is moving. Unknown states remain unknown, and offline or missing doors are unavailable. The sensor shares cloud polling with the cover. Changes made outside Home Assistant may take up to 2 minutes to appear. Account membership is refreshed every 15 minutes; device states are read on each poll.
 
-After an accepted open or close command, the integration waits 1 second before checking the status. The intervals then increase to 2, 3, 4, and 5 seconds and remain at 5 seconds. Polling continues for at least 30 seconds, even if the requested state is reported earlier, and for up to 60 seconds while waiting for it. A new command restarts the sequence and polling window for that door. After an accepted command from a fully closed or open door, the cover immediately shows Opening or Closing. The cover keeps this provisional movement while MyQ still reports the original state, until a different state arrives or the 60-second tracking timeout is reached. After a different state is reported, the cover follows all subsequent MyQ states, including a reversal. All sensors continue to use confirmed MyQ data. Polling returns to the normal 30-second interval when tracking finishes, the door becomes unavailable, or an update fails. If polling is disabled in Home Assistant system options, commands keep the last confirmed state without provisional movement or automatic status requests; manual updates still work.
+After an accepted open or close command, the integration waits 1 second before checking the status. The intervals then increase to 2, 3, 4, and 5 seconds and remain at 5 seconds. Polling continues for at least 30 seconds, even if the requested state is reported earlier, and for up to 60 seconds while waiting for it. A new command restarts the sequence and polling window for that door. After an accepted command from a fully closed or open door, the cover immediately shows Opening or Closing. The cover keeps this provisional movement while MyQ still reports the original state, until a different state arrives or the 60-second tracking timeout is reached. After a different state is reported, the cover follows all subsequent MyQ states, including a reversal. All sensors continue to use confirmed MyQ data. Polling returns to the normal 2-minute interval when tracking finishes or the door becomes unavailable. Failed background updates retry after 4, 8, and then 15 minutes; a successful update restores the normal interval. Longer server-requested retry delays are respected. If polling is disabled in Home Assistant system options, commands keep the last confirmed state without provisional movement or automatic status requests; manual updates still work.
 
 ## Requirements
 
@@ -94,7 +94,7 @@ can also be added.
 
 Openers with an attached camera get a camera entity on the same device.
 Snapshots are fetched on demand from the Tend cloud using the existing MyQ
-authorization. Concurrent requests share an image request.
+authorization. All viewers share one cached image per camera for 30 seconds.
 
 TC cameras also offer experimental live H.264 video. Home Assistant must be able
 to reach the camera over the local network. Playback uses the `stream`

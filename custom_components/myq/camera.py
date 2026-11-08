@@ -19,7 +19,7 @@ from .runtime import MyQConfigEntry
 from .tend_protocol import TendCameraTarget
 from .tend_stream import TendLiveStream
 
-SNAPSHOT_FRAME_INTERVAL = 5.0
+SNAPSHOT_FRAME_INTERVAL = 30.0
 
 
 async def async_setup_entry(
@@ -112,9 +112,11 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
         camera = self.camera
         if camera is None:
             return None
-        requested_at = time.monotonic()
         async with self._capture_lock:
-            if self._image is not None and self._captured_at > requested_at:
+            if (
+                self._image is not None
+                and time.monotonic() - self._captured_at < SNAPSHOT_FRAME_INTERVAL
+            ):
                 return self._image
             try:
                 self._image = await self.coordinator.client.async_get_camera_image(camera)
