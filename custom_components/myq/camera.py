@@ -5,7 +5,7 @@ import time
 
 from aiohttp import ClientError
 from homeassistant.components.camera import Camera, CameraEntityFeature
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -70,6 +70,10 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
         self._capture_lock = asyncio.Lock()
         self._image: bytes | None = None
         self._captured_at = 0.0
+        # A door movement starts a new generation, so viewers never get a pre-move snapshot.
+        self._door_state = door.door_state if door is not None else None
+        self._generation = 0
+        self._image_generation = 0
         self._live_stream: TendLiveStream | None = None
         if camera.serial_prefix == "TC":
             self._attr_supported_features = CameraEntityFeature.STREAM
@@ -115,9 +119,11 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
         async with self._capture_lock:
             if (
                 self._image is not None
+                and self._image_generation == self._generation
                 and time.monotonic() - self._captured_at < SNAPSHOT_FRAME_INTERVAL
             ):
                 return self._image
+            generation = self._generation
             try:
                 self._image = await self.coordinator.client.async_get_camera_image(camera)
             except (ClientError, MyQError, TimeoutError) as error:
@@ -125,7 +131,19 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
                     translation_domain=DOMAIN, translation_key="camera_image_failed"
                 ) from error
             self._captured_at = time.monotonic()
+            self._image_generation = generation
             return self._image
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Expire the shared snapshot when the door moves, so viewers see where it stopped."""
+        if self._opener_serial is not None:
+            door = self.coordinator.data.get(self._opener_serial)
+            door_state = door.door_state if door is not None else None
+            if door_state != self._door_state:
+                self._door_state = door_state
+                self._generation += 1
+        super()._handle_coordinator_update()
 
     async def stream_source(self) -> str | None:
         """Provide a local H.264 source for TC cameras."""

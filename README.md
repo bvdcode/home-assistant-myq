@@ -94,7 +94,8 @@ can also be added.
 
 Openers with an attached camera get a camera entity on the same device.
 Snapshots are fetched on demand from the Tend cloud using the existing MyQ
-authorization. All viewers share one cached image per camera for 30 seconds.
+authorization. All viewers share one cached image per camera for 30 seconds;
+when the door moves, the next request takes a new image.
 
 TC cameras also offer experimental live H.264 video. Home Assistant must be able
 to reach the camera over the local network. Playback uses the `stream`

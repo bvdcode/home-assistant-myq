@@ -122,6 +122,47 @@ async def test_snapshot_viewers_share_one_capture_per_frame_interval() -> None:
         assert coordinator.client.async_get_camera_image.await_count == 2
 
 
+async def test_door_movement_expires_the_shared_snapshot() -> None:
+    entity, coordinator = _entity(DOOR)
+    with (
+        patch("custom_components.myq.camera.time.monotonic", return_value=100),
+        patch.object(entity, "async_write_ha_state"),
+    ):
+        assert await entity.async_camera_image() == IMAGE
+        entity._handle_coordinator_update()
+        assert await entity.async_camera_image() == IMAGE
+        coordinator.client.async_get_camera_image.assert_awaited_once()
+
+        # Within the shared interval, a moved door still gets a new picture.
+        coordinator.data = {DOOR.serial_number: replace(DOOR, door_state="open")}
+        coordinator.client.async_get_camera_image.return_value = IMAGE + b"open"
+        entity._handle_coordinator_update()
+        assert await entity.async_camera_image() == IMAGE + b"open"
+        assert await entity.async_camera_image() == IMAGE + b"open"
+        assert coordinator.client.async_get_camera_image.await_count == 2
+
+
+async def test_snapshot_taken_while_the_door_moves_is_not_shared_afterwards() -> None:
+    entity, coordinator = _entity(DOOR)
+    release = asyncio.Event()
+
+    async def capture(camera: MyQCamera) -> bytes:
+        await release.wait()
+        return IMAGE
+
+    coordinator.client.async_get_camera_image = AsyncMock(side_effect=capture)
+    with patch.object(entity, "async_write_ha_state"):
+        in_flight = asyncio.create_task(entity.async_camera_image())
+        await asyncio.sleep(0)
+        coordinator.data = {DOOR.serial_number: replace(DOOR, door_state="opening")}
+        entity._handle_coordinator_update()
+        release.set()
+        assert await in_flight == IMAGE
+
+        coordinator.client.async_get_camera_image = AsyncMock(return_value=IMAGE + b"new")
+        assert await entity.async_camera_image() == IMAGE + b"new"
+
+
 async def test_expired_snapshot_does_not_hide_a_capture_failure() -> None:
     entity, coordinator = _entity(DOOR)
     with patch("custom_components.myq.camera.time.monotonic", return_value=100) as clock:
