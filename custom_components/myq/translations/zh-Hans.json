@@ -81,6 +81,25 @@
       "unknown": "MyQ 返回了意外的响应。"
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "车库面板",
+        "description": "在 Home Assistant 侧边栏的专属页面中控制车库门、查看状态并观看摄像头视频。",
+        "data": {
+          "panel_enabled": "在侧边栏中显示车库面板",
+          "panel_title": "侧边栏标题",
+          "panel_icon": "侧边栏图标",
+          "panel_require_admin": "仅管理员可以打开面板"
+        },
+        "data_description": {
+          "panel_enabled": "此账户中的车库门和摄像头会自动添加到面板。",
+          "panel_title": "如果有多个 MyQ 账户，由第一个显示面板的账户决定标题和图标。",
+          "panel_require_admin": "只有管理员可以更改车库门的外观。"
+        }
+      }
+    }
+  },
   "selector": {
     "mfa_method": {
       "options": {

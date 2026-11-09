@@ -1,0 +1,161 @@
+{
+  "panel": {
+    "loading": "Cargando tu garaje…",
+    "error": "No se ha podido cargar el panel del garaje.",
+    "retry": "Reintentar",
+    "empty_title": "Aún no hay puertas de garaje",
+    "empty_text": "Las puertas de garaje y las cámaras que detecte MyQ aparecerán aquí automáticamente.",
+    "open_settings": "Abrir la configuración de MyQ",
+    "menu": "Mostrar barra lateral",
+    "settings": "Configuración del panel",
+    "cameras": "Cámaras",
+    "compact": "Vista compacta"
+  },
+  "summary": {
+    "all_closed": "Todas las puertas están cerradas",
+    "open": {
+      "one": "{count} puerta está abierta",
+      "other": "{count} puertas están abiertas"
+    },
+    "moving": {
+      "one": "{count} puerta está en movimiento",
+      "other": "{count} puertas están en movimiento"
+    },
+    "unavailable": {
+      "one": "{count} puerta no está disponible",
+      "other": "{count} puertas no están disponibles"
+    },
+    "last_change": "{name} · {state} {time}",
+    "left_open": "{name}: abierta desde hace {duration}",
+    "close_all": "Cerrar todas",
+    "confirm_close_all": "Toca de nuevo para cerrar todas"
+  },
+  "account": {
+    "connecting": "Conectando con MyQ…",
+    "retrying": "No se puede acceder a MyQ en este momento. Home Assistant seguirá intentándolo.",
+    "error": "La cuenta de MyQ requiere atención."
+  },
+  "door": {
+    "open": "Abrir",
+    "close": "Cerrar",
+    "confirm": "Toca para confirmar",
+    "changed": "Cambió {time}",
+    "open_for": "Abierta desde hace {duration}",
+    "camera": "Mostrar cámara",
+    "door_view": "Mostrar puerta",
+    "customize": "Personalizar",
+    "details": "Detalles",
+    "light_on": "Luz encendida",
+    "vacation": "Modo vacaciones",
+    "fault": "Fallo {codes}",
+    "battery": "Batería de respaldo",
+    "command_failed": "{name} no ha aceptado el comando.",
+    "check": "Comprobar ahora",
+    "checked": "Comprobado ahora mismo",
+    "check_failed": "No se ha podido comprobar {name}: {error}",
+    "activity": "Actividad reciente",
+    "no_activity": "Sin cambios en los últimos 7 días",
+    "by": "por {name}",
+    "via": "vía {source}"
+  },
+  "camera": {
+    "live": "En directo",
+    "stop_live": "Instantánea",
+    "expand": "Abrir cámara",
+    "unavailable": "Cámara no disponible",
+    "updated": "Actualizado {time}",
+    "loading": "Cargando imagen…"
+  },
+  "card": {
+    "name": "Puerta de garaje MyQ",
+    "description": "Una puerta de garaje con sus controles, su estado y su cámara.",
+    "entity": "Puerta de garaje",
+    "compact": "Diseño compacto",
+    "choose": "Elige una puerta de garaje MyQ.",
+    "not_found": "No se ha encontrado la puerta de garaje MyQ: {entity}",
+    "error": "No se ha podido cargar la puerta de garaje."
+  },
+  "customize": {
+    "title": "Personalizar {name}",
+    "preview_closed": "Cerrada",
+    "preview_open": "Abierta",
+    "preview_light": "Luz",
+    "size": "Tamaño",
+    "style": "Estilo",
+    "color": "Color",
+    "painted": "Pintado",
+    "wood": "Efecto madera",
+    "custom_color": "Color personalizado",
+    "windows": "Ventanas",
+    "glass": "Cristal",
+    "hardware": "Bisagras y tiradores decorativos",
+    "trim": "Color del marco",
+    "apply_all": "Usar este aspecto en todas las puertas",
+    "apply_all_help": "Cada puerta conserva su propio tamaño.",
+    "reset": "Restablecer",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "close": "Cerrar",
+    "saved": "Aspecto de la puerta guardado",
+    "save_failed": "No se ha podido guardar el aspecto: {error}"
+  },
+  "settings": {
+    "confirm": "Confirmar antes de abrir o cerrar",
+    "confirm_help": "Las puertas solo se mueven tras un segundo toque, así nunca se accionan por accidente.",
+    "open_warning": "Resaltar puertas que se quedan abiertas",
+    "open_warning_help": "Las puertas abiertas durante más tiempo se marcan en ámbar y se mencionan en el resumen.",
+    "off": "Desactivado",
+    "order": "Orden de las puertas",
+    "move_up": "Mover {name} hacia arriba",
+    "move_down": "Mover {name} hacia abajo",
+    "sidebar_help": "El título y el icono de la barra lateral, y quién puede ver el panel, se configuran en las opciones de la integración MyQ.",
+    "done": "Listo"
+  },
+  "width": {
+    "single": "Sencilla",
+    "double": "Doble"
+  },
+  "style": {
+    "traditional": "Cuarterones",
+    "long_panel": "Cuarterones largos",
+    "shaker": "Estilo Shaker",
+    "carriage": "Aspecto batiente",
+    "farmhouse": "Estilo campestre",
+    "modern": "Lisa",
+    "plank": "Lamas",
+    "glass": "Acristalada"
+  },
+  "windows": {
+    "none": "Ninguna",
+    "plain": "Sencillas",
+    "grid": "Cuadrícula",
+    "arched": "En arco",
+    "side": "Laterales"
+  },
+  "glass": {
+    "tinted": "Tintado",
+    "clear": "Transparente",
+    "frosted": "Esmerilado"
+  },
+  "color": {
+    "white": "Blanco",
+    "almond": "Almendra",
+    "sandstone": "Arenisca",
+    "clay": "Arcilla",
+    "gray": "Gris",
+    "charcoal": "Antracita",
+    "black": "Negro",
+    "brown": "Marrón",
+    "bronze": "Bronce",
+    "green": "Verde inglés",
+    "navy": "Azul marino",
+    "red": "Rojo óxido",
+    "aluminum": "Aluminio",
+    "light_oak": "Roble claro",
+    "cedar": "Cedro",
+    "walnut": "Nogal",
+    "mahogany": "Caoba",
+    "espresso": "Café",
+    "driftwood": "Madera de deriva"
+  }
+}

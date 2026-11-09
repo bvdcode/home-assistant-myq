@@ -81,6 +81,25 @@
       "unknown": "O MyQ retornou uma resposta inesperada."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Painel da garagem",
+        "description": "Controle seus portões de garagem, confira o status e assista ao vídeo das câmeras em uma página na barra lateral do Home Assistant.",
+        "data": {
+          "panel_enabled": "Mostrar o painel da garagem na barra lateral",
+          "panel_title": "Título na barra lateral",
+          "panel_icon": "Ícone na barra lateral",
+          "panel_require_admin": "Somente administradores podem abrir o painel"
+        },
+        "data_description": {
+          "panel_enabled": "Os portões de garagem e as câmeras desta conta são adicionados ao painel automaticamente.",
+          "panel_title": "Com várias contas MyQ, a primeira conta que mostra o painel define o título e o ícone.",
+          "panel_require_admin": "Somente administradores podem alterar a aparência dos portões."
+        }
+      }
+    }
+  },
   "selector": {
     "mfa_method": {
       "options": {

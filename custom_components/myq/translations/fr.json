@@ -81,6 +81,25 @@
       "unknown": "MyQ a renvoyé une réponse inattendue."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Panneau du garage",
+        "description": "Commandez vos portes de garage, consultez leur état et regardez la vidéo des caméras depuis une page de la barre latérale de Home Assistant.",
+        "data": {
+          "panel_enabled": "Afficher le panneau du garage dans la barre latérale",
+          "panel_title": "Titre dans la barre latérale",
+          "panel_icon": "Icône dans la barre latérale",
+          "panel_require_admin": "Seuls les administrateurs peuvent ouvrir le panneau"
+        },
+        "data_description": {
+          "panel_enabled": "Les portes de garage et les caméras de ce compte sont ajoutées automatiquement au panneau.",
+          "panel_title": "Avec plusieurs comptes MyQ, le premier compte qui affiche le panneau définit son titre et son icône.",
+          "panel_require_admin": "Seuls les administrateurs peuvent modifier l'apparence des portes."
+        }
+      }
+    }
+  },
   "selector": {
     "mfa_method": {
       "options": {

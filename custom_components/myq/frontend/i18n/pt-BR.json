@@ -1,0 +1,161 @@
+{
+  "panel": {
+    "loading": "Carregando sua garagem…",
+    "error": "Não foi possível carregar o painel da garagem.",
+    "retry": "Tentar novamente",
+    "empty_title": "Ainda não há portões de garagem",
+    "empty_text": "Os portões de garagem e as câmeras detectados pelo MyQ aparecem aqui automaticamente.",
+    "open_settings": "Abrir as configurações do MyQ",
+    "menu": "Mostrar barra lateral",
+    "settings": "Configurações do painel",
+    "cameras": "Câmeras",
+    "compact": "Visualização compacta"
+  },
+  "summary": {
+    "all_closed": "Todos os portões estão fechados",
+    "open": {
+      "one": "{count} portão está aberto",
+      "other": "{count} portões estão abertos"
+    },
+    "moving": {
+      "one": "{count} portão está em movimento",
+      "other": "{count} portões estão em movimento"
+    },
+    "unavailable": {
+      "one": "{count} portão está indisponível",
+      "other": "{count} portões estão indisponíveis"
+    },
+    "last_change": "{name} · {state} {time}",
+    "left_open": "{name}: aberto há {duration}",
+    "close_all": "Fechar todos",
+    "confirm_close_all": "Toque de novo para fechar todos"
+  },
+  "account": {
+    "connecting": "Conectando ao MyQ…",
+    "retrying": "O MyQ está inacessível no momento. O Home Assistant continuará tentando.",
+    "error": "A conta MyQ precisa de atenção."
+  },
+  "door": {
+    "open": "Abrir",
+    "close": "Fechar",
+    "confirm": "Toque para confirmar",
+    "changed": "Alterado {time}",
+    "open_for": "Aberto há {duration}",
+    "camera": "Mostrar câmera",
+    "door_view": "Mostrar portão",
+    "customize": "Personalizar",
+    "details": "Detalhes",
+    "light_on": "Luz acesa",
+    "vacation": "Modo férias",
+    "fault": "Falha {codes}",
+    "battery": "Bateria reserva",
+    "command_failed": "{name} não aceitou o comando.",
+    "check": "Verificar agora",
+    "checked": "Verificado agora",
+    "check_failed": "Não foi possível verificar {name}: {error}",
+    "activity": "Atividade recente",
+    "no_activity": "Nenhuma alteração nos últimos 7 dias",
+    "by": "por {name}",
+    "via": "via {source}"
+  },
+  "camera": {
+    "live": "Ao vivo",
+    "stop_live": "Instantâneo",
+    "expand": "Abrir câmera",
+    "unavailable": "Câmera indisponível",
+    "updated": "Atualizado {time}",
+    "loading": "Carregando imagem…"
+  },
+  "card": {
+    "name": "Portão de garagem MyQ",
+    "description": "Um portão de garagem com controles, status e câmera.",
+    "entity": "Portão de garagem",
+    "compact": "Layout compacto",
+    "choose": "Escolha um portão de garagem MyQ.",
+    "not_found": "Portão de garagem MyQ não encontrado: {entity}",
+    "error": "Não foi possível carregar o portão de garagem."
+  },
+  "customize": {
+    "title": "Personalizar {name}",
+    "preview_closed": "Fechado",
+    "preview_open": "Aberto",
+    "preview_light": "Luz",
+    "size": "Tamanho",
+    "style": "Estilo",
+    "color": "Cor",
+    "painted": "Pintado",
+    "wood": "Amadeirado",
+    "custom_color": "Cor personalizada",
+    "windows": "Janelas",
+    "glass": "Vidro",
+    "hardware": "Dobradiças e puxadores decorativos",
+    "trim": "Cor da moldura",
+    "apply_all": "Usar este visual em todos os portões",
+    "apply_all_help": "Cada portão mantém o próprio tamanho.",
+    "reset": "Redefinir",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "close": "Fechar",
+    "saved": "Aparência do portão salva",
+    "save_failed": "Não foi possível salvar a aparência: {error}"
+  },
+  "settings": {
+    "confirm": "Confirmar antes de abrir ou fechar",
+    "confirm_help": "Os portões só se movem após um segundo toque, então nunca são acionados por acidente.",
+    "open_warning": "Destacar portões deixados abertos",
+    "open_warning_help": "Portões abertos por mais tempo ganham um contorno âmbar e são citados no resumo.",
+    "off": "Desligado",
+    "order": "Ordem dos portões",
+    "move_up": "Mover {name} para cima",
+    "move_down": "Mover {name} para baixo",
+    "sidebar_help": "O título e o ícone da barra lateral, e quem pode ver o painel, são definidos nas opções da integração MyQ.",
+    "done": "Concluído"
+  },
+  "width": {
+    "single": "Simples",
+    "double": "Duplo"
+  },
+  "style": {
+    "traditional": "Almofadado",
+    "long_panel": "Almofadado longo",
+    "shaker": "Estilo Shaker",
+    "carriage": "Estilo cocheira",
+    "farmhouse": "Estilo fazenda",
+    "modern": "Liso",
+    "plank": "Lambri",
+    "glass": "Envidraçado"
+  },
+  "windows": {
+    "none": "Nenhuma",
+    "plain": "Simples",
+    "grid": "Quadriculadas",
+    "arched": "Em arco",
+    "side": "Laterais"
+  },
+  "glass": {
+    "tinted": "Fumê",
+    "clear": "Transparente",
+    "frosted": "Jateado"
+  },
+  "color": {
+    "white": "Branco",
+    "almond": "Amêndoa",
+    "sandstone": "Arenito",
+    "clay": "Argila",
+    "gray": "Cinza",
+    "charcoal": "Grafite",
+    "black": "Preto",
+    "brown": "Marrom",
+    "bronze": "Bronze",
+    "green": "Verde-inglês",
+    "navy": "Azul-marinho",
+    "red": "Vermelho-óxido",
+    "aluminum": "Alumínio",
+    "light_oak": "Carvalho claro",
+    "cedar": "Cedro",
+    "walnut": "Nogueira",
+    "mahogany": "Mogno",
+    "espresso": "Café",
+    "driftwood": "Madeira flutuante"
+  }
+}

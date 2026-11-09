@@ -1,0 +1,158 @@
+{
+  "panel": {
+    "loading": "正在加载您的车库…",
+    "error": "无法加载车库面板。",
+    "retry": "重试",
+    "empty_title": "暂无车库门",
+    "empty_text": "MyQ 发现的车库门和摄像头会自动显示在这里。",
+    "open_settings": "打开 MyQ 设置",
+    "menu": "显示侧边栏",
+    "settings": "面板设置",
+    "cameras": "摄像头",
+    "compact": "紧凑视图"
+  },
+  "summary": {
+    "all_closed": "所有门均已关闭",
+    "open": {
+      "other": "{count} 扇门已打开"
+    },
+    "moving": {
+      "other": "{count} 扇门正在移动"
+    },
+    "unavailable": {
+      "other": "{count} 扇门不可用"
+    },
+    "last_change": "{name} · {time}{state}",
+    "left_open": "{name}已打开 {duration}",
+    "close_all": "全部关闭",
+    "confirm_close_all": "再次点击以全部关闭"
+  },
+  "account": {
+    "connecting": "正在连接 MyQ…",
+    "retrying": "暂时无法访问 MyQ。Home Assistant 会持续重试。",
+    "error": "MyQ 账户需要处理。"
+  },
+  "door": {
+    "open": "打开",
+    "close": "关闭",
+    "confirm": "点击确认",
+    "changed": "上次变化：{time}",
+    "open_for": "已打开 {duration}",
+    "camera": "显示摄像头",
+    "door_view": "显示车库门",
+    "customize": "自定义",
+    "details": "详情",
+    "light_on": "灯已开启",
+    "vacation": "度假模式",
+    "fault": "故障 {codes}",
+    "battery": "备用电池",
+    "command_failed": "{name} 未接受该命令。",
+    "check": "立即检查",
+    "checked": "刚刚已检查",
+    "check_failed": "无法检查{name}：{error}",
+    "activity": "最近活动",
+    "no_activity": "过去 7 天没有变化",
+    "by": "由{name}触发",
+    "via": "通过{source}"
+  },
+  "camera": {
+    "live": "实时",
+    "stop_live": "快照",
+    "expand": "打开摄像头",
+    "unavailable": "摄像头不可用",
+    "updated": "上次更新：{time}",
+    "loading": "正在加载图像…"
+  },
+  "card": {
+    "name": "MyQ 车库门",
+    "description": "带控制、状态和摄像头的车库门。",
+    "entity": "车库门",
+    "compact": "紧凑布局",
+    "choose": "请选择一个 MyQ 车库门。",
+    "not_found": "未找到 MyQ 车库门：{entity}",
+    "error": "无法加载车库门。"
+  },
+  "customize": {
+    "title": "自定义 {name}",
+    "preview_closed": "已关闭",
+    "preview_open": "已打开",
+    "preview_light": "灯光",
+    "size": "尺寸",
+    "style": "款式",
+    "color": "颜色",
+    "painted": "漆面",
+    "wood": "仿木纹",
+    "custom_color": "自定义颜色",
+    "windows": "窗户",
+    "glass": "玻璃",
+    "hardware": "装饰把手和合页",
+    "trim": "门框颜色",
+    "apply_all": "将此外观应用到所有门",
+    "apply_all_help": "每扇门保留各自的尺寸。",
+    "reset": "重置",
+    "cancel": "取消",
+    "save": "保存",
+    "close": "关闭",
+    "saved": "车库门外观已保存",
+    "save_failed": "无法保存外观：{error}"
+  },
+  "settings": {
+    "confirm": "打开或关闭前需确认",
+    "confirm_help": "车库门只有在第二次点击后才会移动，因此不会被误操作。",
+    "open_warning": "突出显示未关闭的门",
+    "open_warning_help": "打开时间超过此时长的门会显示琥珀色边框，并在摘要中列出。",
+    "off": "关闭",
+    "order": "车库门顺序",
+    "move_up": "上移 {name}",
+    "move_down": "下移 {name}",
+    "sidebar_help": "侧边栏的标题和图标，以及哪些用户可以查看此面板，均在 MyQ 集成选项中设置。",
+    "done": "完成"
+  },
+  "width": {
+    "single": "单车位",
+    "double": "双车位"
+  },
+  "style": {
+    "traditional": "短方格",
+    "long_panel": "长方格",
+    "shaker": "夏克风格",
+    "carriage": "马车房风格",
+    "farmhouse": "农舍风格",
+    "modern": "平板",
+    "plank": "条板",
+    "glass": "全景玻璃"
+  },
+  "windows": {
+    "none": "无",
+    "plain": "普通",
+    "grid": "格栅",
+    "arched": "拱形",
+    "side": "侧边"
+  },
+  "glass": {
+    "tinted": "有色",
+    "clear": "透明",
+    "frosted": "磨砂"
+  },
+  "color": {
+    "white": "白色",
+    "almond": "杏仁色",
+    "sandstone": "砂岩色",
+    "clay": "陶土色",
+    "gray": "灰色",
+    "charcoal": "炭灰色",
+    "black": "黑色",
+    "brown": "棕色",
+    "bronze": "古铜色",
+    "green": "墨绿色",
+    "navy": "海军蓝",
+    "red": "枣红色",
+    "aluminum": "铝银色",
+    "light_oak": "浅橡木",
+    "cedar": "雪松木",
+    "walnut": "胡桃木",
+    "mahogany": "桃花心木",
+    "espresso": "深咖啡色",
+    "driftwood": "浮木"
+  }
+}

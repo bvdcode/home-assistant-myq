@@ -1,0 +1,167 @@
+{
+  "panel": {
+    "loading": "Wczytywanie garażu…",
+    "error": "Nie udało się wczytać panelu garażu.",
+    "retry": "Spróbuj ponownie",
+    "empty_title": "Nie ma jeszcze bram garażowych",
+    "empty_text": "Bramy garażowe i kamery wykryte przez MyQ pojawią się tutaj automatycznie.",
+    "open_settings": "Otwórz ustawienia MyQ",
+    "menu": "Pokaż pasek boczny",
+    "settings": "Ustawienia panelu",
+    "cameras": "Kamery",
+    "compact": "Widok kompaktowy"
+  },
+  "summary": {
+    "all_closed": "Wszystkie bramy są zamknięte",
+    "open": {
+      "one": "{count} brama jest otwarta",
+      "few": "{count} bramy są otwarte",
+      "many": "{count} bram jest otwartych",
+      "other": "{count} bram jest otwartych"
+    },
+    "moving": {
+      "one": "{count} brama jest w ruchu",
+      "few": "{count} bramy są w ruchu",
+      "many": "{count} bram jest w ruchu",
+      "other": "{count} bram jest w ruchu"
+    },
+    "unavailable": {
+      "one": "{count} brama jest niedostępna",
+      "few": "{count} bramy są niedostępne",
+      "many": "{count} bram jest niedostępnych",
+      "other": "{count} bram jest niedostępnych"
+    },
+    "last_change": "{name} · {state} {time}",
+    "left_open": "{name}: otwarta od {duration}",
+    "close_all": "Zamknij wszystkie",
+    "confirm_close_all": "Dotknij ponownie, aby zamknąć wszystkie"
+  },
+  "account": {
+    "connecting": "Łączenie z MyQ…",
+    "retrying": "MyQ jest teraz niedostępny. Home Assistant będzie ponawiać próby.",
+    "error": "Konto MyQ wymaga uwagi."
+  },
+  "door": {
+    "open": "Otwórz",
+    "close": "Zamknij",
+    "confirm": "Dotknij, aby potwierdzić",
+    "changed": "Zmieniono {time}",
+    "open_for": "Otwarta od {duration}",
+    "camera": "Pokaż kamerę",
+    "door_view": "Pokaż bramę",
+    "customize": "Dostosuj",
+    "details": "Szczegóły",
+    "light_on": "Światło włączone",
+    "vacation": "Tryb urlopowy",
+    "fault": "Usterka {codes}",
+    "battery": "Akumulator awaryjny",
+    "command_failed": "{name}: polecenie nie zostało przyjęte.",
+    "check": "Sprawdź teraz",
+    "checked": "Sprawdzono przed chwilą",
+    "check_failed": "{name}: nie udało się sprawdzić stanu: {error}",
+    "activity": "Ostatnia aktywność",
+    "no_activity": "Brak zmian w ciągu ostatnich 7 dni",
+    "by": "przez {name}",
+    "via": "przez {source}"
+  },
+  "camera": {
+    "live": "Na żywo",
+    "stop_live": "Zdjęcie",
+    "expand": "Otwórz kamerę",
+    "unavailable": "Kamera niedostępna",
+    "updated": "Zaktualizowano {time}",
+    "loading": "Wczytywanie obrazu…"
+  },
+  "card": {
+    "name": "Brama garażowa MyQ",
+    "description": "Brama garażowa ze sterowaniem, stanem i kamerą.",
+    "entity": "Brama garażowa",
+    "compact": "Układ kompaktowy",
+    "choose": "Wybierz bramę garażową MyQ.",
+    "not_found": "Nie znaleziono bramy garażowej MyQ: {entity}",
+    "error": "Nie udało się wczytać bramy garażowej."
+  },
+  "customize": {
+    "title": "Dostosuj: {name}",
+    "preview_closed": "Zamknięta",
+    "preview_open": "Otwarta",
+    "preview_light": "Światło",
+    "size": "Rozmiar",
+    "style": "Styl",
+    "color": "Kolor",
+    "painted": "Malowane",
+    "wood": "Drewnopodobne",
+    "custom_color": "Własny kolor",
+    "windows": "Okna",
+    "glass": "Szkło",
+    "hardware": "Ozdobne uchwyty i zawiasy",
+    "trim": "Kolor obramowania",
+    "apply_all": "Użyj tego wyglądu dla wszystkich bram",
+    "apply_all_help": "Każda brama zachowuje swój rozmiar.",
+    "reset": "Resetuj",
+    "cancel": "Anuluj",
+    "save": "Zapisz",
+    "close": "Zamknij",
+    "saved": "Zapisano wygląd bramy",
+    "save_failed": "Nie udało się zapisać wyglądu: {error}"
+  },
+  "settings": {
+    "confirm": "Potwierdzaj otwieranie i zamykanie",
+    "confirm_help": "Bramy ruszają dopiero po drugim dotknięciu, więc nigdy nie uruchomisz ich przypadkiem.",
+    "open_warning": "Wyróżniaj bramy pozostawione otwarte",
+    "open_warning_help": "Bramy otwarte dłużej otrzymują bursztynową ramkę i są wymieniane w podsumowaniu.",
+    "off": "Wyłączone",
+    "order": "Kolejność bram",
+    "move_up": "Przesuń w górę: {name}",
+    "move_down": "Przesuń w dół: {name}",
+    "sidebar_help": "Tytuł i ikonę w pasku bocznym oraz to, kto widzi panel, ustawisz w opcjach integracji MyQ.",
+    "done": "Gotowe"
+  },
+  "width": {
+    "single": "Pojedyncza",
+    "double": "Podwójna"
+  },
+  "style": {
+    "traditional": "Kasetony",
+    "long_panel": "Długie kasetony",
+    "shaker": "Styl Shaker",
+    "carriage": "Powozownia",
+    "farmhouse": "Styl rustykalny",
+    "modern": "Gładka",
+    "plank": "Deski",
+    "glass": "Pełne przeszklenie"
+  },
+  "windows": {
+    "none": "Brak",
+    "plain": "Proste",
+    "grid": "Szprosy",
+    "arched": "Łukowe",
+    "side": "Boczne"
+  },
+  "glass": {
+    "tinted": "Przyciemniane",
+    "clear": "Przezroczyste",
+    "frosted": "Matowe"
+  },
+  "color": {
+    "white": "Biały",
+    "almond": "Migdałowy",
+    "sandstone": "Piaskowiec",
+    "clay": "Glina",
+    "gray": "Szary",
+    "charcoal": "Antracyt",
+    "black": "Czarny",
+    "brown": "Brązowy",
+    "bronze": "Brąz antyczny",
+    "green": "Butelkowa zieleń",
+    "navy": "Granatowy",
+    "red": "Bordowy",
+    "aluminum": "Aluminium",
+    "light_oak": "Jasny dąb",
+    "cedar": "Cedr",
+    "walnut": "Orzech",
+    "mahogany": "Mahoń",
+    "espresso": "Espresso",
+    "driftwood": "Drewno dryfujące"
+  }
+}

@@ -81,6 +81,25 @@
       "unknown": "MyQ returnerade ett oväntat svar."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Garagepanel",
+        "description": "Styr dina garageportar, se deras status och titta på kameravideo från en sida i Home Assistants sidofält.",
+        "data": {
+          "panel_enabled": "Visa garagepanelen i sidofältet",
+          "panel_title": "Rubrik i sidofältet",
+          "panel_icon": "Ikon i sidofältet",
+          "panel_require_admin": "Endast administratörer kan öppna panelen"
+        },
+        "data_description": {
+          "panel_enabled": "Garageportar och kameror på det här kontot läggs till i panelen automatiskt.",
+          "panel_title": "Med flera MyQ-konton bestämmer det första kontot som visar panelen rubrik och ikon.",
+          "panel_require_admin": "Portarnas utseende kan bara ändras av administratörer."
+        }
+      }
+    }
+  },
   "selector": {
     "mfa_method": {
       "options": {

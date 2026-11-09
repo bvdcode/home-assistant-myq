@@ -81,6 +81,25 @@
       "unknown": "MyQ gaf een onverwacht antwoord."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Garagepaneel",
+        "description": "Bedien je garagedeuren, bekijk hun status en kijk naar camerabeelden vanaf een pagina in de zijbalk van Home Assistant.",
+        "data": {
+          "panel_enabled": "Garagepaneel in de zijbalk tonen",
+          "panel_title": "Titel in de zijbalk",
+          "panel_icon": "Pictogram in de zijbalk",
+          "panel_require_admin": "Alleen beheerders kunnen het paneel openen"
+        },
+        "data_description": {
+          "panel_enabled": "Garagedeuren en camera's van dit account worden automatisch aan het paneel toegevoegd.",
+          "panel_title": "Bij meerdere MyQ-accounts bepaalt het eerste account dat het paneel toont de titel en het pictogram.",
+          "panel_require_admin": "Alleen beheerders kunnen het uiterlijk van de deuren wijzigen."
+        }
+      }
+    }
+  },
   "selector": {
     "mfa_method": {
       "options": {

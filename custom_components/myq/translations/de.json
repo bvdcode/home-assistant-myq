@@ -81,6 +81,25 @@
       "unknown": "MyQ hat eine unerwartete Antwort zurückgegeben."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Garagen-Panel",
+        "description": "Steuere deine Garagentore, prüfe ihren Status und sieh dir Kameravideos auf einer Seite in der Home Assistant-Seitenleiste an.",
+        "data": {
+          "panel_enabled": "Garagen-Panel in der Seitenleiste anzeigen",
+          "panel_title": "Titel in der Seitenleiste",
+          "panel_icon": "Symbol in der Seitenleiste",
+          "panel_require_admin": "Nur Administratoren können das Panel öffnen"
+        },
+        "data_description": {
+          "panel_enabled": "Garagentore und Kameras dieses Kontos werden automatisch zum Panel hinzugefügt.",
+          "panel_title": "Bei mehreren MyQ-Konten legt das erste Konto, das das Panel anzeigt, Titel und Symbol fest.",
+          "panel_require_admin": "Das Aussehen der Tore können nur Administratoren ändern."
+        }
+      }
+    }
+  },
   "selector": {
     "mfa_method": {
       "options": {

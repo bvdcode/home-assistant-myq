@@ -81,6 +81,25 @@
       "unknown": "MyQ ha devuelto una respuesta inesperada."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Panel del garaje",
+        "description": "Controla tus puertas de garaje, consulta su estado y mira el vídeo de las cámaras desde una página en la barra lateral de Home Assistant.",
+        "data": {
+          "panel_enabled": "Mostrar el panel del garaje en la barra lateral",
+          "panel_title": "Título en la barra lateral",
+          "panel_icon": "Icono en la barra lateral",
+          "panel_require_admin": "Solo los administradores pueden abrir el panel"
+        },
+        "data_description": {
+          "panel_enabled": "Las puertas de garaje y las cámaras de esta cuenta se añaden al panel automáticamente.",
+          "panel_title": "Con varias cuentas de MyQ, la primera cuenta que muestra el panel define su título e icono.",
+          "panel_require_admin": "Solo los administradores pueden cambiar el aspecto de las puertas."
+        }
+      }
+    }
+  },
   "selector": {
     "mfa_method": {
       "options": {

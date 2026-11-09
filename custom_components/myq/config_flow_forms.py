@@ -3,7 +3,16 @@ from typing import Final, TypedDict
 import voluptuous as vol
 from homeassistant.helpers import selector
 
-from .const import CONF_MFA_METHOD, DEFAULT_MFA_METHOD, MFA_METHOD_EMAIL, MFA_METHOD_SMS
+from .const import (
+    CONF_MFA_METHOD,
+    CONF_PANEL_ENABLED,
+    CONF_PANEL_ICON,
+    CONF_PANEL_REQUIRE_ADMIN,
+    CONF_PANEL_TITLE,
+    DEFAULT_MFA_METHOD,
+    MFA_METHOD_EMAIL,
+    MFA_METHOD_SMS,
+)
 
 
 class CredentialsInput(TypedDict):
@@ -71,5 +80,13 @@ BROWSER_CALLBACK_SCHEMA = vol.Schema(
         vol.Required("callback_url"): selector.TextSelector(
             selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT)
         )
+    }
+)
+PANEL_OPTIONS_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_PANEL_ENABLED): selector.BooleanSelector(),
+        vol.Optional(CONF_PANEL_TITLE): selector.TextSelector(),
+        vol.Optional(CONF_PANEL_ICON): selector.IconSelector(),
+        vol.Required(CONF_PANEL_REQUIRE_ADMIN): selector.BooleanSelector(),
     }
 )

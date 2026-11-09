@@ -81,6 +81,25 @@
       "unknown": "MyQ vrátilo neočekávanou odpověď."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Panel garáže",
+        "description": "Ovládejte garážová vrata, sledujte jejich stav a video z kamer na stránce v postranním panelu Home Assistantu.",
+        "data": {
+          "panel_enabled": "Zobrazit panel garáže v postranním panelu",
+          "panel_title": "Název v postranním panelu",
+          "panel_icon": "Ikona v postranním panelu",
+          "panel_require_admin": "Panel mohou otevřít pouze správci"
+        },
+        "data_description": {
+          "panel_enabled": "Garážová vrata a kamery z tohoto účtu se do panelu přidají automaticky.",
+          "panel_title": "Při více účtech MyQ určuje název a ikonu první účet, který panel zobrazuje.",
+          "panel_require_admin": "Vzhled vrat mohou měnit pouze správci."
+        }
+      }
+    }
+  },
   "selector": {
     "mfa_method": {
       "options": {

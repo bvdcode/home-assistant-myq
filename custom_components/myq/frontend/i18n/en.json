@@ -1,0 +1,161 @@
+{
+  "panel": {
+    "loading": "Loading your garage…",
+    "error": "The garage panel could not load.",
+    "retry": "Try again",
+    "empty_title": "No garage doors yet",
+    "empty_text": "Garage doors and cameras discovered by MyQ appear here automatically.",
+    "open_settings": "Open MyQ settings",
+    "menu": "Show sidebar",
+    "settings": "Panel settings",
+    "cameras": "Cameras",
+    "compact": "Compact view"
+  },
+  "summary": {
+    "all_closed": "All doors are closed",
+    "open": {
+      "one": "{count} door is open",
+      "other": "{count} doors are open"
+    },
+    "moving": {
+      "one": "{count} door is moving",
+      "other": "{count} doors are moving"
+    },
+    "unavailable": {
+      "one": "{count} door is unavailable",
+      "other": "{count} doors are unavailable"
+    },
+    "last_change": "{name} · {state} {time}",
+    "left_open": "{name} has been open for {duration}",
+    "close_all": "Close all",
+    "confirm_close_all": "Tap again to close all"
+  },
+  "account": {
+    "connecting": "Connecting to MyQ…",
+    "retrying": "MyQ can't be reached right now. Home Assistant will keep trying.",
+    "error": "The MyQ account needs attention."
+  },
+  "door": {
+    "open": "Open",
+    "close": "Close",
+    "confirm": "Tap to confirm",
+    "changed": "Changed {time}",
+    "open_for": "Open for {duration}",
+    "camera": "Show camera",
+    "door_view": "Show door",
+    "customize": "Customize",
+    "details": "Details",
+    "light_on": "Light on",
+    "vacation": "Vacation mode",
+    "fault": "Fault {codes}",
+    "battery": "Battery backup",
+    "command_failed": "{name} did not accept the command.",
+    "check": "Check now",
+    "checked": "Checked just now",
+    "check_failed": "{name} could not be checked: {error}",
+    "activity": "Recent activity",
+    "no_activity": "No changes in the last 7 days",
+    "by": "by {name}",
+    "via": "via {source}"
+  },
+  "camera": {
+    "live": "Live",
+    "stop_live": "Snapshot",
+    "expand": "Open camera",
+    "unavailable": "Camera unavailable",
+    "updated": "Updated {time}",
+    "loading": "Loading image…"
+  },
+  "card": {
+    "name": "MyQ garage door",
+    "description": "A garage door with its controls, status, and camera.",
+    "entity": "Garage door",
+    "compact": "Compact layout",
+    "choose": "Choose a MyQ garage door.",
+    "not_found": "MyQ garage door not found: {entity}",
+    "error": "The garage door could not be loaded."
+  },
+  "customize": {
+    "title": "Customize {name}",
+    "preview_closed": "Closed",
+    "preview_open": "Open",
+    "preview_light": "Light",
+    "size": "Size",
+    "style": "Style",
+    "color": "Color",
+    "painted": "Painted",
+    "wood": "Wood look",
+    "custom_color": "Custom color",
+    "windows": "Windows",
+    "glass": "Glass",
+    "hardware": "Decorative handles and hinges",
+    "trim": "Trim color",
+    "apply_all": "Use this look for every door",
+    "apply_all_help": "Each door keeps its own size.",
+    "reset": "Reset",
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close",
+    "saved": "Door appearance saved",
+    "save_failed": "The appearance could not be saved: {error}"
+  },
+  "settings": {
+    "confirm": "Confirm before opening or closing",
+    "confirm_help": "Doors move only after a second tap, so they are never operated by accident.",
+    "open_warning": "Highlight doors left open",
+    "open_warning_help": "Doors open longer than this get an amber outline and are named in the summary.",
+    "off": "Off",
+    "order": "Door order",
+    "move_up": "Move {name} up",
+    "move_down": "Move {name} down",
+    "sidebar_help": "The sidebar title, icon, and who can see the panel are set in the MyQ integration options.",
+    "done": "Done"
+  },
+  "width": {
+    "single": "Single",
+    "double": "Double"
+  },
+  "style": {
+    "traditional": "Raised panel",
+    "long_panel": "Long panel",
+    "shaker": "Shaker",
+    "carriage": "Carriage house",
+    "farmhouse": "Farmhouse",
+    "modern": "Flush",
+    "plank": "Plank",
+    "glass": "Full-view glass"
+  },
+  "windows": {
+    "none": "None",
+    "plain": "Plain",
+    "grid": "Grid",
+    "arched": "Arched",
+    "side": "Side"
+  },
+  "glass": {
+    "tinted": "Tinted",
+    "clear": "Clear",
+    "frosted": "Frosted"
+  },
+  "color": {
+    "white": "White",
+    "almond": "Almond",
+    "sandstone": "Sandstone",
+    "clay": "Clay",
+    "gray": "Gray",
+    "charcoal": "Charcoal",
+    "black": "Black",
+    "brown": "Brown",
+    "bronze": "Bronze",
+    "green": "Hunter green",
+    "navy": "Navy",
+    "red": "Barn red",
+    "aluminum": "Aluminum",
+    "light_oak": "Light oak",
+    "cedar": "Cedar",
+    "walnut": "Walnut",
+    "mahogany": "Mahogany",
+    "espresso": "Espresso",
+    "driftwood": "Driftwood"
+  }
+}

@@ -81,6 +81,25 @@
       "unknown": "MyQ returned an unexpected response."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Garage panel",
+        "description": "Control your garage doors, check their status, and watch camera video from a page in the Home Assistant sidebar.",
+        "data": {
+          "panel_enabled": "Show the garage panel in the sidebar",
+          "panel_title": "Sidebar title",
+          "panel_icon": "Sidebar icon",
+          "panel_require_admin": "Only administrators can open the panel"
+        },
+        "data_description": {
+          "panel_enabled": "Garage doors and cameras on this account are added to the panel automatically.",
+          "panel_title": "With several MyQ accounts, the first account that shows the panel sets its title and icon.",
+          "panel_require_admin": "Door appearance can only be changed by administrators."
+        }
+      }
+    }
+  },
   "selector": {
     "mfa_method": {
       "options": {

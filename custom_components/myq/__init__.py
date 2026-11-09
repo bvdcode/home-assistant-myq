@@ -7,6 +7,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryError, ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.typing import ConfigType
 
 from .client import MyQClient
 from .const import CONF_TOKENS, DOMAIN
@@ -14,6 +15,7 @@ from .coordinator import MyQDataUpdateCoordinator
 from .exceptions import MyQApiError, MyQAuthenticationError
 from .models import OAuthTokens
 from .oauth import MyQAuth
+from .panel import async_setup_panel
 from .runtime import (
     MyQConfigData,
     MyQConfigEntry,
@@ -29,6 +31,12 @@ PLATFORMS: tuple[Platform, ...] = (
     Platform.COVER,
     Platform.SENSOR,
 )
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    del config
+    await async_setup_panel(hass)
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: MyQConfigEntry) -> bool:

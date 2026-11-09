@@ -1,0 +1,161 @@
+{
+  "panel": {
+    "loading": "Läser in ditt garage…",
+    "error": "Garagepanelen kunde inte läsas in.",
+    "retry": "Försök igen",
+    "empty_title": "Inga garageportar ännu",
+    "empty_text": "Garageportar och kameror som MyQ hittar visas här automatiskt.",
+    "open_settings": "Öppna MyQ-inställningar",
+    "menu": "Visa sidofält",
+    "settings": "Panelinställningar",
+    "cameras": "Kameror",
+    "compact": "Kompakt vy"
+  },
+  "summary": {
+    "all_closed": "Alla portar är stängda",
+    "open": {
+      "one": "{count} port är öppen",
+      "other": "{count} portar är öppna"
+    },
+    "moving": {
+      "one": "{count} port är i rörelse",
+      "other": "{count} portar är i rörelse"
+    },
+    "unavailable": {
+      "one": "{count} port är otillgänglig",
+      "other": "{count} portar är otillgängliga"
+    },
+    "last_change": "{name} · {state} {time}",
+    "left_open": "{name} har varit öppen i {duration}",
+    "close_all": "Stäng alla",
+    "confirm_close_all": "Tryck igen för att stänga alla"
+  },
+  "account": {
+    "connecting": "Ansluter till MyQ…",
+    "retrying": "MyQ går inte att nå just nu. Home Assistant fortsätter att försöka.",
+    "error": "MyQ-kontot kräver uppmärksamhet."
+  },
+  "door": {
+    "open": "Öppna",
+    "close": "Stäng",
+    "confirm": "Tryck för att bekräfta",
+    "changed": "Ändrad {time}",
+    "open_for": "Öppen i {duration}",
+    "camera": "Visa kamera",
+    "door_view": "Visa port",
+    "customize": "Anpassa",
+    "details": "Detaljer",
+    "light_on": "Belysning tänd",
+    "vacation": "Semesterläge",
+    "fault": "Fel {codes}",
+    "battery": "Reservbatteri",
+    "command_failed": "{name} tog inte emot kommandot.",
+    "check": "Kontrollera nu",
+    "checked": "Kontrollerad nyss",
+    "check_failed": "{name} kunde inte kontrolleras: {error}",
+    "activity": "Senaste aktivitet",
+    "no_activity": "Inga ändringar de senaste 7 dagarna",
+    "by": "av {name}",
+    "via": "via {source}"
+  },
+  "camera": {
+    "live": "Livebild",
+    "stop_live": "Stillbild",
+    "expand": "Öppna kamera",
+    "unavailable": "Kamera otillgänglig",
+    "updated": "Uppdaterad {time}",
+    "loading": "Läser in bild…"
+  },
+  "card": {
+    "name": "MyQ-garageport",
+    "description": "En garageport med reglage, status och kamera.",
+    "entity": "Garageport",
+    "compact": "Kompakt layout",
+    "choose": "Välj en MyQ-garageport.",
+    "not_found": "MyQ-garageporten hittades inte: {entity}",
+    "error": "Garageporten kunde inte läsas in."
+  },
+  "customize": {
+    "title": "Anpassa {name}",
+    "preview_closed": "Stängd",
+    "preview_open": "Öppen",
+    "preview_light": "Belysning",
+    "size": "Storlek",
+    "style": "Stil",
+    "color": "Färg",
+    "painted": "Målad",
+    "wood": "Träimitation",
+    "custom_color": "Egen färg",
+    "windows": "Fönster",
+    "glass": "Glas",
+    "hardware": "Dekorativa handtag och gångjärn",
+    "trim": "Karmfärg",
+    "apply_all": "Använd det här utseendet för alla portar",
+    "apply_all_help": "Varje port behåller sin egen storlek.",
+    "reset": "Återställ",
+    "cancel": "Avbryt",
+    "save": "Spara",
+    "close": "Stäng",
+    "saved": "Portens utseende har sparats",
+    "save_failed": "Utseendet kunde inte sparas: {error}"
+  },
+  "settings": {
+    "confirm": "Kräv bekräftelse före öppning eller stängning",
+    "confirm_help": "Portarna rör sig först efter ett andra tryck, så att de aldrig manövreras av misstag.",
+    "open_warning": "Markera portar som står öppna",
+    "open_warning_help": "Portar som står öppna längre får en bärnstensfärgad kant och nämns i sammanfattningen.",
+    "off": "Av",
+    "order": "Portarnas ordning",
+    "move_up": "Flytta upp {name}",
+    "move_down": "Flytta ned {name}",
+    "sidebar_help": "Rubrik och ikon i sidofältet, och vem som kan se panelen, ställs in i alternativen för MyQ-integrationen.",
+    "done": "Klar"
+  },
+  "width": {
+    "single": "Enkel",
+    "double": "Dubbel"
+  },
+  "style": {
+    "traditional": "Kassetter",
+    "long_panel": "Långa kassetter",
+    "shaker": "Shakerstil",
+    "carriage": "Slagportsstil",
+    "farmhouse": "Lantstil",
+    "modern": "Slät",
+    "plank": "Brädor",
+    "glass": "Helglas"
+  },
+  "windows": {
+    "none": "Inga",
+    "plain": "Enkla",
+    "grid": "Spröjsade",
+    "arched": "Välvda",
+    "side": "På sidan"
+  },
+  "glass": {
+    "tinted": "Tonat",
+    "clear": "Klart",
+    "frosted": "Frostat"
+  },
+  "color": {
+    "white": "Vit",
+    "almond": "Mandel",
+    "sandstone": "Sandsten",
+    "clay": "Lera",
+    "gray": "Grå",
+    "charcoal": "Antracit",
+    "black": "Svart",
+    "brown": "Brun",
+    "bronze": "Brons",
+    "green": "Jägargrön",
+    "navy": "Marinblå",
+    "red": "Falurött",
+    "aluminum": "Aluminium",
+    "light_oak": "Ljus ek",
+    "cedar": "Ceder",
+    "walnut": "Valnöt",
+    "mahogany": "Mahogny",
+    "espresso": "Espresso",
+    "driftwood": "Drivved"
+  }
+}

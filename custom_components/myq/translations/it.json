@@ -81,6 +81,25 @@
       "unknown": "MyQ ha restituito una risposta imprevista."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Pannello garage",
+        "description": "Controlla le porte del garage, verificane lo stato e guarda il video delle telecamere da una pagina nella barra laterale di Home Assistant.",
+        "data": {
+          "panel_enabled": "Mostra il pannello garage nella barra laterale",
+          "panel_title": "Titolo nella barra laterale",
+          "panel_icon": "Icona nella barra laterale",
+          "panel_require_admin": "Solo gli amministratori possono aprire il pannello"
+        },
+        "data_description": {
+          "panel_enabled": "Le porte del garage e le telecamere di questo account vengono aggiunte automaticamente al pannello.",
+          "panel_title": "Con più account MyQ, il primo account che mostra il pannello ne stabilisce titolo e icona.",
+          "panel_require_admin": "Solo gli amministratori possono modificare l'aspetto delle porte."
+        }
+      }
+    }
+  },
   "selector": {
     "mfa_method": {
       "options": {

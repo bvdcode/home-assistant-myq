@@ -1,0 +1,161 @@
+{
+  "panel": {
+    "loading": "Deine Garage wird geladen…",
+    "error": "Das Garagen-Panel konnte nicht geladen werden.",
+    "retry": "Erneut versuchen",
+    "empty_title": "Noch keine Garagentore",
+    "empty_text": "Von MyQ erkannte Garagentore und Kameras werden hier automatisch angezeigt.",
+    "open_settings": "MyQ-Einstellungen öffnen",
+    "menu": "Seitenleiste anzeigen",
+    "settings": "Panel-Einstellungen",
+    "cameras": "Kameras",
+    "compact": "Kompakte Ansicht"
+  },
+  "summary": {
+    "all_closed": "Alle Tore sind geschlossen",
+    "open": {
+      "one": "{count} Tor ist offen",
+      "other": "{count} Tore sind offen"
+    },
+    "moving": {
+      "one": "{count} Tor bewegt sich",
+      "other": "{count} Tore bewegen sich"
+    },
+    "unavailable": {
+      "one": "{count} Tor ist nicht verfügbar",
+      "other": "{count} Tore sind nicht verfügbar"
+    },
+    "last_change": "{name} · {state} {time}",
+    "left_open": "{name} ist seit {duration} offen",
+    "close_all": "Alle schließen",
+    "confirm_close_all": "Erneut tippen, um alle zu schließen"
+  },
+  "account": {
+    "connecting": "Verbindung zu MyQ wird hergestellt…",
+    "retrying": "MyQ ist gerade nicht erreichbar. Home Assistant versucht es weiter.",
+    "error": "Das MyQ-Konto erfordert Aufmerksamkeit."
+  },
+  "door": {
+    "open": "Öffnen",
+    "close": "Schließen",
+    "confirm": "Zum Bestätigen tippen",
+    "changed": "Geändert {time}",
+    "open_for": "Seit {duration} offen",
+    "camera": "Kamera anzeigen",
+    "door_view": "Tor anzeigen",
+    "customize": "Anpassen",
+    "details": "Details",
+    "light_on": "Licht an",
+    "vacation": "Urlaubsmodus",
+    "fault": "Fehler {codes}",
+    "battery": "Notstrombatterie",
+    "command_failed": "{name} hat den Befehl nicht angenommen.",
+    "check": "Jetzt prüfen",
+    "checked": "Gerade geprüft",
+    "check_failed": "{name} konnte nicht geprüft werden: {error}",
+    "activity": "Letzte Aktivität",
+    "no_activity": "Keine Änderungen in den letzten 7 Tagen",
+    "by": "von {name}",
+    "via": "über {source}"
+  },
+  "camera": {
+    "live": "Livebild",
+    "stop_live": "Standbild",
+    "expand": "Kamera öffnen",
+    "unavailable": "Kamera nicht verfügbar",
+    "updated": "Aktualisiert {time}",
+    "loading": "Bild wird geladen…"
+  },
+  "card": {
+    "name": "MyQ-Garagentor",
+    "description": "Ein Garagentor mit Steuerung, Status und Kamera.",
+    "entity": "Garagentor",
+    "compact": "Kompaktes Layout",
+    "choose": "Ein MyQ-Garagentor auswählen.",
+    "not_found": "MyQ-Garagentor nicht gefunden: {entity}",
+    "error": "Das Garagentor konnte nicht geladen werden."
+  },
+  "customize": {
+    "title": "{name} anpassen",
+    "preview_closed": "Geschlossen",
+    "preview_open": "Offen",
+    "preview_light": "Licht",
+    "size": "Größe",
+    "style": "Stil",
+    "color": "Farbe",
+    "painted": "Lackiert",
+    "wood": "Holzoptik",
+    "custom_color": "Eigene Farbe",
+    "windows": "Fenster",
+    "glass": "Glas",
+    "hardware": "Dekorative Griffe und Scharniere",
+    "trim": "Rahmenfarbe",
+    "apply_all": "Dieses Aussehen für alle Tore übernehmen",
+    "apply_all_help": "Jedes Tor behält seine eigene Größe.",
+    "reset": "Zurücksetzen",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "close": "Schließen",
+    "saved": "Aussehen des Tors gespeichert",
+    "save_failed": "Das Aussehen konnte nicht gespeichert werden: {error}"
+  },
+  "settings": {
+    "confirm": "Vor dem Öffnen oder Schließen bestätigen",
+    "confirm_help": "Tore bewegen sich erst nach einem zweiten Tippen und werden so nie versehentlich bedient.",
+    "open_warning": "Offen gelassene Tore hervorheben",
+    "open_warning_help": "Tore, die länger offen stehen, erhalten einen bernsteinfarbenen Rahmen und werden in der Übersicht genannt.",
+    "off": "Aus",
+    "order": "Reihenfolge der Tore",
+    "move_up": "{name} nach oben verschieben",
+    "move_down": "{name} nach unten verschieben",
+    "sidebar_help": "Titel und Symbol in der Seitenleiste sowie die Sichtbarkeit des Panels legst du in den Optionen der MyQ-Integration fest.",
+    "done": "Fertig"
+  },
+  "width": {
+    "single": "Einzeltor",
+    "double": "Doppeltor"
+  },
+  "style": {
+    "traditional": "Kassette",
+    "long_panel": "Langkassette",
+    "shaker": "Shaker-Stil",
+    "carriage": "Flügeltor-Optik",
+    "farmhouse": "Landhaus",
+    "modern": "Glatt",
+    "plank": "Planken",
+    "glass": "Vollverglast"
+  },
+  "windows": {
+    "none": "Keine",
+    "plain": "Schlicht",
+    "grid": "Sprossen",
+    "arched": "Rundbogen",
+    "side": "Seitlich"
+  },
+  "glass": {
+    "tinted": "Getönt",
+    "clear": "Klar",
+    "frosted": "Satiniert"
+  },
+  "color": {
+    "white": "Weiß",
+    "almond": "Mandel",
+    "sandstone": "Sandstein",
+    "clay": "Lehm",
+    "gray": "Grau",
+    "charcoal": "Anthrazit",
+    "black": "Schwarz",
+    "brown": "Braun",
+    "bronze": "Bronze",
+    "green": "Tannengrün",
+    "navy": "Marineblau",
+    "red": "Ochsenblutrot",
+    "aluminum": "Aluminium",
+    "light_oak": "Eiche hell",
+    "cedar": "Zeder",
+    "walnut": "Nussbaum",
+    "mahogany": "Mahagoni",
+    "espresso": "Espresso",
+    "driftwood": "Treibholz"
+  }
+}

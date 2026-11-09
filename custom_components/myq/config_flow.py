@@ -9,7 +9,8 @@ from typing import cast
 import voluptuous as vol
 from aiohttp import ClientError, ClientSession, CookieJar
 from homeassistant import config_entries
-from homeassistant.config_entries import ConfigFlowResult
+from homeassistant.config_entries import ConfigEntry, ConfigFlowResult
+from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import (
     async_create_clientsession,
     async_get_clientsession,
@@ -22,6 +23,7 @@ from .config_flow_forms import (
     BROWSER_START_SCHEMA,
     CREDENTIALS_SCHEMA,
     MFA_SCHEMA,
+    PANEL_OPTIONS_SCHEMA,
     REAUTH_MENU_OPTIONS,
     REAUTH_SCHEMA,
     USER_MENU_OPTIONS,
@@ -49,6 +51,7 @@ from .exceptions import (
 )
 from .models import OAuthTokens
 from .oauth import MyQAuth
+from .panel_options import panel_options
 from .runtime import MyQConfigData, MyQConfigEntry, tokens_to_data
 
 _LOGGER = logging.getLogger(__name__)
@@ -71,6 +74,12 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._login: MyQLoginSession | None = None
         self._login_session: ClientSession | None = None
         self._reauth_entry: MyQConfigEntry | None = None
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> MyQOptionsFlow:
+        del config_entry
+        return MyQOptionsFlow()
 
     async def async_step_user(
         self,
@@ -394,3 +403,20 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if self._login is None:
             raise RuntimeError("The MyQ config flow has no login session")
         return self._login
+
+
+class MyQOptionsFlow(config_entries.OptionsFlow):
+    """Configure the MyQ sidebar panel."""
+
+    async def async_step_init(
+        self,
+        user_input: dict[str, object] | None = None,
+    ) -> ConfigFlowResult:
+        if user_input is not None:
+            return self.async_create_entry(data=dict(panel_options(user_input)))
+        return self.async_show_form(
+            step_id="init",
+            data_schema=self.add_suggested_values_to_schema(
+                PANEL_OPTIONS_SCHEMA, dict(panel_options(self.config_entry.options))
+            ),
+        )

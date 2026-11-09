@@ -81,6 +81,25 @@
       "unknown": "MyQ zwrócił nieoczekiwaną odpowiedź."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Panel garażu",
+        "description": "Steruj bramami garażowymi, sprawdzaj ich stan i oglądaj obraz z kamer na stronie w pasku bocznym Home Assistanta.",
+        "data": {
+          "panel_enabled": "Pokaż panel garażu w pasku bocznym",
+          "panel_title": "Tytuł w pasku bocznym",
+          "panel_icon": "Ikona w pasku bocznym",
+          "panel_require_admin": "Panel mogą otwierać tylko administratorzy"
+        },
+        "data_description": {
+          "panel_enabled": "Bramy garażowe i kamery z tego konta są dodawane do panelu automatycznie.",
+          "panel_title": "Przy kilku kontach MyQ tytuł i ikonę ustala pierwsze konto, które pokazuje panel.",
+          "panel_require_admin": "Wygląd bram mogą zmieniać tylko administratorzy."
+        }
+      }
+    }
+  },
   "selector": {
     "mfa_method": {
       "options": {
