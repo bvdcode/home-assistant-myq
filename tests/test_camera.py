@@ -58,9 +58,13 @@ async def test_live_stream_is_available_only_for_tc_camera() -> None:
         )
         assert await tc_entity.stream_source() == "http://127.0.0.1:1234/test.h264"
         stream_class.assert_called_once_with(
-            tc_entity._async_stream_target, coordinator.client.async_access_token, lan_only=False
+            tc_entity._async_stream_target,
+            coordinator.client.async_access_token,
+            lan_only=False,
+            fallback_target_supplier=tc_entity._async_camera_target,
         )
         assert (await tc_entity._async_stream_target()).opener_serial == "door-1"
+        coordinator.client.async_get_camera_alias.assert_not_called()
 
     other = replace(DOOR, camera=MyQCamera("GW-0005-10000001", True))
     other_entity, _ = _entity(other)
@@ -265,5 +269,29 @@ async def test_camera_passes_lan_only_option_to_shared_stream() -> None:
         factory.return_value.source_url = AsyncMock(return_value="http://127.0.0.1/video")
         await entity.stream_source()
         factory.assert_called_once_with(
-            entity._async_stream_target, coordinator.client.async_access_token, lan_only=True
+            entity._async_stream_target,
+            coordinator.client.async_access_token,
+            lan_only=True,
+            fallback_target_supplier=entity._async_camera_target,
         )
+
+
+async def test_camera_alias_lookup_has_a_short_deadline() -> None:
+    entity, coordinator = _entity(DOOR)
+    cancelled = asyncio.Event()
+
+    async def slow_alias(camera: MyQCamera) -> str:
+        try:
+            await asyncio.Event().wait()
+            return "account:mac1"
+        finally:
+            cancelled.set()
+
+    coordinator.client.async_get_camera_alias = AsyncMock(side_effect=slow_alias)
+    with (
+        patch("custom_components.myq.camera._CAMERA_ALIAS_TIMEOUT", 0.01),
+        pytest.raises(TimeoutError),
+    ):
+        await asyncio.wait_for(entity._async_camera_target(), 1)
+    assert cancelled.is_set()
+    coordinator.client.async_get_camera_alias.assert_awaited_once_with(DOOR.camera)
