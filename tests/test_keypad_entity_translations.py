@@ -1,5 +1,7 @@
 """Exercise localized names and existing entity registry entries through HA setup."""
 
+import asyncio
+import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from homeassistant.core import HomeAssistant
@@ -7,6 +9,7 @@ from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.myq.const import CONF_EMAIL, CONF_MFA_METHOD, CONF_TOKENS, DOMAIN
+from custom_components.myq.keypad_state import POWER_MAX_AGE, KeypadPower
 from custom_components.myq.models import MyQCamera, MyQDevices
 
 
@@ -51,4 +54,22 @@ async def test_localized_keypad_entities_keep_user_names_and_ids(hass: HomeAssis
         item = registry.async_get(entity_id)
         assert item is not None and item.original_name == label
         assert item.translation_key == f"keypad_{key}"
+    coordinator = entry.runtime_data.coordinator
+    serial = keypad.serial_number
+    client.async_get_keypad_power = AsyncMock()
+    coordinator._set_keypad_power(serial, KeypadPower(time.time(), 71, "FP"))
+    original = coordinator._power_expiry[serial]
+    coordinator._set_keypad_power(
+        serial, KeypadPower(time.time() - POWER_MAX_AGE + 0.05, 71, "LPDS")
+    )
+    assert original.cancelled()
+    coordinator.async_keypad_changed()
+    assert hass.states.get(existing.entity_id).state == "71"
+    power_id = registry.async_get_entity_id("sensor", DOMAIN, f"{serial}_keypad_power_state")
+    assert hass.states.get(power_id).state == "lpds"
+    assert hass.states.get(power_id).attributes["options"] == ["fp", "lpds"]
+    await asyncio.sleep(0.08)
+    assert hass.states.get(existing.entity_id).state == "unavailable"
+    assert hass.states.get(power_id).state == "unavailable"
+    client.async_get_keypad_power.assert_not_awaited()
     assert await hass.config_entries.async_unload(entry.entry_id)

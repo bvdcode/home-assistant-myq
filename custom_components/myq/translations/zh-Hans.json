@@ -132,13 +132,23 @@
         "name": "电池"
       },
       "keypad_power_state": {
-        "name": "设备报告的电源状态"
+        "name": "设备报告的电源状态",
+        "state": {
+          "fp": "全功率",
+          "lpds": "深度睡眠"
+        }
       },
       "keypad_power_sample_time": {
         "name": "电池采样时间"
       },
       "keypad_session_state": {
-        "name": "会话状态"
+        "name": "会话状态",
+        "state": {
+          "idle": "空闲",
+          "connecting": "正在连接",
+          "streaming": "正在传输视频",
+          "error": "错误"
+        }
       },
       "keypad_session_errors": {
         "name": "会话错误次数"
@@ -153,7 +163,13 @@
         "name": "凭据续期次数"
       },
       "keypad_transport": {
-        "name": "视频传输方式"
+        "name": "视频传输方式",
+        "state": {
+          "idle": "空闲",
+          "lan": "局域网",
+          "p2p": "点对点",
+          "cloud_relay": "云中继"
+        }
       }
     },
     "camera": {
@@ -176,6 +192,17 @@
     },
     "keypad_power_refresh_failed": {
       "message": "无法刷新键盘的电池和电源状态。"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "摄像头视频传输",
+        "description": "要求实时视频来自摄像头在局域网内的私有 IP 地址。授权和建立连接仍需访问云端。如果无法通过局域网连接摄像头，播放将失败，不会改用公网地址。更改此设置会关闭当前的摄像头会话。快照仍从云端获取。",
+        "data": {
+          "camera_lan_only": "仅允许通过局域网传输实时视频"
+        }
+      }
     }
   }
 }

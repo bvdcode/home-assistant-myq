@@ -132,13 +132,23 @@
         "name": "Bateria"
       },
       "keypad_power_state": {
-        "name": "Estado de energia informado"
+        "name": "Estado de energia informado",
+        "state": {
+          "fp": "Potência máxima",
+          "lpds": "Suspensão profunda"
+        }
       },
       "keypad_power_sample_time": {
         "name": "Horário da medição da bateria"
       },
       "keypad_session_state": {
-        "name": "Estado da sessão"
+        "name": "Estado da sessão",
+        "state": {
+          "idle": "Inativo",
+          "connecting": "Conectando",
+          "streaming": "Transmitindo",
+          "error": "Erro"
+        }
       },
       "keypad_session_errors": {
         "name": "Erros de sessão"
@@ -153,7 +163,13 @@
         "name": "Renovações de credenciais"
       },
       "keypad_transport": {
-        "name": "Transporte de vídeo"
+        "name": "Transporte de vídeo",
+        "state": {
+          "idle": "Inativo",
+          "lan": "Rede local",
+          "p2p": "Conexão direta",
+          "cloud_relay": "Retransmissão na nuvem"
+        }
       }
     },
     "camera": {
@@ -176,6 +192,17 @@
     },
     "keypad_power_refresh_failed": {
       "message": "Não foi possível atualizar o estado da bateria e da alimentação do teclado."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Transmissão de vídeo da câmera",
+        "description": "Exige que o vídeo ao vivo venha do endereço IP privado da câmera na rede local. A autorização e o estabelecimento da conexão ainda exigem acesso à nuvem. Se a câmera não estiver acessível pela rede local, a reprodução falhará sem usar um endereço público. Alterar esta opção encerra as sessões ativas da câmera. As imagens estáticas continuam sendo obtidas da nuvem.",
+        "data": {
+          "camera_lan_only": "Usar apenas a rede local para o vídeo ao vivo"
+        }
+      }
     }
   }
 }

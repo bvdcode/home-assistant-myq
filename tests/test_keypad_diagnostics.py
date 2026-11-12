@@ -81,6 +81,8 @@ async def test_explicit_power_requests_coalesce_and_persist_cache(hass: HomeAssi
         == coordinator.keypad_state(KEYPAD.serial_number).power
     )
     client.async_get_keypad_power.assert_not_awaited()
+    await restored.async_shutdown()
+    await coordinator.async_shutdown()
 
 
 async def test_explicit_power_read_is_one_get_with_no_wake() -> None:

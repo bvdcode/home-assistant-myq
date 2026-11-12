@@ -132,13 +132,23 @@
         "name": "Batterie"
       },
       "keypad_power_state": {
-        "name": "Gemeldeter Energiezustand"
+        "name": "Gemeldeter Energiezustand",
+        "state": {
+          "fp": "Volle Leistung",
+          "lpds": "Tiefschlaf"
+        }
       },
       "keypad_power_sample_time": {
         "name": "Zeitpunkt der Batteriemessung"
       },
       "keypad_session_state": {
-        "name": "Sitzungsstatus"
+        "name": "Sitzungsstatus",
+        "state": {
+          "idle": "Inaktiv",
+          "connecting": "Verbindung wird hergestellt",
+          "streaming": "Übertragung läuft",
+          "error": "Fehler"
+        }
       },
       "keypad_session_errors": {
         "name": "Sitzungsfehler"
@@ -153,7 +163,13 @@
         "name": "Erneuerungen der Zugangsdaten"
       },
       "keypad_transport": {
-        "name": "Videoübertragungsweg"
+        "name": "Videoübertragungsweg",
+        "state": {
+          "idle": "Inaktiv",
+          "lan": "Lokales Netzwerk",
+          "p2p": "Direktverbindung",
+          "cloud_relay": "Cloud-Relay"
+        }
       }
     },
     "camera": {
@@ -176,6 +192,17 @@
     },
     "keypad_power_refresh_failed": {
       "message": "Der Batterie- und Energiezustand des Tastenfelds konnte nicht aktualisiert werden."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Übertragung von Kameravideos",
+        "description": "Das Livebild muss von der privaten IP-Adresse der Kamera im lokalen Netzwerk kommen. Für die Autorisierung und den Verbindungsaufbau wird weiterhin die Cloud benötigt. Ist die Kamera im lokalen Netzwerk nicht erreichbar, schlägt die Wiedergabe fehl, ohne eine öffentliche Adresse zu verwenden. Eine Änderung dieser Einstellung beendet aktive Kameraverbindungen. Standbilder werden weiterhin aus der Cloud abgerufen.",
+        "data": {
+          "camera_lan_only": "Livevideo nur über das lokale Netzwerk zulassen"
+        }
+      }
     }
   }
 }

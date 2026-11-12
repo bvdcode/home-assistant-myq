@@ -132,13 +132,23 @@
         "name": "Batterij"
       },
       "keypad_power_state": {
-        "name": "Gemelde energiestand"
+        "name": "Gemelde energiestand",
+        "state": {
+          "fp": "Vol vermogen",
+          "lpds": "Diepe slaap"
+        }
       },
       "keypad_power_sample_time": {
         "name": "Tijdstip van batterijmeting"
       },
       "keypad_session_state": {
-        "name": "Sessiestatus"
+        "name": "Sessiestatus",
+        "state": {
+          "idle": "Inactief",
+          "connecting": "Verbinden",
+          "streaming": "Streamen",
+          "error": "Fout"
+        }
       },
       "keypad_session_errors": {
         "name": "Sessiefouten"
@@ -153,7 +163,13 @@
         "name": "Vernieuwingen van inloggegevens"
       },
       "keypad_transport": {
-        "name": "Videotransport"
+        "name": "Videotransport",
+        "state": {
+          "idle": "Inactief",
+          "lan": "Lokaal netwerk",
+          "p2p": "Directe verbinding",
+          "cloud_relay": "Cloudrelay"
+        }
       }
     },
     "camera": {
@@ -176,6 +192,17 @@
     },
     "keypad_power_refresh_failed": {
       "message": "De batterij- en voedingsstatus van het toetsenpaneel kon niet worden vernieuwd."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Videoverbinding van de camera",
+        "description": "Vereis dat livevideo afkomstig is van het privé-IP-adres van de camera op het lokale netwerk. Voor autorisatie en het opzetten van de verbinding blijft toegang tot de cloud nodig. Als de camera niet bereikbaar is op het lokale netwerk, mislukt het afspelen zonder een openbaar adres te gebruiken. Als je deze instelling wijzigt, worden actieve camerasessies gesloten. Momentopnamen komen nog steeds uit de cloud.",
+        "data": {
+          "camera_lan_only": "Livevideo alleen via het lokale netwerk toestaan"
+        }
+      }
     }
   }
 }

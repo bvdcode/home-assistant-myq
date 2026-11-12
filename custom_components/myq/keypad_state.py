@@ -63,7 +63,7 @@ class KeypadPower:
 
     @property
     def fresh(self) -> bool:
-        return 0 <= time.time() - self.sampled_at <= POWER_MAX_AGE
+        return 0 <= time.time() - self.sampled_at < POWER_MAX_AGE
 
     def as_dict(self) -> dict[str, float | str | None]:
         return asdict(self)

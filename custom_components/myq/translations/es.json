@@ -132,13 +132,23 @@
         "name": "Batería"
       },
       "keypad_power_state": {
-        "name": "Estado de alimentación informado"
+        "name": "Estado de alimentación informado",
+        "state": {
+          "fp": "Potencia completa",
+          "lpds": "Suspensión profunda"
+        }
       },
       "keypad_power_sample_time": {
         "name": "Hora de la medición de la batería"
       },
       "keypad_session_state": {
-        "name": "Estado de la sesión"
+        "name": "Estado de la sesión",
+        "state": {
+          "idle": "Inactivo",
+          "connecting": "Conectando",
+          "streaming": "Transmitiendo",
+          "error": "Error"
+        }
       },
       "keypad_session_errors": {
         "name": "Errores de sesión"
@@ -153,7 +163,13 @@
         "name": "Renovaciones de credenciales"
       },
       "keypad_transport": {
-        "name": "Transporte de vídeo"
+        "name": "Transporte de vídeo",
+        "state": {
+          "idle": "Inactivo",
+          "lan": "Red local",
+          "p2p": "Conexión directa",
+          "cloud_relay": "Retransmisión en la nube"
+        }
       }
     },
     "camera": {
@@ -176,6 +192,17 @@
     },
     "keypad_power_refresh_failed": {
       "message": "No se pudo actualizar el estado de la batería y la alimentación del teclado."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Transmisión de vídeo de la cámara",
+        "description": "Exige que el vídeo en directo proceda de la dirección IP privada de la cámara en la red local. La autorización y el establecimiento de la conexión siguen requiriendo acceso a la nube. Si no se puede acceder a la cámara por la red local, la reproducción falla sin usar una dirección pública. Cambiar esta opción cierra las sesiones de cámara activas. Las imágenes fijas se siguen obteniendo de la nube.",
+        "data": {
+          "camera_lan_only": "Usar solo la red local para el vídeo en directo"
+        }
+      }
     }
   }
 }

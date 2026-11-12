@@ -132,13 +132,23 @@
         "name": "Baterie"
       },
       "keypad_power_state": {
-        "name": "Hlášený stav napájení"
+        "name": "Hlášený stav napájení",
+        "state": {
+          "fp": "Plný výkon",
+          "lpds": "Hluboký spánek"
+        }
       },
       "keypad_power_sample_time": {
         "name": "Čas měření baterie"
       },
       "keypad_session_state": {
-        "name": "Stav relace"
+        "name": "Stav relace",
+        "state": {
+          "idle": "Nečinný",
+          "connecting": "Připojování",
+          "streaming": "Přenos videa",
+          "error": "Chyba"
+        }
       },
       "keypad_session_errors": {
         "name": "Chyby relace"
@@ -153,7 +163,13 @@
         "name": "Obnovení přihlašovacích údajů"
       },
       "keypad_transport": {
-        "name": "Přenos videa"
+        "name": "Přenos videa",
+        "state": {
+          "idle": "Nečinný",
+          "lan": "Místní síť",
+          "p2p": "Přímé spojení",
+          "cloud_relay": "Přenos přes cloud"
+        }
       }
     },
     "camera": {
@@ -176,6 +192,17 @@
     },
     "keypad_power_refresh_failed": {
       "message": "Stav baterie a napájení klávesnice se nepodařilo aktualizovat."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Přenos videa z kamery",
+        "description": "Vyžaduje příjem živého videa ze soukromé IP adresy kamery v místní síti. Ověření přístupu a navázání spojení stále probíhají přes cloud. Pokud kamera není v místní síti dostupná, přehrávání selže a veřejná adresa se nepoužije. Změna této volby ukončí aktivní spojení s kamerou. Snímky z kamery se nadále načítají z cloudu.",
+        "data": {
+          "camera_lan_only": "Přijímat živé video pouze z místní sítě"
+        }
+      }
     }
   }
 }

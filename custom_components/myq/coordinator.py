@@ -20,9 +20,10 @@ from .const import (
     COMMAND_UPDATE_TIMEOUT,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
+    MAX_UPDATE_RETRY_INTERVAL,
 )
-from .exceptions import MyQApiError, MyQAuthenticationError
-from .keypad_state import KeypadPower, KeypadState
+from .exceptions import MyQApiError, MyQAuthenticationError, MyQRateLimitError
+from .keypad_state import POWER_MAX_AGE, KeypadPower, KeypadState
 from .models import MyQCamera
 from .runtime import MyQConfigEntry, MyQCoordinatorData
 
@@ -54,9 +55,11 @@ class MyQDataUpdateCoordinator(DataUpdateCoordinator[MyQCoordinatorData]):
         self.client = client
         self.cameras: dict[str, MyQCamera] = {}
         self._pending_commands: dict[str, _PendingCommand] = {}
+        self._failure_retry_interval = DEFAULT_UPDATE_INTERVAL
 
         self._keypad_states: dict[str, KeypadState] = {}
         self._credential_renewals = 0
+        self._power_expiry: dict[str, asyncio.TimerHandle] = {}
         self._power_lock = asyncio.Lock()
         self._power_data: dict[str, object] = {}
         self._power_store = Store[dict[str, object]](
@@ -79,8 +82,33 @@ class MyQDataUpdateCoordinator(DataUpdateCoordinator[MyQCoordinatorData]):
         self._power_data = stored
         for camera in self.keypads:
             data = stored.get(camera.serial_number)
-            if isinstance(data, dict) and isinstance(power := data.get("power"), dict):
-                self.keypad_state(camera.serial_number).power = KeypadPower.from_storage(power)
+            if (
+                isinstance(data, dict)
+                and isinstance(power := data.get("power"), dict)
+                and (sample := KeypadPower.from_storage(power))
+            ):
+                self._set_keypad_power(camera.serial_number, sample)
+
+    def _set_keypad_power(self, serial: str, power: KeypadPower) -> None:
+        self.keypad_state(serial).power = power
+        if previous := self._power_expiry.pop(serial, None):
+            previous.cancel()
+        delay = power.sampled_at + POWER_MAX_AGE - time.time()
+        if delay > 0:
+            self._power_expiry[serial] = self.hass.loop.call_later(
+                delay, self._expire_power, serial
+            )
+
+    @callback
+    def _expire_power(self, serial: str) -> None:
+        self._power_expiry.pop(serial, None)
+        self.async_keypad_changed()
+
+    async def async_shutdown(self) -> None:
+        for timer in self._power_expiry.values():
+            timer.cancel()
+        self._power_expiry.clear()
+        await super().async_shutdown()
 
     @callback
     def async_keypad_changed(self) -> None:
@@ -109,7 +137,7 @@ class MyQDataUpdateCoordinator(DataUpdateCoordinator[MyQCoordinatorData]):
             updated = {**self._power_data, serial: metadata}
             await self._power_store.async_save(updated)
             self._power_data = updated
-            state.power = power
+            self._set_keypad_power(serial, power)
             self.async_keypad_changed()
 
     @callback
@@ -151,7 +179,16 @@ class MyQDataUpdateCoordinator(DataUpdateCoordinator[MyQCoordinatorData]):
             ) from error
         except (ClientError, MyQApiError, TimeoutError) as error:
             self._stop_command_updates(pending_at_request)
-            raise UpdateFailed("Unable to update MyQ garage doors") from error
+            self._failure_retry_interval = min(
+                self._failure_retry_interval * 2, MAX_UPDATE_RETRY_INTERVAL
+            )
+            retry_after = self._failure_retry_interval.total_seconds()
+            if isinstance(error, MyQRateLimitError):
+                retry_after = max(retry_after, error.retry_after)
+            raise UpdateFailed(
+                "Unable to update MyQ garage doors", retry_after=retry_after
+            ) from error
+        self._failure_retry_interval = DEFAULT_UPDATE_INTERVAL
         self.cameras = {camera.serial_number: camera for camera in devices.standalone_cameras}
         data = {door.serial_number: door for door in devices.doors}
         now = monotonic()

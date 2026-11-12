@@ -132,13 +132,23 @@
         "name": "Bateria"
       },
       "keypad_power_state": {
-        "name": "Zgłoszony stan zasilania"
+        "name": "Zgłoszony stan zasilania",
+        "state": {
+          "fp": "Pełna moc",
+          "lpds": "Głęboki sen"
+        }
       },
       "keypad_power_sample_time": {
         "name": "Czas pomiaru baterii"
       },
       "keypad_session_state": {
-        "name": "Stan sesji"
+        "name": "Stan sesji",
+        "state": {
+          "idle": "Bezczynny",
+          "connecting": "Łączenie",
+          "streaming": "Transmisja",
+          "error": "Błąd"
+        }
       },
       "keypad_session_errors": {
         "name": "Błędy sesji"
@@ -153,7 +163,13 @@
         "name": "Odnowienia danych uwierzytelniających"
       },
       "keypad_transport": {
-        "name": "Transport wideo"
+        "name": "Transport wideo",
+        "state": {
+          "idle": "Bezczynny",
+          "lan": "Sieć lokalna",
+          "p2p": "Połączenie bezpośrednie",
+          "cloud_relay": "Przekaźnik w chmurze"
+        }
       }
     },
     "camera": {
@@ -176,6 +192,17 @@
     },
     "keypad_power_refresh_failed": {
       "message": "Nie udało się odświeżyć stanu baterii i zasilania klawiatury."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Transmisja obrazu z kamery",
+        "description": "Wymaga, aby obraz na żywo pochodził z prywatnego adresu IP kamery w sieci lokalnej. Autoryzacja i nawiązanie połączenia nadal wymagają dostępu do chmury. Jeśli kamera jest niedostępna w sieci lokalnej, odtwarzanie kończy się niepowodzeniem bez użycia publicznego adresu. Zmiana tej opcji zamyka aktywne sesje kamery. Zdjęcia nadal są pobierane z chmury.",
+        "data": {
+          "camera_lan_only": "Odbieraj obraz na żywo tylko przez sieć lokalną"
+        }
+      }
     }
   }
 }

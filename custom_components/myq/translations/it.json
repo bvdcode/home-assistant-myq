@@ -132,13 +132,23 @@
         "name": "Batteria"
       },
       "keypad_power_state": {
-        "name": "Stato di alimentazione segnalato"
+        "name": "Stato di alimentazione segnalato",
+        "state": {
+          "fp": "Piena potenza",
+          "lpds": "Sospensione profonda"
+        }
       },
       "keypad_power_sample_time": {
         "name": "Ora del rilevamento della batteria"
       },
       "keypad_session_state": {
-        "name": "Stato della sessione"
+        "name": "Stato della sessione",
+        "state": {
+          "idle": "Inattivo",
+          "connecting": "Connessione in corso",
+          "streaming": "Trasmissione in corso",
+          "error": "Errore"
+        }
       },
       "keypad_session_errors": {
         "name": "Errori di sessione"
@@ -153,7 +163,13 @@
         "name": "Rinnovi delle credenziali"
       },
       "keypad_transport": {
-        "name": "Trasporto video"
+        "name": "Trasporto video",
+        "state": {
+          "idle": "Inattivo",
+          "lan": "Rete locale",
+          "p2p": "Connessione diretta",
+          "cloud_relay": "Relay cloud"
+        }
       }
     },
     "camera": {
@@ -176,6 +192,17 @@
     },
     "keypad_power_refresh_failed": {
       "message": "Impossibile aggiornare lo stato della batteria e dell’alimentazione del tastierino."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Trasmissione video della videocamera",
+        "description": "Richiede che il video in diretta provenga dall’indirizzo IP privato della videocamera sulla rete locale. L’autorizzazione e la configurazione della connessione richiedono ancora l’accesso al cloud. Se la videocamera non è raggiungibile sulla rete locale, la riproduzione non riesce e non viene usato un indirizzo pubblico. La modifica di questa opzione chiude le sessioni attive della videocamera. Le istantanee continuano a essere recuperate dal cloud.",
+        "data": {
+          "camera_lan_only": "Usa solo la rete locale per il video in diretta"
+        }
+      }
     }
   }
 }

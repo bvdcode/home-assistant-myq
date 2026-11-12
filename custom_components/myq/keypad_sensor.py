@@ -23,6 +23,13 @@ KEYPAD_SENSORS = (
 )
 
 
+ENUM_OPTIONS = {
+    "power_state": ["fp", "lpds"],
+    "session_state": ["idle", "connecting", "streaming", "error"],
+    "transport": ["idle", "lan", "p2p", "cloud_relay"],
+}
+
+
 class MyQKeypadSensor(MyQKeypadEntity, SensorEntity):
     _attr_entity_category = EntityCategory.DIAGNOSTIC
 
@@ -35,6 +42,9 @@ class MyQKeypadSensor(MyQKeypadEntity, SensorEntity):
             self._attr_state_class = SensorStateClass.MEASUREMENT
         elif key == "power_sample_time":
             self._attr_device_class = SensorDeviceClass.TIMESTAMP
+        elif key in ENUM_OPTIONS:
+            self._attr_device_class = SensorDeviceClass.ENUM
+            self._attr_options = ENUM_OPTIONS[key]
         elif key == "startup_time":
             self._attr_device_class = SensorDeviceClass.DURATION
             self._attr_native_unit_of_measurement = UnitOfTime.SECONDS
@@ -54,11 +64,11 @@ class MyQKeypadSensor(MyQKeypadEntity, SensorEntity):
             case "battery":
                 return power.battery_percent if power else None
             case "power_state":
-                return power.sleep_mode if power else None
+                return power.sleep_mode.lower() if power and power.sleep_mode else None
             case "power_sample_time":
                 return datetime.fromtimestamp(power.sampled_at, UTC) if power else None
             case "transport":
-                return state.transport
+                return None if state.transport == "unknown" else state.transport
             case "session_state":
                 return state.phase
             case "session_errors":

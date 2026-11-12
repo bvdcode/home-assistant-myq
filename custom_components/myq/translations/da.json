@@ -132,13 +132,23 @@
         "name": "Batteri"
       },
       "keypad_power_state": {
-        "name": "Rapporteret strømtilstand"
+        "name": "Rapporteret strømtilstand",
+        "state": {
+          "fp": "Fuld effekt",
+          "lpds": "Dyb dvale"
+        }
       },
       "keypad_power_sample_time": {
         "name": "Tidspunkt for batterimåling"
       },
       "keypad_session_state": {
-        "name": "Sessionsstatus"
+        "name": "Sessionsstatus",
+        "state": {
+          "idle": "Inaktiv",
+          "connecting": "Opretter forbindelse",
+          "streaming": "Streamer",
+          "error": "Fejl"
+        }
       },
       "keypad_session_errors": {
         "name": "Sessionsfejl"
@@ -153,7 +163,13 @@
         "name": "Fornyelser af loginoplysninger"
       },
       "keypad_transport": {
-        "name": "Videotransport"
+        "name": "Videotransport",
+        "state": {
+          "idle": "Inaktiv",
+          "lan": "Lokalt netværk",
+          "p2p": "Direkte forbindelse",
+          "cloud_relay": "Via skyen"
+        }
       }
     },
     "camera": {
@@ -176,6 +192,17 @@
     },
     "keypad_power_refresh_failed": {
       "message": "Batteri- og strømstatus for tastaturet kunne ikke opdateres."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Overførsel af kameravideo",
+        "description": "Kræv, at livevideo kommer fra kameraets private IP-adresse på lokalnetværket. Godkendelse og oprettelse af forbindelsen kræver stadig adgang til skyen. Hvis kameraet ikke kan nås på lokalnetværket, mislykkes afspilningen uden at bruge en offentlig adresse. Ændring af indstillingen lukker aktive kameraforbindelser. Stillbilleder hentes fortsat fra skyen.",
+        "data": {
+          "camera_lan_only": "Kræv livevideo via lokalnetværket"
+        }
+      }
     }
   }
 }
