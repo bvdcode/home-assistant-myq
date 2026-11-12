@@ -64,12 +64,13 @@ async def test_localized_keypad_entities_keep_user_names_and_ids(hass: HomeAssis
     )
     assert original.cancelled()
     coordinator.async_keypad_changed()
-    assert hass.states.get(existing.entity_id).state == "71"
+    assert (battery_state := hass.states.get(existing.entity_id)) and battery_state.state == "71"
     power_id = registry.async_get_entity_id("sensor", DOMAIN, f"{serial}_keypad_power_state")
-    assert hass.states.get(power_id).state == "lpds"
-    assert hass.states.get(power_id).attributes["options"] == ["fp", "lpds"]
+    assert power_id is not None
+    assert (power_state := hass.states.get(power_id)) and power_state.state == "lpds"
+    assert power_state.attributes["options"] == ["fp", "lpds"]
     await asyncio.sleep(0.08)
-    assert hass.states.get(existing.entity_id).state == "unavailable"
-    assert hass.states.get(power_id).state == "unavailable"
+    assert hass.states.is_state(existing.entity_id, "unavailable")
+    assert hass.states.is_state(power_id, "unavailable")
     client.async_get_keypad_power.assert_not_awaited()
     assert await hass.config_entries.async_unload(entry.entry_id)
