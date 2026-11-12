@@ -145,7 +145,7 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
             if camera is not None:
                 try:
                     fallback = await self.coordinator.client.async_get_camera_alias(camera)
-                except (ClientError, MyQError, TimeoutError):
+                except ClientError, MyQError, TimeoutError:
                     fallback = None  # the opener identity alone still works where Tend names it
             return TendCameraTarget(
                 opener_serial=self._opener_serial, fallback_destination=fallback

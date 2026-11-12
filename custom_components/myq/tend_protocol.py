@@ -130,8 +130,9 @@ class TendCamera:
 class TendCameraTarget:
     """Identify exactly one camera by its opener or resolved signaling destination.
 
-    ``fallback_destination`` is tried only when no listed camera names ``opener_serial``: Tend reports the
-    opener a camera is built into (GSN), which is not always the door MyQ discovery attaches it to.
+    ``fallback_destination`` is tried only when no listed camera names ``opener_serial``.
+    Tend reports the opener a camera is built into (GSN), which is not always the door that
+    MyQ discovery attaches it to.
     """
 
     opener_serial: str | None = None
@@ -158,9 +159,10 @@ class TendCameraTarget:
                     camera for camera in cameras if camera.destination == self.fallback_destination
                 ]
         if not matches:
+            with_opener = sum(1 for camera in cameras if camera.opener_serial)
             raise TendStreamError(
                 "TC camera was not listed by Tend signaling "
-                f"({len(cameras)} listed, {sum(1 for c in cameras if c.opener_serial)} with an opener)"
+                f"({len(cameras)} listed, {with_opener} with an opener)"
             )
         if len(matches) != 1:
             raise TendStreamError("TC camera identity is ambiguous in Tend signaling")
