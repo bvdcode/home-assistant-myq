@@ -60,7 +60,14 @@ async def test_live_stream_is_available_only_for_tc_camera() -> None:
         stream_class.assert_called_once_with(
             tc_entity._async_stream_target, coordinator.client.async_access_token
         )
-        assert (await tc_entity._async_stream_target()).opener_serial == "door-1"
+        coordinator.client.async_get_camera_alias = AsyncMock(return_value="account:mac1")
+        target = await tc_entity._async_stream_target()
+        assert target.opener_serial == "door-1"
+        assert target.fallback_destination == "account:mac1"
+        coordinator.client.async_get_camera_alias = AsyncMock(side_effect=TimeoutError)
+        target = await tc_entity._async_stream_target()
+        assert target.opener_serial == "door-1"
+        assert target.fallback_destination is None
 
     other = replace(DOOR, camera=MyQCamera("GW-0005-10000001", True))
     other_entity, _ = _entity(other)
