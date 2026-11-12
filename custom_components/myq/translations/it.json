@@ -121,11 +121,25 @@
       },
       "last_activation_source": {
         "name": "Origine dell'ultima attivazione"
+      },
+      "keypad_recording_status": {
+        "name": "Stato della registrazione"
+      },
+      "keypad_last_clip": {
+        "name": "Ultima registrazione"
       }
     },
     "camera": {
       "camera": {
         "name": "Telecamera"
+      }
+    },
+    "button": {
+      "keypad_record": {
+        "name": "Registra clip"
+      },
+      "keypad_cancel_recording": {
+        "name": "Annulla registrazione"
       }
     }
   },
@@ -140,12 +154,31 @@
   "options": {
     "step": {
       "init": {
-        "title": "Trasmissione video della videocamera",
-        "description": "Richiede che il video in diretta provenga dall’indirizzo IP privato della videocamera sulla rete locale. L’autorizzazione e la configurazione della connessione richiedono ancora l’accesso al cloud. Se la videocamera non è raggiungibile sulla rete locale, la riproduzione non riesce e non viene usato un indirizzo pubblico. La modifica di questa opzione chiude le sessioni attive della videocamera. Le istantanee continuano a essere recuperate dal cloud.",
+        "title": "MyQ",
+        "description": "Richiede che il video in diretta provenga dall’indirizzo IP privato della videocamera sulla rete locale. L’autorizzazione e la configurazione della connessione richiedono ancora l’accesso al cloud. Se la videocamera non è raggiungibile sulla rete locale, la riproduzione non riesce e non viene usato un indirizzo pubblico. La modifica di questa opzione chiude le sessioni attive della videocamera. Le istantanee continuano a essere recuperate dal cloud.\n\nScegli le impostazioni predefinite per le registrazioni del tastierino video. Il periodo di conservazione si applica alle nuove clip. Imposta 0 per conservarle a tempo indeterminato. Registrazioni più lunghe o frequenti consumano più batteria.",
         "data": {
-          "camera_lan_only": "Usa solo la rete locale per il video in diretta"
+          "camera_lan_only": "Usa solo la rete locale per il video in diretta",
+          "recording_duration": "Durata predefinita della registrazione (secondi)",
+          "recording_cooldown": "Intervallo minimo tra gli avvii delle registrazioni (secondi)",
+          "retention_days": "Elimina le clip dopo questo numero di giorni (0 per conservarle a tempo indeterminato)"
         }
       }
+    }
+  },
+  "services": {
+    "record_keypad": {
+      "name": "Registra dal tastierino video",
+      "description": "Salva il video ricevuto nei contenuti multimediali locali dopo aver verificato la clip.",
+      "fields": {
+        "duration": {
+          "name": "Durata del video",
+          "description": "Secondi di video ricevuto. Le interruzioni della connessione possono prolungare il tempo totale."
+        }
+      }
+    },
+    "cancel_keypad_recording": {
+      "name": "Annulla la registrazione dal tastierino video",
+      "description": "Interrompe la registrazione o la verifica mantenendo connessi gli altri spettatori. Una clip già in fase di finalizzazione viene salvata per il periodo di conservazione impostato."
     }
   }
 }

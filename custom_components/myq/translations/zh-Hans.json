@@ -121,11 +121,25 @@
       },
       "last_activation_source": {
         "name": "上次触发来源"
+      },
+      "keypad_recording_status": {
+        "name": "录制状态"
+      },
+      "keypad_last_clip": {
+        "name": "上次录制"
       }
     },
     "camera": {
       "camera": {
         "name": "摄像头"
+      }
+    },
+    "button": {
+      "keypad_record": {
+        "name": "录制片段"
+      },
+      "keypad_cancel_recording": {
+        "name": "取消录制"
       }
     }
   },
@@ -140,12 +154,31 @@
   "options": {
     "step": {
       "init": {
-        "title": "摄像头视频传输",
-        "description": "要求实时视频来自摄像头在局域网内的私有 IP 地址。授权和建立连接仍需访问云端。如果无法通过局域网连接摄像头，播放将失败，不会改用公网地址。更改此设置会关闭当前的摄像头会话。快照仍从云端获取。",
+        "title": "MyQ",
+        "description": "要求实时视频来自摄像头在局域网内的私有 IP 地址。授权和建立连接仍需访问云端。如果无法通过局域网连接摄像头，播放将失败，不会改用公网地址。更改此设置会关闭当前的摄像头会话。快照仍从云端获取。\n\n设置可视键盘录像的默认选项。保留期限适用于新录制的片段。设为 0 可永久保留。录像时间越长或频率越高，耗电量就越大。",
         "data": {
-          "camera_lan_only": "仅允许通过局域网传输实时视频"
+          "camera_lan_only": "仅允许通过局域网传输实时视频",
+          "recording_duration": "默认录像时长（秒）",
+          "recording_cooldown": "两次录像开始之间的最短间隔（秒）",
+          "retention_days": "录像保留天数（0 表示永久保留）"
         }
       }
+    }
+  },
+  "services": {
+    "record_keypad": {
+      "name": "录制键盘视频",
+      "description": "校验视频片段后，将接收到的视频保存到本地媒体。",
+      "fields": {
+        "duration": {
+          "name": "视频时长",
+          "description": "接收到的视频时长，以秒为单位。连接中断可能会延长实际用时。"
+        }
+      }
+    },
+    "cancel_keypad_recording": {
+      "name": "取消键盘录像",
+      "description": "停止录像或校验，其他观看者可继续观看。已进入保存阶段的片段将按设置的保留期限保存。"
     }
   }
 }

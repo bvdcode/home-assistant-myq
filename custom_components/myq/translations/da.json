@@ -121,11 +121,25 @@
       },
       "last_activation_source": {
         "name": "Seneste aktiveringskilde"
+      },
+      "keypad_recording_status": {
+        "name": "Optagelsesstatus"
+      },
+      "keypad_last_clip": {
+        "name": "Seneste optagelse"
       }
     },
     "camera": {
       "camera": {
         "name": "Kamera"
+      }
+    },
+    "button": {
+      "keypad_record": {
+        "name": "Optag klip"
+      },
+      "keypad_cancel_recording": {
+        "name": "Annuller optagelse"
       }
     }
   },
@@ -140,12 +154,31 @@
   "options": {
     "step": {
       "init": {
-        "title": "Overførsel af kameravideo",
-        "description": "Kræv, at livevideo kommer fra kameraets private IP-adresse på lokalnetværket. Godkendelse og oprettelse af forbindelsen kræver stadig adgang til skyen. Hvis kameraet ikke kan nås på lokalnetværket, mislykkes afspilningen uden at bruge en offentlig adresse. Ændring af indstillingen lukker aktive kameraforbindelser. Stillbilleder hentes fortsat fra skyen.",
+        "title": "MyQ",
+        "description": "Kræv, at livevideo kommer fra kameraets private IP-adresse på lokalnetværket. Godkendelse og oprettelse af forbindelsen kræver stadig adgang til skyen. Hvis kameraet ikke kan nås på lokalnetværket, mislykkes afspilningen uden at bruge en offentlig adresse. Ændring af indstillingen lukker aktive kameraforbindelser. Stillbilleder hentes fortsat fra skyen.\n\nVælg standardindstillinger for optagelser fra videotastaturet. Opbevaringsperioden gælder for nye optagelser. Vælg 0 for at beholde dem på ubestemt tid. Længere eller hyppigere optagelser bruger mere batteri.",
         "data": {
-          "camera_lan_only": "Kræv livevideo via lokalnetværket"
+          "camera_lan_only": "Kræv livevideo via lokalnetværket",
+          "recording_duration": "Standardlængde på optagelser (sekunder)",
+          "recording_cooldown": "Minimumstid mellem start af optagelser (sekunder)",
+          "retention_days": "Slet optagelser efter antal dage (0 for ubegrænset opbevaring)"
         }
       }
+    }
+  },
+  "services": {
+    "record_keypad": {
+      "name": "Optag fra videotastaturet",
+      "description": "Gem den modtagne video under lokale medier, når optagelsen er kontrolleret.",
+      "fields": {
+        "duration": {
+          "name": "Videolængde",
+          "description": "Antal sekunders modtaget video. Afbrydelser kan forlænge den samlede tid."
+        }
+      }
+    },
+    "cancel_keypad_recording": {
+      "name": "Annuller optagelse fra videotastaturet",
+      "description": "Stop optagelsen eller kontrollen, mens andre seere forbliver tilsluttet. En optagelse, som er ved at blive gemt, færdiggøres med den valgte opbevaringsperiode."
     }
   }
 }

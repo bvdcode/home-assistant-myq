@@ -20,6 +20,7 @@ from .const import (
     MAX_UPDATE_RETRY_INTERVAL,
 )
 from .exceptions import MyQApiError, MyQAuthenticationError, MyQRateLimitError
+from .keypad_retention import KeypadRecordings
 from .models import MyQCamera
 from .runtime import MyQConfigEntry, MyQCoordinatorData
 
@@ -49,6 +50,7 @@ class MyQDataUpdateCoordinator(DataUpdateCoordinator[MyQCoordinatorData]):
             update_interval=DEFAULT_UPDATE_INTERVAL,
         )
         self.client = client
+        self.recordings = KeypadRecordings(hass, entry.entry_id)
         self.cameras: dict[str, MyQCamera] = {}
         self._pending_commands: dict[str, _PendingCommand] = {}
         self._failure_retry_interval = DEFAULT_UPDATE_INTERVAL

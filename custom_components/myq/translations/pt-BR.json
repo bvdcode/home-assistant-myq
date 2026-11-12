@@ -121,11 +121,25 @@
       },
       "last_activation_source": {
         "name": "Origem da última ativação"
+      },
+      "keypad_recording_status": {
+        "name": "Estado da gravação"
+      },
+      "keypad_last_clip": {
+        "name": "Última gravação"
       }
     },
     "camera": {
       "camera": {
         "name": "Câmera"
+      }
+    },
+    "button": {
+      "keypad_record": {
+        "name": "Gravar clipe"
+      },
+      "keypad_cancel_recording": {
+        "name": "Cancelar gravação"
       }
     }
   },
@@ -140,12 +154,31 @@
   "options": {
     "step": {
       "init": {
-        "title": "Transmissão de vídeo da câmera",
-        "description": "Exige que o vídeo ao vivo venha do endereço IP privado da câmera na rede local. A autorização e o estabelecimento da conexão ainda exigem acesso à nuvem. Se a câmera não estiver acessível pela rede local, a reprodução falhará sem usar um endereço público. Alterar esta opção encerra as sessões ativas da câmera. As imagens estáticas continuam sendo obtidas da nuvem.",
+        "title": "MyQ",
+        "description": "Exige que o vídeo ao vivo venha do endereço IP privado da câmera na rede local. A autorização e o estabelecimento da conexão ainda exigem acesso à nuvem. Se a câmera não estiver acessível pela rede local, a reprodução falhará sem usar um endereço público. Alterar esta opção encerra as sessões ativas da câmera. As imagens estáticas continuam sendo obtidas da nuvem.\n\nEscolha os padrões de gravação do teclado com câmera. O prazo de retenção se aplica aos novos clipes. Defina 0 para mantê-los por tempo indeterminado. Gravações mais longas ou frequentes consomem mais bateria.",
         "data": {
-          "camera_lan_only": "Usar apenas a rede local para o vídeo ao vivo"
+          "camera_lan_only": "Usar apenas a rede local para o vídeo ao vivo",
+          "recording_duration": "Duração padrão da gravação (segundos)",
+          "recording_cooldown": "Intervalo mínimo entre inícios de gravação (segundos)",
+          "retention_days": "Excluir as gravações após este número de dias (0 para manter por tempo indeterminado)"
         }
       }
+    }
+  },
+  "services": {
+    "record_keypad": {
+      "name": "Gravar vídeo do teclado",
+      "description": "Salva o vídeo recebido na mídia local após validar o clipe.",
+      "fields": {
+        "duration": {
+          "name": "Duração do vídeo",
+          "description": "Segundos de vídeo recebido. Interrupções na conexão podem prolongar o tempo total."
+        }
+      }
+    },
+    "cancel_keypad_recording": {
+      "name": "Cancelar gravação do teclado",
+      "description": "Interrompe a gravação ou a validação e mantém os demais espectadores conectados. Um clipe que já está sendo finalizado é salvo pelo prazo de retenção configurado."
     }
   }
 }

@@ -415,10 +415,23 @@ class MyQOptionsFlow(config_entries.OptionsFlow):
             step_id="init",
             data_schema=vol.Schema(
                 {
+                    # Battery-conscious recording defaults, adjustable without reauthorization.
+                    vol.Required(
+                        "recording_duration",
+                        default=self.config_entry.options.get("recording_duration", 30),
+                    ): vol.All(vol.Coerce(int), vol.Range(min=5, max=300)),
+                    vol.Required(
+                        "recording_cooldown",
+                        default=self.config_entry.options.get("recording_cooldown", 60),
+                    ): vol.All(vol.Coerce(int), vol.Range(min=0, max=3600)),
+                    vol.Required(
+                        "retention_days",
+                        default=self.config_entry.options.get("retention_days", 30),
+                    ): vol.All(vol.Coerce(int), vol.Range(min=0, max=365)),
                     vol.Required(
                         CONF_CAMERA_LAN_ONLY,
                         default=self.config_entry.options.get(CONF_CAMERA_LAN_ONLY, False),
-                    ): bool
+                    ): bool,
                 }
             ),
         )

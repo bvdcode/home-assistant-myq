@@ -121,11 +121,25 @@
       },
       "last_activation_source": {
         "name": "Zdroj poslední aktivace"
+      },
+      "keypad_recording_status": {
+        "name": "Stav nahrávání"
+      },
+      "keypad_last_clip": {
+        "name": "Poslední nahrávka"
       }
     },
     "camera": {
       "camera": {
         "name": "Kamera"
+      }
+    },
+    "button": {
+      "keypad_record": {
+        "name": "Nahrát klip"
+      },
+      "keypad_cancel_recording": {
+        "name": "Zrušit nahrávání"
       }
     }
   },
@@ -140,12 +154,31 @@
   "options": {
     "step": {
       "init": {
-        "title": "Přenos videa z kamery",
-        "description": "Vyžaduje příjem živého videa ze soukromé IP adresy kamery v místní síti. Ověření přístupu a navázání spojení stále probíhají přes cloud. Pokud kamera není v místní síti dostupná, přehrávání selže a veřejná adresa se nepoužije. Změna této volby ukončí aktivní spojení s kamerou. Snímky z kamery se nadále načítají z cloudu.",
+        "title": "MyQ",
+        "description": "Vyžaduje příjem živého videa ze soukromé IP adresy kamery v místní síti. Ověření přístupu a navázání spojení stále probíhají přes cloud. Pokud kamera není v místní síti dostupná, přehrávání selže a veřejná adresa se nepoužije. Změna této volby ukončí aktivní spojení s kamerou. Snímky z kamery se nadále načítají z cloudu.\n\nNastavte výchozí hodnoty pro nahrávání z videoklávesnice. Doba uchování platí pro nově pořízené klipy. Hodnota 0 je uchová bez časového omezení. Delší nebo častější nahrávání zvyšuje spotřebu baterie.",
         "data": {
-          "camera_lan_only": "Přijímat živé video pouze z místní sítě"
+          "camera_lan_only": "Přijímat živé video pouze z místní sítě",
+          "recording_duration": "Výchozí délka nahrávky (sekundy)",
+          "recording_cooldown": "Minimální interval mezi začátky nahrávání (sekundy)",
+          "retention_days": "Smazat nahrané klipy po uplynutí počtu dní (0 pro neomezené uchování)"
         }
       }
+    }
+  },
+  "services": {
+    "record_keypad": {
+      "name": "Nahrávat z videoklávesnice",
+      "description": "Po ověření klipu uloží přijaté video do místních médií.",
+      "fields": {
+        "duration": {
+          "name": "Délka videa",
+          "description": "Počet sekund přijatého videa. Výpadky připojení mohou prodloužit celkovou dobu."
+        }
+      }
+    },
+    "cancel_keypad_recording": {
+      "name": "Zrušit nahrávání z videoklávesnice",
+      "description": "Zastaví nahrávání nebo ověřování a zachová připojení ostatních diváků. Klip v závěrečné fázi ukládání se uloží s nastavenou dobou uchování."
     }
   }
 }

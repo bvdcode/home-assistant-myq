@@ -1,4 +1,5 @@
 from collections.abc import Mapping
+from datetime import datetime, timedelta
 from typing import cast
 
 from aiohttp import ClientError
@@ -7,6 +8,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryError, ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.event import async_track_time_interval
 
 from .client import MyQClient
 from .const import CONF_CAMERA_LAN_ONLY, CONF_TOKENS, DOMAIN
@@ -25,6 +27,7 @@ from .runtime import (
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 PLATFORMS: tuple[Platform, ...] = (
     Platform.BINARY_SENSOR,
+    Platform.BUTTON,
     Platform.CAMERA,
     Platform.COVER,
     Platform.SENSOR,
@@ -51,6 +54,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyQConfigEntry) -> bool:
         client = MyQClient(async_get_clientsession(hass), auth)
         coordinator = MyQDataUpdateCoordinator(hass, entry, client)
         await coordinator.async_config_entry_first_refresh()
+        await coordinator.recordings.async_load()
     except MyQAuthenticationError as error:
         raise ConfigEntryAuthFailed(
             translation_domain=DOMAIN,
@@ -80,6 +84,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyQConfigEntry) -> bool:
     entry.async_on_unload(entry.add_update_listener(camera_policy_changed))
     entry.runtime_data = MyQRuntimeData(client=client, coordinator=coordinator)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    async def cleanup_recordings(now: datetime) -> None:
+        await coordinator.recordings.async_cleanup(int(entry.options.get("retention_days", 30)))
+        coordinator.async_update_listeners()
+
+    entry.async_on_unload(async_track_time_interval(hass, cleanup_recordings, timedelta(hours=1)))
+    await coordinator.recordings.async_cleanup(int(entry.options.get("retention_days", 30)))
     return True
 
 

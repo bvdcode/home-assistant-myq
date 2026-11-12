@@ -121,11 +121,25 @@
       },
       "last_activation_source": {
         "name": "Źródło ostatniego uruchomienia"
+      },
+      "keypad_recording_status": {
+        "name": "Stan nagrywania"
+      },
+      "keypad_last_clip": {
+        "name": "Ostatnie nagranie"
       }
     },
     "camera": {
       "camera": {
         "name": "Kamera"
+      }
+    },
+    "button": {
+      "keypad_record": {
+        "name": "Nagraj klip"
+      },
+      "keypad_cancel_recording": {
+        "name": "Anuluj nagrywanie"
       }
     }
   },
@@ -140,12 +154,31 @@
   "options": {
     "step": {
       "init": {
-        "title": "Transmisja obrazu z kamery",
-        "description": "Wymaga, aby obraz na żywo pochodził z prywatnego adresu IP kamery w sieci lokalnej. Autoryzacja i nawiązanie połączenia nadal wymagają dostępu do chmury. Jeśli kamera jest niedostępna w sieci lokalnej, odtwarzanie kończy się niepowodzeniem bez użycia publicznego adresu. Zmiana tej opcji zamyka aktywne sesje kamery. Zdjęcia nadal są pobierane z chmury.",
+        "title": "MyQ",
+        "description": "Wymaga, aby obraz na żywo pochodził z prywatnego adresu IP kamery w sieci lokalnej. Autoryzacja i nawiązanie połączenia nadal wymagają dostępu do chmury. Jeśli kamera jest niedostępna w sieci lokalnej, odtwarzanie kończy się niepowodzeniem bez użycia publicznego adresu. Zmiana tej opcji zamyka aktywne sesje kamery. Zdjęcia nadal są pobierane z chmury.\n\nWybierz domyślne ustawienia nagrań z klawiatury z kamerą. Okres przechowywania dotyczy nowych klipów. Ustaw 0, aby zachować je bezterminowo. Dłuższe lub częstsze nagrywanie zwiększa zużycie baterii.",
         "data": {
-          "camera_lan_only": "Odbieraj obraz na żywo tylko przez sieć lokalną"
+          "camera_lan_only": "Odbieraj obraz na żywo tylko przez sieć lokalną",
+          "recording_duration": "Domyślny czas nagrywania (sekundy)",
+          "recording_cooldown": "Minimalny odstęp między rozpoczęciem kolejnych nagrań (sekundy)",
+          "retention_days": "Usuń nagrania po tylu dniach (0, aby zachować je bezterminowo)"
         }
       }
+    }
+  },
+  "services": {
+    "record_keypad": {
+      "name": "Nagraj wideo z klawiatury",
+      "description": "Po sprawdzeniu klipu zapisuje odebrane wideo w lokalnych multimediach.",
+      "fields": {
+        "duration": {
+          "name": "Czas trwania wideo",
+          "description": "Liczba sekund odebranego wideo. Przerwy w połączeniu mogą wydłużyć całkowity czas."
+        }
+      }
+    },
+    "cancel_keypad_recording": {
+      "name": "Anuluj nagrywanie z klawiatury",
+      "description": "Zatrzymuje nagrywanie lub sprawdzanie klipu. Pozostali widzowie nadal mają połączenie. Klip, którego zapis jest już finalizowany, zostanie zachowany zgodnie z ustawionym okresem przechowywania."
     }
   }
 }
