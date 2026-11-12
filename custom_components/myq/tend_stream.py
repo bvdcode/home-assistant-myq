@@ -10,7 +10,7 @@ from collections.abc import Awaitable, Callable
 from aiohttp import ClientError, web
 
 from .exceptions import MyQError
-from .tend_protocol import TendCameraTarget, TendStreamError
+from .tend_protocol import CameraTargetSupplier, TendStreamError
 from .tend_session import TendSession
 
 _LOGGER = logging.getLogger(__name__)
@@ -56,16 +56,20 @@ class TendLiveStream:
 
     def __init__(
         self,
-        target_supplier: Callable[[], Awaitable[TendCameraTarget]],
+        target_supplier: CameraTargetSupplier,
         token_supplier: Callable[[], Awaitable[str]],
         *,
-        idle_seconds: float = _IDLE_SECONDS,
+        idle_seconds: float | None = None,
         on_snapshot: Callable[[bytes], None] | None = None,
+        lan_only: bool = False,
+        fallback_target_supplier: CameraTargetSupplier | None = None,
     ) -> None:
         self._idle_seconds = idle_seconds
         self._on_snapshot = on_snapshot
         self._snapshot_frame: bytes | None = None
         self._target_supplier = target_supplier
+        self._fallback_target_supplier = fallback_target_supplier
+        self._lan_only = lan_only
         self._token_supplier = token_supplier
         self._runner: web.AppRunner | None = None
         self._url: str | None = None
@@ -121,7 +125,11 @@ class TendLiveStream:
             if self._session is None or self._session.ended:
                 await self._close_session()
                 self._session = await TendSession.open(
-                    await self._target_supplier(), await self._token_supplier(), self._on_frame
+                    await self._target_supplier(),
+                    await self._token_supplier(),
+                    self._on_frame,
+                    lan_only=self._lan_only,
+                    fallback_target_supplier=self._fallback_target_supplier,
                 )
             viewer = _Viewer()
             self._viewers.add(viewer)
@@ -200,7 +208,7 @@ class TendLiveStream:
             if viewer is not None:
                 self._viewers.discard(viewer)
                 if not self._viewers and not self._closed:
-                    delay = self._idle_seconds
+                    delay = _IDLE_SECONDS if self._idle_seconds is None else self._idle_seconds
                     if self._session is not None and self._session.ended:
                         delay = 0
                     self._idle_timer = asyncio.get_running_loop().call_later(
