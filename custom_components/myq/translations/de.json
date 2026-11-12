@@ -121,6 +121,9 @@
       },
       "last_activation_source": {
         "name": "Letzte Auslösequelle"
+      },
+      "keypad_snapshot_time": {
+        "name": "Zeitpunkt des Standbilds"
       }
     },
     "camera": {

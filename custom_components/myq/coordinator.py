@@ -1,12 +1,13 @@
 import logging
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta
 from time import monotonic
 from typing import Literal
 
 from aiohttp import ClientError
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .client import MyQClient
@@ -50,8 +51,20 @@ class MyQDataUpdateCoordinator(DataUpdateCoordinator[MyQCoordinatorData]):
         )
         self.client = client
         self.cameras: dict[str, MyQCamera] = {}
+        self.keypad_snapshot_times: dict[str, datetime] = {}
         self._pending_commands: dict[str, _PendingCommand] = {}
         self._failure_retry_interval = DEFAULT_UPDATE_INTERVAL
+
+    def snapshot_signal(self, serial: str) -> str:
+        """Address updates to the timestamp sensor for this entry and keypad."""
+        assert self.config_entry is not None
+        return f"{DOMAIN}_{self.config_entry.entry_id}_{serial}_snapshot"
+
+    @callback
+    def async_set_keypad_snapshot_time(self, serial: str, at: datetime | None) -> None:
+        if at is not None:
+            self.keypad_snapshot_times[serial] = at
+            async_dispatcher_send(self.hass, self.snapshot_signal(serial))
 
     @callback
     def async_schedule_command_updates(

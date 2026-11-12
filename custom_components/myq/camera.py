@@ -14,6 +14,7 @@ from .const import CONF_CAMERA_LAN_ONLY, DOMAIN
 from .coordinator import MyQDataUpdateCoordinator
 from .entity import myq_device_info
 from .exceptions import MyQApiError, MyQError
+from .keypad_preview import KeypadPreview
 from .models import GarageDoor, MyQCamera
 from .runtime import MyQConfigEntry
 from .tend_protocol import TendCameraTarget
@@ -68,6 +69,11 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
             self._attr_device_info = myq_device_info(
                 camera.serial_number, name=camera.name, model=camera.device_model
             )
+        self._preview = (
+            KeypadPreview(coordinator.hass, camera.serial_number)
+            if camera.is_video_keypad
+            else None
+        )
         self._capture_lock = asyncio.Lock()
         self._image: bytes | None = None
         self._captured_at = 0.0
@@ -75,6 +81,23 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
         if camera.serial_prefix == "TC":
             self._attr_supported_features = CameraEntityFeature.STREAM
             self.stream_options = {"use_wallclock_as_timestamps": True}
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        if self._preview is not None:
+            await self._preview.load()
+            self.coordinator.async_set_keypad_snapshot_time(
+                self._camera_serial, self._preview.captured_at
+            )
+
+    def _received_snapshot(self, frame: bytes) -> None:
+        if self._preview is not None:
+            self._preview.received(frame)
+            self.coordinator.async_set_keypad_snapshot_time(
+                self._camera_serial, self._preview.captured_at
+            )
+            if self.hass and self.entity_id:
+                self.async_write_ha_state()
 
     @property
     def camera(self) -> MyQCamera | None:
@@ -89,11 +112,15 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
         return self.camera.device_model if self.camera is not None else None
 
     @property
-    def extra_state_attributes(self) -> dict[str, str] | None:
+    def extra_state_attributes(self) -> dict[str, str | None] | None:
         camera = self.camera
         if camera is None or camera.serial_prefix is None:
             return None
-        return {"camera_serial_prefix": camera.serial_prefix}
+        attributes: dict[str, str | None] = {"camera_serial_prefix": camera.serial_prefix}
+        if self._preview is not None:
+            at = self._preview.captured_at
+            attributes["preview_updated"] = at.isoformat() if at is not None else None
+        return attributes
 
     @property
     def available(self) -> bool:
@@ -113,6 +140,8 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
         camera = self.camera
         if camera is None:
             return None
+        if self._preview is not None:
+            return await self._preview.image()
         async with self._capture_lock:
             if (
                 self._image is not None
@@ -137,6 +166,8 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
             self._live_stream = TendLiveStream(
                 self._async_stream_target,
                 self.coordinator.client.async_access_token,
+                idle_seconds=20 if self._preview is not None else None,
+                on_snapshot=self._received_snapshot if self._preview is not None else None,
                 fallback_target_supplier=(
                     self._async_camera_target if self._opener_serial is not None else None
                 ),
@@ -168,8 +199,12 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
             if self._live_stream is not None:
                 await self._live_stream.close()
         finally:
-            self._live_stream = None
-            if self.stream is not None:
-                await self.stream.stop()
-                self.stream = None
-            await super().async_will_remove_from_hass()
+            try:
+                if self._preview is not None:
+                    await self._preview.save()
+            finally:
+                self._live_stream = None
+                if self.stream is not None:
+                    await self.stream.stop()
+                    self.stream = None
+                await super().async_will_remove_from_hass()

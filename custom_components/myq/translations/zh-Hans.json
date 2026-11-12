@@ -121,6 +121,9 @@
       },
       "last_activation_source": {
         "name": "上次触发来源"
+      },
+      "keypad_snapshot_time": {
+        "name": "快照时间"
       }
     },
     "camera": {

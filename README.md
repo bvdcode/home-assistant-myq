@@ -135,6 +135,21 @@ This is a community-maintained project and is not affiliated with, endorsed by,
 or associated with The Chamberlain Group LLC. MyQ, Chamberlain, and LiftMaster
 are trademarks of their respective owners.
 
+### Video Keypad previews and battery
+
+The Video Keypad preview is passive: opening an idle dashboard does not fetch a
+cloud image or start live video. It shows the most recent keyframe received during
+an explicit live session, saved locally and restored after integration reload or
+Home Assistant restart. Before the first live view there is no preview. The **Snapshot time** diagnostic sensor and the `preview_updated` camera attribute
+show when the preview was captured.
+
+Keypad video uses a 20-second idle grace period after the final internal consumer
+leaves (Home Assistant's own stream worker may remain attached longer). Ordinary
+garage camera behavior is unchanged. Avoid stream preloading on a battery keypad.
+Live viewing still uses battery and cloud authorization/signaling; this change
+does not add background recording or establish a battery-life improvement.
+
+
 ### Restrict camera video to the LAN
 
 In **Settings → Devices & services → MyQ → Configure**, enable **Require LAN-only

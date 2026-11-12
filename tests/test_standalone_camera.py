@@ -1,6 +1,7 @@
 """Standalone cameras retain their own identity, names, and availability."""
 
 from dataclasses import replace
+from datetime import UTC, datetime
 from typing import cast
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -8,6 +9,7 @@ import pytest
 from homeassistant.components.camera import async_get_image
 from homeassistant.const import STATE_UNAVAILABLE
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -20,6 +22,7 @@ from custom_components.myq.const import (
     DOMAIN,
     MFA_METHOD_EMAIL,
 )
+from custom_components.myq.keypad_preview import KeypadPreview
 from custom_components.myq.models import GarageDoor, MyQCamera, MyQDevices
 from custom_components.myq.runtime import MyQRuntimeData
 from custom_components.myq.tend_protocol import CameraTargetSupplier, TendCameraTarget
@@ -84,6 +87,12 @@ async def test_setup_preserves_devices_and_updates_cameras_without_extra_polling
         },
     )
     entry.add_to_hass(hass)
+    restored_at = None
+    if with_door:
+        stored = KeypadPreview(hass, FIRST.serial_number)
+        stored.received(b"synthetic-frame")
+        await stored.save()
+        restored_at = stored.captured_at
     client = MagicMock()
     doors = (DOOR,) if with_door else ()
     client.async_get_devices = AsyncMock(
@@ -106,9 +115,30 @@ async def test_setup_preserves_devices_and_updates_cameras_without_extra_polling
         assert entity is not None and entity.device_id == device.id
         state = hass.states.get(entity_id)
         assert state is not None and state.attributes["friendly_name"] == f"{camera.name} Camera"
-        assert (await async_get_image(hass, entity_id)).content == IMAGE
-    assert client.async_get_camera_image.await_args_list[0].args == (FIRST,)
-    assert client.async_get_camera_image.await_args_list[1].args == (SECOND,)
+        expected_at = restored_at if camera == FIRST else None
+        if expected_at is None:
+            with pytest.raises(HomeAssistantError):
+                await async_get_image(hass, entity_id)
+        assert state.attributes["preview_updated"] == (
+            expected_at.isoformat() if expected_at is not None else None
+        )
+        timestamp_id = registry.async_get_entity_id(
+            "sensor", DOMAIN, f"{camera.serial_number}_keypad_snapshot_time"
+        )
+        assert timestamp_id is not None
+        timestamp = hass.states.get(timestamp_id)
+        assert timestamp is not None
+        assert timestamp.state == (
+            expected_at.isoformat(timespec="seconds") if expected_at is not None else "unknown"
+        )
+    coordinator = cast(MyQRuntimeData, entry.runtime_data).coordinator
+    updated_at = datetime.now(UTC)
+    coordinator.async_set_keypad_snapshot_time(SECOND.serial_number, updated_at)
+    await hass.async_block_till_done()
+    assert timestamp_id is not None
+    updated = hass.states.get(timestamp_id)
+    assert updated is not None and updated.state == updated_at.isoformat(timespec="seconds")
+    client.async_get_camera_image.assert_not_awaited()
     if with_door:
         attached = registry.async_get_entity_id("camera", DOMAIN, "door-1_camera")
         assert attached is not None

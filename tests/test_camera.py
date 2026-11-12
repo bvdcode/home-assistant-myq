@@ -60,6 +60,8 @@ async def test_live_stream_is_available_only_for_tc_camera() -> None:
         stream_class.assert_called_once_with(
             tc_entity._async_stream_target,
             coordinator.client.async_access_token,
+            idle_seconds=None,
+            on_snapshot=None,
             lan_only=False,
             fallback_target_supplier=tc_entity._async_camera_target,
         )
@@ -271,6 +273,8 @@ async def test_camera_passes_lan_only_option_to_shared_stream() -> None:
         factory.assert_called_once_with(
             entity._async_stream_target,
             coordinator.client.async_access_token,
+            idle_seconds=None,
+            on_snapshot=None,
             lan_only=True,
             fallback_target_supplier=entity._async_camera_target,
         )
