@@ -139,9 +139,17 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
         return await self._live_stream.source_url()
 
     async def _async_stream_target(self) -> TendCameraTarget:
-        if self._opener_serial is not None:
-            return TendCameraTarget(opener_serial=self._opener_serial)
         camera = self.camera
+        if self._opener_serial is not None:
+            fallback = None
+            if camera is not None:
+                try:
+                    fallback = await self.coordinator.client.async_get_camera_alias(camera)
+                except (ClientError, MyQError, TimeoutError):
+                    fallback = None  # the opener identity alone still works where Tend names it
+            return TendCameraTarget(
+                opener_serial=self._opener_serial, fallback_destination=fallback
+            )
         if camera is None:
             raise MyQApiError("Camera is no longer available")
         return TendCameraTarget(
