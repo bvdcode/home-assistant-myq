@@ -123,6 +123,20 @@ async def test_cancelled_setup_releases_offer(connection: MagicMock, transport: 
     connection.aclose.assert_awaited_once()
 
 
+async def test_session_passes_lan_policy_to_transport(connection: MagicMock) -> None:
+    with (
+        patch("custom_components.myq.tend_session.VideoTransport") as factory,
+        patch("custom_components.myq.tend_session.request_video", new_callable=AsyncMock) as offer,
+    ):
+        offer.return_value = VideoOffer("relay.example", 30000, "0123456789abcdef", "LOG-test")
+        factory.return_value.punch = AsyncMock()
+        session = await TendSession.open(
+            TendCameraTarget(opener_serial="door-1"), "token", MagicMock(), lan_only=True
+        )
+        assert factory.call_args.kwargs == {"lan_only": True}
+        await session.close()
+
+
 async def test_session_selects_exact_destination_among_unattached_cameras(
     connection: MagicMock, transport: MagicMock
 ) -> None:
