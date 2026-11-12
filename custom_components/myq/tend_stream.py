@@ -10,7 +10,7 @@ from collections.abc import Awaitable, Callable
 from aiohttp import ClientError, web
 
 from .exceptions import MyQError
-from .tend_protocol import TendCameraTarget, TendStreamError
+from .tend_protocol import CameraTargetSupplier, TendCameraTarget, TendStreamError
 from .tend_session import TendSession
 
 _LOGGER = logging.getLogger(__name__)
@@ -56,11 +56,16 @@ class TendLiveStream:
 
     def __init__(
         self,
-        target_supplier: Callable[[], Awaitable[TendCameraTarget]],
+        target_supplier: CameraTargetSupplier,
         token_supplier: Callable[[], Awaitable[str]],
+        *,
+        lan_only: bool = False,
+        fallback_target_supplier: CameraTargetSupplier | None = None,
     ) -> None:
         self._target_supplier = target_supplier
         self._target_task: asyncio.Future[TendCameraTarget] | None = None
+        self._fallback_target_supplier = fallback_target_supplier
+        self._lan_only = lan_only
         self._token_supplier = token_supplier
         self._runner: web.AppRunner | None = None
         self._url: str | None = None
@@ -124,7 +129,13 @@ class TendLiveStream:
                 token = await self._token_supplier()
                 if bool(self._closed):
                     raise TendStreamError("Camera stream is closed")
-                self._session = await TendSession.open(target, token, self._on_frame)
+                self._session = await TendSession.open(
+                    target,
+                    token,
+                    self._on_frame,
+                    lan_only=self._lan_only,
+                    fallback_target_supplier=self._fallback_target_supplier,
+                )
                 if bool(self._closed):
                     await self._close_session()
                     raise TendStreamError("Camera stream is closed")
