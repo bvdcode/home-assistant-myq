@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v0.2.13 (2026-11-12)
+
+Fix live video selection for attached cameras
+
+- Resolve cameras by their exact destination when no opener matches.
+- Request camera aliases only when needed, with a five-second timeout.
+- Add regression coverage for camera selection, timeouts, and session cleanup.
+
+
 ## v0.2.12 (2026-11-12)
 
 Add optional LAN-only camera video
