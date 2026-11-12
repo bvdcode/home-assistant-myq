@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v0.2.12 (2026-11-12)
+
+Add optional LAN-only camera video
+
+- Add a setting that restricts live video to the camera's private LAN address and negotiated UDP ports.
+- Keep the setting disabled by default and reload the integration when it changes.
+- Translate the camera video setting into all 13 supported languages.
+
+
 ## v0.2.11 (2026-11-08)
 
 Reduce MyQ cloud request volume
