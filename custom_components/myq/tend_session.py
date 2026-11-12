@@ -7,7 +7,15 @@ import logging
 from collections.abc import Callable
 
 from .tend_media import VideoTransport
-from .tend_protocol import TendCamera, TendCameraTarget, TendStreamError, VideoOffer, parse_cameras
+from .tend_protocol import (
+    CameraTargetSupplier,
+    TendCamera,
+    TendCameraNotFoundError,
+    TendCameraTarget,
+    TendStreamError,
+    VideoOffer,
+    parse_cameras,
+)
 from .tend_signaling import CxsConnection, request_video
 
 _LOGGER = logging.getLogger(__name__)
@@ -37,13 +45,21 @@ class TendSession:
         on_frame: Callable[[bytes], None],
         *,
         lan_only: bool = False,
+        fallback_target_supplier: CameraTargetSupplier | None = None,
     ) -> TendSession:
         """Connect to the requested camera, releasing failed attempts."""
         session = cls(on_frame, lan_only=lan_only)
         ready = False
         try:
             await session._connection.login(token)
-            session._camera = target.select(parse_cameras(session._connection.properties))
+            cameras = parse_cameras(session._connection.properties)
+            try:
+                session._camera = target.select(cameras)
+            except TendCameraNotFoundError:
+                if fallback_target_supplier is None:
+                    raise
+                fallback = await fallback_target_supplier()
+                session._camera = fallback.select(cameras)
             await session._start()
             if session.ended:
                 raise TendStreamError("Tend signaling closed during camera setup")
