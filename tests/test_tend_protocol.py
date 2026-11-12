@@ -14,6 +14,7 @@ from custom_components.myq.tend_media import VideoTransport, _Channel
 from custom_components.myq.tend_protocol import (
     CxsPacket,
     TendCamera,
+    TendCameraNotFoundError,
     TendCameraTarget,
     TendStreamError,
     VideoOffer,
@@ -201,27 +202,10 @@ def test_stream_target_requires_exactly_one_identity(
         TendCameraTarget(opener, destination)
 
 
-def test_opener_target_falls_back_to_destination_when_tend_names_another_opener() -> None:
-    """Tend reports the opener a camera is built into, not always the discovered door."""
-    built_in = TendCamera("alias", "alias:mac1", "key", "192.0.2.1", "other-opener")
-    other = TendCamera("alias", "alias:mac2", "key", "192.0.2.2", "")
-    target = TendCameraTarget(opener_serial="door-1", fallback_destination="alias:mac1")
-    assert target.select([other, built_in]) is built_in
-    with pytest.raises(TendStreamError, match="not listed"):
-        TendCameraTarget(opener_serial="door-1").select([other, built_in])
-    with pytest.raises(TendStreamError, match="not listed"):
-        TendCameraTarget(opener_serial="door-1", fallback_destination="alias:absent").select(
-            [other]
-        )
-
-
-def test_opener_match_wins_over_the_fallback_destination() -> None:
-    named = TendCamera("alias", "alias:mac1", "key", "192.0.2.1", "door-1")
-    other = TendCamera("alias", "alias:mac2", "key", "192.0.2.2", "")
-    target = TendCameraTarget(opener_serial="door-1", fallback_destination="alias:mac2")
-    assert target.select([other, named]) is named
-
-
-def test_fallback_destination_requires_an_opener_identity() -> None:
-    with pytest.raises(ValueError):
-        TendCameraTarget(destination="alias:mac1", fallback_destination="alias:mac2")
+def test_missing_camera_reports_counts_without_identifiers() -> None:
+    camera = TendCamera("account", "account:mac1", "key", "192.0.2.1", "other-opener")
+    with pytest.raises(TendCameraNotFoundError) as raised:
+        TendCameraTarget(opener_serial="missing").select([camera])
+    assert str(raised.value) == (
+        "TC camera was not listed by Tend signaling (1 listed, 1 with an opener)"
+    )

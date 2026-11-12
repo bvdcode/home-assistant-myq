@@ -8,6 +8,7 @@ from __future__ import annotations
 import ipaddress
 import re
 import struct
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -22,6 +23,10 @@ _PROPERTY_SPACE = " \t\f"
 
 class TendStreamError(Exception):
     """A TC camera stream could not be opened or read."""
+
+
+class TendCameraNotFoundError(TendStreamError):
+    """No camera in the signaling reply matches the requested identity."""
 
 
 @dataclass(slots=True)
@@ -128,16 +133,10 @@ class TendCamera:
 
 @dataclass(frozen=True, slots=True)
 class TendCameraTarget:
-    """Identify exactly one camera by its opener or resolved signaling destination.
-
-    ``fallback_destination`` is tried only when no listed camera names ``opener_serial``.
-    Tend reports the opener a camera is built into (GSN), which is not always the door that
-    MyQ discovery attaches it to.
-    """
+    """Identify exactly one camera by its opener or resolved signaling destination."""
 
     opener_serial: str | None = None
     destination: str | None = None
-    fallback_destination: str | None = None
 
     def __post_init__(self) -> None:
         if (self.opener_serial is None) == (self.destination is None):
@@ -145,8 +144,6 @@ class TendCameraTarget:
         value = self.opener_serial if self.opener_serial is not None else self.destination
         if not value:
             raise ValueError("Camera identity must not be empty")
-        if self.fallback_destination is not None and self.opener_serial is None:
-            raise ValueError("A fallback destination only applies to an opener identity")
 
     def select(self, cameras: list[TendCamera]) -> TendCamera:
         """Reject missing or ambiguous destinations instead of selecting another camera."""
@@ -154,19 +151,18 @@ class TendCameraTarget:
             matches = [camera for camera in cameras if camera.destination == self.destination]
         else:
             matches = [camera for camera in cameras if camera.opener_serial == self.opener_serial]
-            if not matches and self.fallback_destination:
-                matches = [
-                    camera for camera in cameras if camera.destination == self.fallback_destination
-                ]
         if not matches:
             with_opener = sum(1 for camera in cameras if camera.opener_serial)
-            raise TendStreamError(
+            raise TendCameraNotFoundError(
                 "TC camera was not listed by Tend signaling "
                 f"({len(cameras)} listed, {with_opener} with an opener)"
             )
         if len(matches) != 1:
             raise TendStreamError("TC camera identity is ambiguous in Tend signaling")
         return matches[0]
+
+
+type CameraTargetSupplier = Callable[[], Awaitable[TendCameraTarget]]
 
 
 def parse_cameras(properties: dict[str, str]) -> list[TendCamera]:
