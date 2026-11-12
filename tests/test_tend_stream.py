@@ -237,6 +237,67 @@ def test_queue_end_survives_backpressure() -> None:
     assert b"late" not in queued
 
 
+async def test_keypad_lifecycle_reports_session_measures_and_cancellation(
+    live: TendLiveStream, open_session: AsyncMock
+) -> None:
+    from dataclasses import replace
+
+    from custom_components.myq.keypad_state import KeypadState
+
+    state = KeypadState()
+    one_viewer = asyncio.Event()
+
+    def observe(event: str, value: str | float | int | None) -> None:
+        state.stream_event(event, value)
+        if event == "consumers" and value == 1:
+            one_viewer.set()
+
+    live._on_diagnostic = observe
+    open_session.return_value.media_path = "unknown"
+    url = await live.source_url()
+    assert replace(state).phase == "idle" and state.active_consumers == 0
+    async with ClientSession() as client:
+        first, second = await asyncio.gather(client.get(url), client.get(url))
+        assert replace(state).phase == "connecting" and state.active_consumers == 2
+        open_session.assert_awaited_once()
+        live._on_frame(PFRAME)
+        assert replace(state).first_frame_seconds is None
+        open_session.return_value.media_path = "lan"
+        live._on_frame(SPS + PPS + IDR)
+        assert replace(state).session_active and replace(state).first_frame_seconds is not None
+        assert replace(state).transport == "lan" and state.last_transport == "lan"
+        one_viewer.clear()
+        first.close()
+        await asyncio.wait_for(one_viewer.wait(), 1)
+        assert replace(state).active_consumers == 1 and state.session_active
+        live._on_frame(b"")
+        live._on_frame(b"")
+        assert replace(state).session_errors == 1 and state.last_failure == "VideoEnded"
+        assert replace(state).phase == "error" and not replace(state).session_active
+        second.close()
+    await live.close()
+
+
+async def test_diagnostic_callback_failure_preserves_media_and_idle_cleanup(
+    live: TendLiveStream, open_session: AsyncMock
+) -> None:
+    def fail(event: str, value: object) -> None:
+        raise RuntimeError("synthetic diagnostic failure")
+
+    closed = asyncio.Event()
+    open_session.return_value.close.side_effect = closed.set
+    live._on_diagnostic = fail
+    open_session.return_value.media_path = "lan"
+    with patch("custom_components.myq.tend_stream._IDLE_SECONDS", 0):
+        async with ClientSession() as client:
+            response = await client.get(await live.source_url())
+            live._on_frame(SPS + PPS + IDR)
+            assert await response.content.readexactly(len(SPS + PPS + IDR)) == SPS + PPS + IDR
+            response.close()
+        await asyncio.wait_for(closed.wait(), 1)
+    open_session.return_value.close.assert_awaited_once()
+
+
 async def test_lan_only_applies_to_every_new_session(open_session: AsyncMock) -> None:
     stream = TendLiveStream(
         AsyncMock(return_value=TendCameraTarget(opener_serial="door-1")),

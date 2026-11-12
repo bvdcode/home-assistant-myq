@@ -102,6 +102,12 @@
       },
       "active_fault": {
         "name": "Défaut actif"
+      },
+      "keypad_streaming": {
+        "name": "Diffusion vidéo"
+      },
+      "keypad_session_problem": {
+        "name": "Problème de session"
       }
     },
     "cover": {
@@ -121,11 +127,59 @@
       },
       "last_activation_source": {
         "name": "Source de la dernière activation"
+      },
+      "keypad_battery": {
+        "name": "Batterie"
+      },
+      "keypad_power_state": {
+        "name": "État d’alimentation signalé",
+        "state": {
+          "fp": "Pleine puissance",
+          "lpds": "Veille profonde"
+        }
+      },
+      "keypad_power_sample_time": {
+        "name": "Heure de mesure de la batterie"
+      },
+      "keypad_session_state": {
+        "name": "État de la session",
+        "state": {
+          "idle": "Inactif",
+          "connecting": "Connexion en cours",
+          "streaming": "Diffusion en cours",
+          "error": "Erreur"
+        }
+      },
+      "keypad_session_errors": {
+        "name": "Erreurs de session"
+      },
+      "keypad_startup_time": {
+        "name": "Durée du dernier démarrage"
+      },
+      "keypad_active_consumers": {
+        "name": "Récepteurs vidéo actifs"
+      },
+      "keypad_credential_renewals": {
+        "name": "Renouvellements des identifiants"
+      },
+      "keypad_transport": {
+        "name": "Transport vidéo",
+        "state": {
+          "idle": "Inactif",
+          "lan": "Réseau local",
+          "p2p": "Connexion directe",
+          "cloud_relay": "Relais cloud"
+        }
       }
     },
     "camera": {
       "camera": {
         "name": "Caméra"
+      }
+    },
+    "button": {
+      "keypad_refresh_power": {
+        "name": "Actualiser la batterie et l’alimentation"
       }
     }
   },
@@ -135,6 +189,9 @@
     },
     "camera_image_failed": {
       "message": "Impossible de récupérer une image de la caméra MyQ."
+    },
+    "keypad_power_refresh_failed": {
+      "message": "Impossible d’actualiser l’état de la batterie et de l’alimentation du clavier."
     }
   },
   "options": {

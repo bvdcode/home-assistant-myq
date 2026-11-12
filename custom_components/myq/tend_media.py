@@ -82,6 +82,8 @@ class VideoTransport:
         self.channels: list[_Channel] = []
         self.local_ip = ""
         self._relay_ip = ""
+        self._last_media_peer = ""
+        self.media_path = "unknown"
         self._camera_ips = {camera.local_ip} if camera.local_ip else set[str]()
         self._connected = asyncio.Event()
         self._report_task: asyncio.Task[None] | None = None
@@ -265,8 +267,21 @@ class VideoTransport:
             return
         if control:
             self._handle_rtcp(data)
-        else:
+        elif len(data) >= 8:
+            if remote[0] != self._last_media_peer:
+                self._last_media_peer = remote[0]
+                self.media_path = self._media_path(remote[0])
             self._handle_media(data)
+
+    def _media_path(self, host: str) -> str:
+        """Classify the observed media sender using authenticated camera metadata."""
+        if host == self._relay_ip:
+            return "cloud_relay"
+        if host == self.camera.local_ip:
+            address = ipaddress.ip_address(host)
+            if any(address in network for network in _LAN_NETWORKS):
+                return "lan"
+        return "p2p"
 
     def _handle_media(self, data: bytes) -> None:
         if len(data) < 8:

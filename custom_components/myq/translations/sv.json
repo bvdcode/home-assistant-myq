@@ -102,6 +102,12 @@
       },
       "active_fault": {
         "name": "Aktivt fel"
+      },
+      "keypad_streaming": {
+        "name": "Videoströmning"
+      },
+      "keypad_session_problem": {
+        "name": "Sessionsproblem"
       }
     },
     "cover": {
@@ -121,11 +127,59 @@
       },
       "last_activation_source": {
         "name": "Senaste aktiveringskälla"
+      },
+      "keypad_battery": {
+        "name": "Batteri"
+      },
+      "keypad_power_state": {
+        "name": "Rapporterat strömläge",
+        "state": {
+          "fp": "Full effekt",
+          "lpds": "Djup vila"
+        }
+      },
+      "keypad_power_sample_time": {
+        "name": "Tidpunkt för batterimätning"
+      },
+      "keypad_session_state": {
+        "name": "Sessionsstatus",
+        "state": {
+          "idle": "Inaktiv",
+          "connecting": "Ansluter",
+          "streaming": "Strömmar",
+          "error": "Fel"
+        }
+      },
+      "keypad_session_errors": {
+        "name": "Sessionsfel"
+      },
+      "keypad_startup_time": {
+        "name": "Senaste uppstartstid"
+      },
+      "keypad_active_consumers": {
+        "name": "Aktiva videomottagare"
+      },
+      "keypad_credential_renewals": {
+        "name": "Förnyelser av inloggningsuppgifter"
+      },
+      "keypad_transport": {
+        "name": "Videotransport",
+        "state": {
+          "idle": "Inaktiv",
+          "lan": "Lokalt nätverk",
+          "p2p": "Direktanslutning",
+          "cloud_relay": "Molnrelä"
+        }
       }
     },
     "camera": {
       "camera": {
         "name": "Kamera"
+      }
+    },
+    "button": {
+      "keypad_refresh_power": {
+        "name": "Uppdatera batteri- och strömstatus"
       }
     }
   },
@@ -135,6 +189,9 @@
     },
     "camera_image_failed": {
       "message": "Det gick inte att hämta en stillbild från MyQ-kameran."
+    },
+    "keypad_power_refresh_failed": {
+      "message": "Det gick inte att uppdatera knappsatsens batteri- och strömstatus."
     }
   },
   "options": {

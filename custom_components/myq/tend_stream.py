@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import secrets
+import time
 from collections.abc import Awaitable, Callable
 
 from aiohttp import ClientError, web
@@ -59,9 +60,13 @@ class TendLiveStream:
         target_supplier: CameraTargetSupplier,
         token_supplier: Callable[[], Awaitable[str]],
         *,
+        on_diagnostic: Callable[[str, str | int | float | None], None] | None = None,
         lan_only: bool = False,
         fallback_target_supplier: CameraTargetSupplier | None = None,
     ) -> None:
+        self._on_diagnostic = on_diagnostic
+        self._last_media_path = "unknown"
+        self._first_frame_started: float | None = None
         self._target_supplier = target_supplier
         self._fallback_target_supplier = fallback_target_supplier
         self._lan_only = lan_only
@@ -105,6 +110,13 @@ class TendLiveStream:
                         await runner.cleanup()
             return self._url
 
+    def _report(self, event: str, value: str | int | float | None = None) -> None:
+        if self._on_diagnostic is not None:
+            try:
+                self._on_diagnostic(event, value)
+            except Exception as error:
+                _LOGGER.debug("Camera diagnostic callback failed: %s", type(error).__name__)
+
     async def _subscribe(self) -> _Viewer:
         async with self._session_lock:
             if self._closed:
@@ -114,19 +126,40 @@ class TendLiveStream:
                 self._idle_timer = None
             if self._session is None or self._session.ended:
                 await self._close_session()
-                self._session = await TendSession.open(
-                    await self._target_supplier(),
-                    await self._token_supplier(),
-                    self._on_frame,
-                    lan_only=self._lan_only,
-                    fallback_target_supplier=self._fallback_target_supplier,
-                )
+                self._last_media_path = "unknown"
+                self._first_frame_started = time.monotonic()
+                self._report("start")
+                try:
+                    self._session = await TendSession.open(
+                        await self._target_supplier(),
+                        await self._token_supplier(),
+                        self._on_frame,
+                        lan_only=self._lan_only,
+                        fallback_target_supplier=self._fallback_target_supplier,
+                    )
+                except asyncio.CancelledError:
+                    self._report("end")
+                    raise
+                except Exception as error:
+                    self._report("error", type(error).__name__)
+                    raise
+            self._report_media_path()
             viewer = _Viewer()
             self._viewers.add(viewer)
+            self._report("consumers", len(self._viewers))
             return viewer
+
+    def _report_media_path(self) -> None:
+        if self._on_diagnostic is not None and self._session is not None:
+            path = self._session.media_path
+            if path != self._last_media_path:
+                self._last_media_path = path
+                self._report("transport", path)
 
     def _on_frame(self, frame: bytes) -> None:
         if not frame:
+            if not self._closed and self._session is not None:
+                self._report("error", "VideoEnded")
             for viewer in self._viewers:
                 viewer.end()
             return
@@ -134,11 +167,15 @@ class TendLiveStream:
         types = {kind for kind, _ in units}
         if not types:
             return
+        self._report_media_path()
         for kind, nal in units:
             if kind == 7:
                 self._sps = nal
             elif kind == 8:
                 self._pps = nal
+        if 5 in types and self._sps and self._pps and self._first_frame_started is not None:
+            self._report("first_frame", round(time.monotonic() - self._first_frame_started, 3))
+            self._first_frame_started = None
         for viewer in self._viewers:
             if not viewer.ready:
                 if 5 not in types or self._sps is None or self._pps is None:
@@ -185,6 +222,7 @@ class TendLiveStream:
         finally:
             if viewer is not None:
                 self._viewers.discard(viewer)
+                self._report("consumers", len(self._viewers))
                 if not self._viewers and not self._closed:
                     delay = _IDLE_SECONDS
                     if self._session is not None and self._session.ended:
@@ -207,6 +245,7 @@ class TendLiveStream:
         if self._session is not None:
             await self._session.close()
             self._session = None
+            self._report("end")
         self._sps = self._pps = None
 
     async def close(self) -> None:

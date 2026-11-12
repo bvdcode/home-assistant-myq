@@ -64,8 +64,8 @@ def test_lan_only_never_selects_public_or_other_private_candidate() -> None:
     receiver.on_datagram(False, candidates(("198.51.100.1", 9000), ("192.168.1.30", 9001)), BROKER)
     assert receiver.channels[0].peer is None
     with patch.object(receiver, "_handle_media") as media:
-        receiver.on_datagram(False, b"media", BROKER)
-        receiver.on_datagram(False, b"media", ("198.51.100.1", 9000))
+        receiver.on_datagram(False, b"media packet", BROKER)
+        receiver.on_datagram(False, b"media packet", ("198.51.100.1", 9000))
         media.assert_not_called()
 
 
@@ -79,14 +79,14 @@ def test_pin_applies_to_media_rtcp_and_handshake_packets() -> None:
     ):
         for control in [False, True]:
             for remote in [BROKER, (CAMERA_IP, 9999), ("192.168.1.30", 9000)]:
-                receiver.on_datagram(control, b"media", remote)
+                receiver.on_datagram(control, b"media packet", remote)
                 receiver.on_datagram(control, _sdnk(5, b"\1"), remote)
             assert not receiver.channels[int(control)].connected
         media.assert_not_called()
         rtcp.assert_not_called()
-        receiver.on_datagram(False, b"media", (CAMERA_IP, 9000))
+        receiver.on_datagram(False, b"media packet", (CAMERA_IP, 9000))
         receiver.on_datagram(True, b"rtcp", (CAMERA_IP, 9001))
-        media.assert_called_once_with(b"media")
+        media.assert_called_once_with(b"media packet")
         rtcp.assert_called_once_with(b"rtcp")
 
 

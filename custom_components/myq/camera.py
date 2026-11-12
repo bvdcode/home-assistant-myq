@@ -145,8 +145,13 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
                 )
                 if self.coordinator.config_entry
                 else False,
+                **({"on_diagnostic": self._runtime_diagnostic} if camera.is_video_keypad else {}),
             )
         return await self._live_stream.source_url()
+
+    def _runtime_diagnostic(self, event: str, value: str | int | float | None) -> None:
+        self.coordinator.keypad_state(self._camera_serial).stream_event(event, value)
+        self.coordinator.async_keypad_changed()
 
     async def _async_stream_target(self) -> TendCameraTarget:
         if self._opener_serial is not None:

@@ -21,6 +21,7 @@ from .const import (
     USER_AGENT,
 )
 from .exceptions import MyQApiError, MyQAuthenticationError
+from .keypad_state import KeypadPower
 from .models import GarageDoor, MyQAccount, MyQCamera, MyQDevices
 from .oauth import MyQAuth
 from .request_limits import RequestCooldown
@@ -110,13 +111,33 @@ class MyQClient:
             raise MyQApiError("Tend returned a camera snapshot that is not a JPEG")
         return image
 
-    async def async_get_camera_alias(self, camera: MyQCamera) -> str:
-        """Resolve one camera's signaling destination from its Tend device ID."""
+    async def _async_camera_metadata(self, camera: MyQCamera) -> dict[str, object]:
+        if not camera.tend_device_id.isdecimal():
+            raise MyQApiError("Invalid camera video identifier")
         payload = await self._async_request_json(
-            "GET", f"{TEND_API_BASE_URL}/devices/{camera.tend_device_id}", _tend_headers
+            "GET",
+            f"{TEND_API_BASE_URL}/devices/{camera.tend_device_id}",
+            _metadata_headers,
+            bounded=True,
         )
         if payload.get("id") != camera.tend_device_id:
             raise MyQApiError("Tend returned a different camera identity")
+        return payload
+
+    async def async_get_keypad_power(self, camera: MyQCamera) -> KeypadPower:
+        """Read this keypad's reported power with one explicit metadata GET."""
+        if not camera.is_video_keypad:
+            raise MyQApiError("Camera is not a Video Keypad")
+        async with asyncio.timeout(15):
+            metadata = await self._async_camera_metadata(camera)
+        try:
+            return KeypadPower.from_device(metadata)
+        except ValueError:
+            raise MyQApiError("Keypad returned an invalid power report") from None
+
+    async def async_get_camera_alias(self, camera: MyQCamera) -> str:
+        """Resolve one camera's signaling destination from its Tend device ID."""
+        payload = await self._async_camera_metadata(camera)
         alias = payload.get("alias")
         if not isinstance(alias, str):
             raise MyQApiError("Tend returned a camera without a signaling alias")
@@ -170,9 +191,15 @@ class MyQClient:
         await self._async_request("PUT", url)
 
     async def _async_request_json(
-        self, method: str, url: str, headers: HeadersFn | None = None
+        self, method: str, url: str, headers: HeadersFn | None = None, *, bounded: bool = False
     ) -> dict[str, object]:
-        body = await self._async_request(method, url, headers)
+        body = (
+            await self._async_request(
+                method, url, headers, allow_redirects=False, max_body_bytes=1_024_000
+            )
+            if bounded
+            else await self._async_request(method, url, headers)
+        )
         try:
             parsed = json.loads(body)
         except (UnicodeDecodeError, json.JSONDecodeError) as error:
@@ -186,20 +213,37 @@ class MyQClient:
         method: str,
         url: str,
         headers: HeadersFn | None = None,
+        *,
+        allow_redirects: bool | None = None,
+        max_body_bytes: int | None = None,
     ) -> bytes:
         self._request_cooldown.check(url)
         access_token = await self._auth.async_access_token()
         self._request_cooldown.check(url)
-        async with self._session.request(
-            method,
-            url,
-            headers=(headers or _api_headers)(access_token),
-        ) as response:
-            body = await response.read()
+        request_headers = (headers or _api_headers)(access_token)
+        if allow_redirects is None:
+            request = self._session.request(method, url, headers=request_headers)
+        else:
+            request = self._session.request(
+                method,
+                url,
+                headers=request_headers,
+                allow_redirects=allow_redirects,
+            )
+        async with request as response:
+            if max_body_bytes is None:
+                body = await response.read()
+            else:
+                received = bytearray()
+                async for chunk in response.content.iter_chunked(65536):
+                    received.extend(chunk)
+                    if len(received) > max_body_bytes:
+                        raise MyQApiError("MyQ response exceeds size limit")
+                body = bytes(received)
             self._request_cooldown.check_response(url, response.status, response.headers)
             if response.status in {401, 403}:
                 raise MyQAuthenticationError(f"MyQ returned HTTP {response.status}")
-            if response.status >= 400:
+            if response.status >= (300 if allow_redirects is False else 400):
                 raise MyQApiError(f"MyQ returned HTTP {response.status}")
             return body
 
@@ -295,3 +339,7 @@ def _tend_headers(access_token: str) -> dict[str, str]:
         "SeedonkLocale": TEND_LOCALE,
         "partnerId": TEND_PARTNER_ID,
     }
+
+
+def _metadata_headers(access_token: str) -> dict[str, str]:
+    return {**_api_headers(access_token), **_tend_headers(access_token)}
