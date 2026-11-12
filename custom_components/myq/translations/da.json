@@ -154,9 +154,10 @@
   "options": {
     "step": {
       "init": {
-        "title": "Indstillinger for optagelse fra tastaturet",
-        "description": "Vælg standardindstillinger for optagelser fra videotastaturet. Opbevaringsperioden gælder for nye optagelser. Vælg 0 for at beholde dem på ubestemt tid. Længere eller hyppigere optagelser bruger mere batteri.",
+        "title": "MyQ",
+        "description": "Kræv, at livevideo kommer fra kameraets private IP-adresse på lokalnetværket. Godkendelse og oprettelse af forbindelsen kræver stadig adgang til skyen. Hvis kameraet ikke kan nås på lokalnetværket, mislykkes afspilningen uden at bruge en offentlig adresse. Ændring af indstillingen lukker aktive kameraforbindelser. Stillbilleder hentes fortsat fra skyen.\n\nVælg standardindstillinger for optagelser fra videotastaturet. Opbevaringsperioden gælder for nye optagelser. Vælg 0 for at beholde dem på ubestemt tid. Længere eller hyppigere optagelser bruger mere batteri.",
         "data": {
+          "camera_lan_only": "Kræv livevideo via lokalnetværket",
           "recording_duration": "Standardlængde på optagelser (sekunder)",
           "recording_cooldown": "Minimumstid mellem start af optagelser (sekunder)",
           "retention_days": "Slet optagelser efter antal dage (0 for ubegrænset opbevaring)"

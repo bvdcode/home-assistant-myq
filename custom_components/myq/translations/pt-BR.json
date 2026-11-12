@@ -154,9 +154,10 @@
   "options": {
     "step": {
       "init": {
-        "title": "Configurações de gravação do teclado",
-        "description": "Escolha os padrões de gravação do teclado com câmera. O prazo de retenção se aplica aos novos clipes. Defina 0 para mantê-los por tempo indeterminado. Gravações mais longas ou frequentes consomem mais bateria.",
+        "title": "MyQ",
+        "description": "Exige que o vídeo ao vivo venha do endereço IP privado da câmera na rede local. A autorização e o estabelecimento da conexão ainda exigem acesso à nuvem. Se a câmera não estiver acessível pela rede local, a reprodução falhará sem usar um endereço público. Alterar esta opção encerra as sessões ativas da câmera. As imagens estáticas continuam sendo obtidas da nuvem.\n\nEscolha os padrões de gravação do teclado com câmera. O prazo de retenção se aplica aos novos clipes. Defina 0 para mantê-los por tempo indeterminado. Gravações mais longas ou frequentes consomem mais bateria.",
         "data": {
+          "camera_lan_only": "Usar apenas a rede local para o vídeo ao vivo",
           "recording_duration": "Duração padrão da gravação (segundos)",
           "recording_cooldown": "Intervalo mínimo entre inícios de gravação (segundos)",
           "retention_days": "Excluir as gravações após este número de dias (0 para manter por tempo indeterminado)"

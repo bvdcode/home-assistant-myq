@@ -180,7 +180,7 @@ async def test_close_cancels_hung_setup(live: TendLiveStream, open_session: Asyn
     started = asyncio.Event()
     cancelled = asyncio.Event()
 
-    async def hang(*args: object) -> None:
+    async def hang(*args: object, **kwargs: object) -> None:
         started.set()
         try:
             await asyncio.Event().wait()
@@ -259,3 +259,46 @@ def test_slow_consumer_ends_instead_of_dropping_a_reference_frame() -> None:
     assert viewer.ended
     assert viewer.frames.get_nowait() == b""
     assert viewer.frames.empty()
+
+
+async def test_lan_only_applies_to_every_new_session(open_session: AsyncMock) -> None:
+    stream = TendLiveStream(
+        AsyncMock(return_value=TendCameraTarget(opener_serial="door-1")),
+        AsyncMock(return_value="token"),
+        lan_only=True,
+    )
+    try:
+        await stream._subscribe()
+        assert open_session.await_args is not None
+        assert open_session.await_args.kwargs == {
+            "lan_only": True,
+            "fallback_target_supplier": None,
+        }
+        open_session.return_value.ended = True
+        await stream._subscribe()
+        assert open_session.await_count == 2
+        assert open_session.await_args.kwargs == {
+            "lan_only": True,
+            "fallback_target_supplier": None,
+        }
+    finally:
+        await stream.close()
+
+
+async def test_shared_session_passes_lazy_alias_lookup_without_calling_it(
+    open_session: AsyncMock,
+) -> None:
+    fallback = AsyncMock(return_value=TendCameraTarget(destination="alias:mac1"))
+    stream = TendLiveStream(
+        AsyncMock(return_value=TendCameraTarget(opener_serial="door-1")),
+        AsyncMock(return_value="token"),
+        fallback_target_supplier=fallback,
+    )
+    try:
+        await asyncio.gather(stream._subscribe(), stream._subscribe())
+        open_session.assert_awaited_once()
+        assert open_session.await_args is not None
+        assert open_session.await_args.kwargs["fallback_target_supplier"] is fallback
+        fallback.assert_not_awaited()
+    finally:
+        await stream.close()

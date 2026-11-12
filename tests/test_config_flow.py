@@ -488,6 +488,22 @@ def _entry_data() -> dict[str, object]:
     }
 
 
+async def test_lan_only_option_is_opt_in_and_preserves_other_options(hass: HomeAssistant) -> None:
+    entry = MockConfigEntry(domain=DOMAIN, data={}, options={"unrelated": 7})
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    assert result["type"] is data_entry_flow.FlowResultType.FORM
+    schema = result["data_schema"]
+    assert schema is not None
+    # Scoped to this option so later options can join the same form.
+    assert schema({})["camera_lan_only"] is False
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"camera_lan_only": True}
+    )
+    assert result["type"] is data_entry_flow.FlowResultType.CREATE_ENTRY
+    assert entry.options["unrelated"] == 7 and entry.options["camera_lan_only"] is True
+
+
 @pytest.mark.parametrize("has_camera", [False, True])
 async def test_setup_accepts_camera_only_accounts_and_rejects_empty_accounts(
     hass: HomeAssistant,
@@ -508,10 +524,18 @@ async def test_setup_accepts_camera_only_accounts_and_rejects_empty_accounts(
         assert result["reason"] == "no_devices"
 
 
-async def test_recording_options_preserve_unrelated_privacy_policy(hass: HomeAssistant) -> None:
+async def test_recording_and_lan_policy_share_one_options_form(hass: HomeAssistant) -> None:
     entry = MockConfigEntry(domain=DOMAIN, data={}, options={"camera_lan_only": True})
     entry.add_to_hass(hass)
     result = await hass.config_entries.options.async_init(entry.entry_id)
+    schema = result["data_schema"]
+    assert schema is not None
+    assert schema({}) == {
+        "camera_lan_only": True,
+        "recording_duration": 30,
+        "recording_cooldown": 60,
+        "retention_days": 30,
+    }
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         {"recording_duration": 15, "recording_cooldown": 90, "retention_days": 30},

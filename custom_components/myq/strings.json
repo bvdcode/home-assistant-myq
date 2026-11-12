@@ -154,9 +154,10 @@
   "options": {
     "step": {
       "init": {
-        "title": "Keypad recording settings",
-        "description": "Choose the defaults for Video Keypad recordings. Retention applies to newly recorded clips. Set retention to 0 to keep them indefinitely. Longer or more frequent recordings use more battery.",
+        "title": "MyQ",
+        "description": "Require video to come from the camera’s private LAN address. Cloud authorization and connection setup are still required. If the LAN path is unavailable, playback fails instead of using a public candidate. Changing this option closes active camera sessions. This setting applies to live video only; snapshots still use the cloud.\n\nChoose the defaults for Video Keypad recordings. Retention applies to newly recorded clips. Set retention to 0 to keep them indefinitely. Longer or more frequent recordings use more battery.",
         "data": {
+          "camera_lan_only": "Require LAN-only camera video",
           "recording_duration": "Default recording duration (seconds)",
           "recording_cooldown": "Minimum time between recording starts (seconds)",
           "retention_days": "Delete recorded clips after (days, 0 to keep indefinitely)"

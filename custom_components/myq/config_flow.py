@@ -33,6 +33,7 @@ from .config_flow_forms import (
     PasswordInput,
 )
 from .const import (
+    CONF_CAMERA_LAN_ONLY,
     CONF_EMAIL,
     CONF_MFA_METHOD,
     DEFAULT_MFA_METHOD,
@@ -427,6 +428,10 @@ class MyQOptionsFlow(config_entries.OptionsFlow):
                         "retention_days",
                         default=self.config_entry.options.get("retention_days", 30),
                     ): vol.All(vol.Coerce(int), vol.Range(min=0, max=365)),
+                    vol.Required(
+                        CONF_CAMERA_LAN_ONLY,
+                        default=self.config_entry.options.get(CONF_CAMERA_LAN_ONLY, False),
+                    ): bool,
                 }
             ),
         )

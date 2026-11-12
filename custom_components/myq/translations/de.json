@@ -154,9 +154,10 @@
   "options": {
     "step": {
       "init": {
-        "title": "Aufnahmeeinstellungen für das Tastenfeld",
-        "description": "Lege die Standardwerte für Aufnahmen des Video-Tastenfelds fest. Die Aufbewahrungsdauer gilt für neue Clips. Mit 0 bleiben sie unbegrenzt erhalten. Längere oder häufigere Aufnahmen verbrauchen mehr Batterie.",
+        "title": "MyQ",
+        "description": "Das Livebild muss von der privaten IP-Adresse der Kamera im lokalen Netzwerk kommen. Für die Autorisierung und den Verbindungsaufbau wird weiterhin die Cloud benötigt. Ist die Kamera im lokalen Netzwerk nicht erreichbar, schlägt die Wiedergabe fehl, ohne eine öffentliche Adresse zu verwenden. Eine Änderung dieser Einstellung beendet aktive Kameraverbindungen. Standbilder werden weiterhin aus der Cloud abgerufen.\n\nLege die Standardwerte für Aufnahmen des Video-Tastenfelds fest. Die Aufbewahrungsdauer gilt für neue Clips. Mit 0 bleiben sie unbegrenzt erhalten. Längere oder häufigere Aufnahmen verbrauchen mehr Batterie.",
         "data": {
+          "camera_lan_only": "Livevideo nur über das lokale Netzwerk zulassen",
           "recording_duration": "Standardaufnahmedauer (Sekunden)",
           "recording_cooldown": "Mindestabstand zwischen Aufnahmestarts (Sekunden)",
           "retention_days": "Aufnahmen nach dieser Anzahl Tage löschen (0 für unbegrenzte Aufbewahrung)"
