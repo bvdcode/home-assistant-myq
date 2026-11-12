@@ -149,8 +149,16 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
         return await self._live_stream.source_url()
 
     async def _async_stream_target(self) -> TendCameraTarget:
+        camera = self.camera
+        if camera is None:
+            raise MyQApiError("Camera is no longer available")
+        alias = None
+        if camera.device_model == "vkp-camera":
+            alias = await self.coordinator.client.async_prepare_keypad(camera)
         if self._opener_serial is not None:
             return TendCameraTarget(opener_serial=self._opener_serial)
+        if alias is not None:
+            return TendCameraTarget(destination=alias)
         return await self._async_camera_target()
 
     async def _async_camera_target(self) -> TendCameraTarget:

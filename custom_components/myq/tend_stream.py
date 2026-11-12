@@ -10,7 +10,7 @@ from collections.abc import Awaitable, Callable
 from aiohttp import ClientError, web
 
 from .exceptions import MyQError
-from .tend_protocol import CameraTargetSupplier, TendStreamError
+from .tend_protocol import CameraTargetSupplier, TendCameraTarget, TendStreamError
 from .tend_session import TendSession
 
 _LOGGER = logging.getLogger(__name__)
@@ -63,6 +63,7 @@ class TendLiveStream:
         fallback_target_supplier: CameraTargetSupplier | None = None,
     ) -> None:
         self._target_supplier = target_supplier
+        self._target_task: asyncio.Future[TendCameraTarget] | None = None
         self._fallback_target_supplier = fallback_target_supplier
         self._lan_only = lan_only
         self._token_supplier = token_supplier
@@ -114,13 +115,30 @@ class TendLiveStream:
                 self._idle_timer = None
             if self._session is None or self._session.ended:
                 await self._close_session()
+                if bool(self._closed):
+                    raise TendStreamError("Camera stream is closed")
+                self._target_task = asyncio.ensure_future(self._target_supplier())
+                try:
+                    target = await self._target_task
+                except ClientError, MyQError, OSError, TimeoutError:
+                    raise TendStreamError("Camera could not prepare for live video") from None
+                finally:
+                    self._target_task = None
+                if bool(self._closed):
+                    raise TendStreamError("Camera stream is closed")
+                token = await self._token_supplier()
+                if bool(self._closed):
+                    raise TendStreamError("Camera stream is closed")
                 self._session = await TendSession.open(
-                    await self._target_supplier(),
-                    await self._token_supplier(),
+                    target,
+                    token,
                     self._on_frame,
                     lan_only=self._lan_only,
                     fallback_target_supplier=self._fallback_target_supplier,
                 )
+                if bool(self._closed):
+                    await self._close_session()
+                    raise TendStreamError("Camera stream is closed")
             viewer = _Viewer()
             self._viewers.add(viewer)
             return viewer
@@ -213,6 +231,8 @@ class TendLiveStream:
         """Finish cleanup even when the caller cancels entity removal."""
         if self._shutdown_task is None:
             self._closed = True
+            if self._target_task is not None:
+                self._target_task.cancel()
             self._shutdown_task = asyncio.create_task(self._shutdown())
         try:
             await asyncio.shield(self._shutdown_task)
