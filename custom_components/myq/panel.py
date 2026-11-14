@@ -57,8 +57,47 @@ MAX_OPEN_WARNING: Final = 24 * 60
 
 DATA_PANEL: HassKey[MyQPanel] = HassKey(f"{DOMAIN}_panel")
 
-_SLUG = vol.All(str, vol.Match(r"^[a-z0-9_]{1,32}$"))
-_COLOR = vol.All(str, vol.Match(r"^(#[0-9a-f]{6}|[a-z0-9_]{1,32})$"))
+# The looks the door drawing in frontend/door-scene.js can show; a test keeps the two in step.
+DOOR_WIDTHS: Final = ("single", "double")
+DOOR_STYLES: Final = (
+    "traditional",
+    "long_panel",
+    "shaker",
+    "carriage",
+    "farmhouse",
+    "modern",
+    "plank",
+    "glass",
+)
+DOOR_WINDOWS: Final = ("none", "plain", "grid", "arched", "side")
+DOOR_GLASS: Final = ("tinted", "clear", "frosted")
+# Trim is painted, so it takes the painted colors but not the metal and wood finishes.
+TRIM_COLORS: Final = (
+    "white",
+    "almond",
+    "sandstone",
+    "clay",
+    "gray",
+    "charcoal",
+    "black",
+    "brown",
+    "bronze",
+    "green",
+    "navy",
+    "red",
+)
+DOOR_COLORS: Final = (
+    *TRIM_COLORS,
+    "aluminum",
+    "light_oak",
+    "cedar",
+    "walnut",
+    "mahogany",
+    "espresso",
+    "driftwood",
+)
+
+_CUSTOM_COLOR = vol.All(str, vol.Match(r"^#[0-9a-f]{6}$"))
 _DEVICE_ID = vol.All(str, vol.Length(min=1, max=64))
 
 
@@ -72,13 +111,13 @@ def _minutes(value: Any) -> int:
 
 APPEARANCE_SCHEMA: Final = vol.Schema(
     {
-        vol.Optional("width"): vol.In(("single", "double")),
-        vol.Optional("style"): _SLUG,
-        vol.Optional("color"): _COLOR,
-        vol.Optional("windows"): _SLUG,
-        vol.Optional("glass"): _SLUG,
+        vol.Optional("width"): vol.In(DOOR_WIDTHS),
+        vol.Optional("style"): vol.In(DOOR_STYLES),
+        vol.Optional("color"): vol.Any(vol.In(DOOR_COLORS), _CUSTOM_COLOR),
+        vol.Optional("windows"): vol.In(DOOR_WINDOWS),
+        vol.Optional("glass"): vol.In(DOOR_GLASS),
         vol.Optional("hardware"): bool,
-        vol.Optional("trim"): _COLOR,
+        vol.Optional("trim"): vol.Any(vol.In(TRIM_COLORS), _CUSTOM_COLOR),
     }
 )
 SETTINGS_SCHEMA: Final = vol.Schema(

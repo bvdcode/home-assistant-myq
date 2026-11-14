@@ -33,7 +33,14 @@ from custom_components.myq.const import (
 )
 from custom_components.myq.models import GarageDoor, MyQCamera, MyQDevices
 from custom_components.myq.panel import (
+    DOOR_COLORS,
+    DOOR_GLASS,
+    DOOR_STYLES,
+    DOOR_WIDTHS,
+    DOOR_WINDOWS,
+    FRONTEND_PATH,
     STORAGE_KEY,
+    TRIM_COLORS,
     MyQPanel,
     _frontend_version,
     _stored_panel,
@@ -365,8 +372,13 @@ async def test_appearance_and_settings_are_validated_stored_and_shared(
 
     for invalid in (
         {"style": "Raised Panel"},
+        {"style": "castle"},
         {"color": "#GGGGGG"},
+        {"color": "plaid"},
+        {"windows": "round"},
+        {"glass": "mirror"},
         {"trim": "Bright White"},
+        {"trim": "cedar"},
         {"width": "triple"},
         {"x": 1},
     ):
@@ -507,6 +519,28 @@ def test_stored_panel_data_is_sanitized() -> None:
             "settings": {"confirm": "yes"},
         }
     ) == {"appearance": {"keep": {"style": "glass", "hardware": True}}, "settings": {}}
+
+
+def test_appearance_choices_match_the_door_drawing() -> None:
+    source = (FRONTEND_PATH / "door-scene.js").read_text(encoding="utf-8")
+
+    def js_list(name: str) -> str:
+        found = re.search(rf"const {name} = \[(.*?)\];", source, re.DOTALL)
+        assert found is not None, name
+        return found.group(1)
+
+    def names(name: str) -> tuple[str, ...]:
+        return tuple(re.findall(r'"([^"]+)"', js_list(name)))
+
+    assert names("WIDTHS") == DOOR_WIDTHS
+    assert names("STYLES") == DOOR_STYLES
+    assert names("GLASS") == DOOR_GLASS
+    assert {*names("PANEL_WINDOWS"), *names("MODERN_WINDOWS")} == set(DOOR_WINDOWS)
+    colors = re.findall(
+        r'\{ id: "(\w+)", hex: "#[0-9a-f]{6}"(, finish: "\w+")? \}', js_list("DOOR_COLORS")
+    )
+    assert tuple(color for color, _ in colors) == DOOR_COLORS
+    assert tuple(color for color, finish in colors if not finish) == TRIM_COLORS
 
 
 def test_frontend_version_fingerprints_panel_files() -> None:
