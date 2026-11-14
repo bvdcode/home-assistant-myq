@@ -79,6 +79,11 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._login_session: ClientSession | None = None
         self._reauth_entry: MyQConfigEntry | None = None
 
+    @callback
+    def async_remove(self) -> None:
+        """Release the sign-in session when the flow is dismissed before it finishes."""
+        self._close_login()
+
     async def async_step_user(
         self,
         user_input: dict[str, object] | None = None,

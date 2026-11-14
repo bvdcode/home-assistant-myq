@@ -230,6 +230,26 @@ async def test_invalid_mfa_can_be_retried(
     mock_login_session.http_session.detach.assert_not_called()
 
 
+@pytest.mark.parametrize(
+    ("start_error", "step_id"), [(None, "mfa"), (MyQCloudflareChallengeError, "browser")]
+)
+async def test_dismissed_sign_in_releases_login_session(
+    hass: HomeAssistant,
+    mock_login_session: MagicMock,
+    start_error: type[MyQCloudflareChallengeError] | None,
+    step_id: str,
+) -> None:
+    mock_login_session.async_start.return_value = None
+    mock_login_session.async_start.side_effect = start_error
+    result = await _submit_credentials(hass)
+    assert result["step_id"] == step_id
+    mock_login_session.http_session.detach.assert_not_called()
+
+    hass.config_entries.flow.async_abort(result["flow_id"])
+
+    mock_login_session.http_session.detach.assert_called_once_with()
+
+
 @pytest.mark.parametrize("error_type", [MyQCloudflareChallengeError, MyQUnsupportedAuthPageError])
 async def test_unsupported_screen_after_mfa_starts_browser_sign_in(
     hass: HomeAssistant,
