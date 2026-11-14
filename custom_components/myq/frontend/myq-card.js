@@ -126,10 +126,12 @@ class MyQDoorCard extends HTMLElement {
   }
 
   setConfig(config) {
-    if (!config || typeof config.entity !== "string" || !config.entity.startsWith("cover.")) {
+    // A new card has no door yet when the account has none; it asks for one instead of failing.
+    const entity = config?.entity ?? "";
+    if (typeof entity !== "string" || (entity && !entity.startsWith("cover."))) {
       throw new Error(text("card.choose"));
     }
-    this._config = { ...config };
+    this._config = { ...config, entity };
     this._render();
   }
 
@@ -212,6 +214,10 @@ class MyQDoorCard extends HTMLElement {
 
   _render() {
     if (!this._config || !this._ready) return;
+    if (!this._config.entity) {
+      this._message("mdi:garage-variant", text("card.choose"));
+      return;
+    }
     if (doors.error) {
       this._message("mdi:alert-circle-outline", t("card.error"));
       return;
