@@ -1,0 +1,161 @@
+{
+  "panel": {
+    "loading": "Je garage wordt geladen…",
+    "error": "Het garagepaneel kon niet worden geladen.",
+    "retry": "Opnieuw proberen",
+    "empty_title": "Nog geen garagedeuren",
+    "empty_text": "Garagedeuren en camera's die MyQ vindt, verschijnen hier automatisch.",
+    "open_settings": "MyQ-instellingen openen",
+    "menu": "Zijbalk tonen",
+    "settings": "Paneelinstellingen",
+    "cameras": "Camera's",
+    "compact": "Compacte weergave"
+  },
+  "summary": {
+    "all_closed": "Alle deuren zijn gesloten",
+    "open": {
+      "one": "{count} deur is open",
+      "other": "{count} deuren zijn open"
+    },
+    "moving": {
+      "one": "{count} deur beweegt",
+      "other": "{count} deuren bewegen"
+    },
+    "unavailable": {
+      "one": "{count} deur is niet beschikbaar",
+      "other": "{count} deuren zijn niet beschikbaar"
+    },
+    "last_change": "{name} · {state} {time}",
+    "left_open": "{name} staat al {duration} open",
+    "close_all": "Alle sluiten",
+    "confirm_close_all": "Tik nogmaals om alle te sluiten"
+  },
+  "account": {
+    "connecting": "Verbinden met MyQ…",
+    "retrying": "MyQ is momenteel niet bereikbaar. Home Assistant blijft het proberen.",
+    "error": "Het MyQ-account vereist aandacht."
+  },
+  "door": {
+    "open": "Openen",
+    "close": "Sluiten",
+    "confirm": "Tik om te bevestigen",
+    "changed": "Gewijzigd {time}",
+    "open_for": "Al {duration} open",
+    "camera": "Camera tonen",
+    "door_view": "Deur tonen",
+    "customize": "Aanpassen",
+    "details": "Details",
+    "light_on": "Licht aan",
+    "vacation": "Vakantiemodus",
+    "fault": "Storing {codes}",
+    "battery": "Noodstroomaccu",
+    "command_failed": "{name} heeft de opdracht niet geaccepteerd.",
+    "check": "Nu controleren",
+    "checked": "Zojuist gecontroleerd",
+    "check_failed": "{name} kon niet worden gecontroleerd: {error}",
+    "activity": "Recente activiteit",
+    "no_activity": "Geen wijzigingen in de afgelopen 7 dagen",
+    "by": "door {name}",
+    "via": "via {source}"
+  },
+  "camera": {
+    "live": "Livebeeld",
+    "stop_live": "Momentopname",
+    "expand": "Camera openen",
+    "unavailable": "Camera niet beschikbaar",
+    "updated": "Bijgewerkt {time}",
+    "loading": "Afbeelding wordt geladen…"
+  },
+  "card": {
+    "name": "MyQ-garagedeur",
+    "description": "Een garagedeur met bediening, status en camera.",
+    "entity": "Garagedeur",
+    "compact": "Compacte indeling",
+    "choose": "Kies een MyQ-garagedeur.",
+    "not_found": "MyQ-garagedeur niet gevonden: {entity}",
+    "error": "De garagedeur kon niet worden geladen."
+  },
+  "customize": {
+    "title": "{name} aanpassen",
+    "preview_closed": "Gesloten",
+    "preview_open": "Open",
+    "preview_light": "Licht",
+    "size": "Formaat",
+    "style": "Stijl",
+    "color": "Kleur",
+    "painted": "Gelakt",
+    "wood": "Houtdecor",
+    "custom_color": "Aangepaste kleur",
+    "windows": "Ramen",
+    "glass": "Glas",
+    "hardware": "Decoratieve handgrepen en scharnieren",
+    "trim": "Kozijnkleur",
+    "apply_all": "Dit uiterlijk voor alle deuren gebruiken",
+    "apply_all_help": "Het formaat blijft per deur behouden.",
+    "reset": "Herstellen",
+    "cancel": "Annuleren",
+    "save": "Opslaan",
+    "close": "Sluiten",
+    "saved": "Uiterlijk van de deur opgeslagen",
+    "save_failed": "Het uiterlijk kon niet worden opgeslagen: {error}"
+  },
+  "settings": {
+    "confirm": "Bevestiging vragen bij openen of sluiten",
+    "confirm_help": "Deuren bewegen pas na een tweede tik, zodat ze nooit per ongeluk worden bediend.",
+    "open_warning": "Openstaande deuren markeren",
+    "open_warning_help": "Deuren die langer openstaan krijgen een oranje rand en worden in het overzicht genoemd.",
+    "off": "Uit",
+    "order": "Volgorde van de deuren",
+    "move_up": "{name} omhoog verplaatsen",
+    "move_down": "{name} omlaag verplaatsen",
+    "sidebar_help": "De titel en het pictogram in de zijbalk, en wie het paneel kan zien, stel je in bij de opties van de MyQ-integratie.",
+    "done": "Klaar"
+  },
+  "width": {
+    "single": "Enkel",
+    "double": "Dubbel"
+  },
+  "style": {
+    "traditional": "Cassettes",
+    "long_panel": "Lange cassettes",
+    "shaker": "Shakerstijl",
+    "carriage": "Koetshuis",
+    "farmhouse": "Landelijk",
+    "modern": "Vlak",
+    "plank": "Planken",
+    "glass": "Volledig glas"
+  },
+  "windows": {
+    "none": "Geen",
+    "plain": "Eenvoudig",
+    "grid": "Roedes",
+    "arched": "Boog",
+    "side": "Zijkant"
+  },
+  "glass": {
+    "tinted": "Getint",
+    "clear": "Helder",
+    "frosted": "Mat"
+  },
+  "color": {
+    "white": "Wit",
+    "almond": "Amandel",
+    "sandstone": "Zandsteen",
+    "clay": "Klei",
+    "gray": "Grijs",
+    "charcoal": "Antraciet",
+    "black": "Zwart",
+    "brown": "Bruin",
+    "bronze": "Brons",
+    "green": "Jagersgroen",
+    "navy": "Marineblauw",
+    "red": "Ossenbloedrood",
+    "aluminum": "Aluminium",
+    "light_oak": "Licht eiken",
+    "cedar": "Ceder",
+    "walnut": "Walnoot",
+    "mahogany": "Mahonie",
+    "espresso": "Espresso",
+    "driftwood": "Drijfhout"
+  }
+}

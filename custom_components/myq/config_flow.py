@@ -31,6 +31,7 @@ from .config_flow_forms import (
     CredentialsInput,
     MfaInput,
     PasswordInput,
+    panel_option_fields,
 )
 from .const import (
     CONF_CAMERA_LAN_ONLY,
@@ -51,6 +52,7 @@ from .exceptions import (
 )
 from .models import OAuthTokens
 from .oauth import MyQAuth
+from .panel_options import panel_options
 from .runtime import MyQConfigData, MyQConfigEntry, tokens_to_data
 
 _LOGGER = logging.getLogger(__name__)
@@ -404,12 +406,15 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class MyQOptionsFlow(config_entries.OptionsFlow):
+    """Configure camera video and the sidebar panel on one form."""
+
     async def async_step_init(
         self, user_input: dict[str, object] | None = None
     ) -> ConfigFlowResult:
+        options = self.config_entry.options
         if user_input is not None:
             return self.async_create_entry(
-                title="", data={**self.config_entry.options, **user_input}
+                title="", data={**options, **user_input, **panel_options(user_input)}
             )
         return self.async_show_form(
             step_id="init",
@@ -417,8 +422,9 @@ class MyQOptionsFlow(config_entries.OptionsFlow):
                 {
                     vol.Required(
                         CONF_CAMERA_LAN_ONLY,
-                        default=self.config_entry.options.get(CONF_CAMERA_LAN_ONLY, False),
-                    ): bool
+                        default=options.get(CONF_CAMERA_LAN_ONLY, False),
+                    ): bool,
+                    **panel_option_fields(panel_options(options)),
                 }
             ),
         )

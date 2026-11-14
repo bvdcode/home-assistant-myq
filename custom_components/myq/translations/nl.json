@@ -140,10 +140,18 @@
   "options": {
     "step": {
       "init": {
-        "title": "Videoverbinding van de camera",
-        "description": "Vereis dat livevideo afkomstig is van het privé-IP-adres van de camera op het lokale netwerk. Voor autorisatie en het opzetten van de verbinding blijft toegang tot de cloud nodig. Als de camera niet bereikbaar is op het lokale netwerk, mislukt het afspelen zonder een openbaar adres te gebruiken. Als je deze instelling wijzigt, worden actieve camerasessies gesloten. Momentopnamen komen nog steeds uit de cloud.",
         "data": {
-          "camera_lan_only": "Livevideo alleen via het lokale netwerk toestaan"
+          "camera_lan_only": "Livevideo alleen via het lokale netwerk toestaan",
+          "panel_enabled": "Garagepaneel in de zijbalk tonen",
+          "panel_title": "Titel in de zijbalk",
+          "panel_icon": "Pictogram in de zijbalk",
+          "panel_require_admin": "Alleen beheerders kunnen het paneel openen"
+        },
+        "data_description": {
+          "camera_lan_only": "Vereis dat livevideo afkomstig is van het privé-IP-adres van de camera op het lokale netwerk. Voor autorisatie en het opzetten van de verbinding blijft toegang tot de cloud nodig. Als de camera niet bereikbaar is op het lokale netwerk, mislukt het afspelen zonder een openbaar adres te gebruiken. Als je deze instelling wijzigt, worden actieve camerasessies gesloten. Momentopnamen komen nog steeds uit de cloud.",
+          "panel_enabled": "Garagedeuren en camera's van dit account worden automatisch aan het paneel toegevoegd.",
+          "panel_title": "Bij meerdere MyQ-accounts bepaalt het eerste account dat het paneel toont de titel en het pictogram.",
+          "panel_require_admin": "Alleen beheerders kunnen het uiterlijk van de deuren wijzigen."
         }
       }
     }

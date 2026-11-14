@@ -15,6 +15,13 @@ MFA_METHOD_EMAIL: Final = "email"
 MFA_METHOD_SMS: Final = "sms"
 DEFAULT_MFA_METHOD: Final = MFA_METHOD_EMAIL
 
+CONF_PANEL_ENABLED: Final = "panel_enabled"
+CONF_PANEL_TITLE: Final = "panel_title"
+CONF_PANEL_ICON: Final = "panel_icon"
+CONF_PANEL_REQUIRE_ADMIN: Final = "panel_require_admin"
+DEFAULT_PANEL_TITLE: Final = "MyQ"
+DEFAULT_PANEL_ICON: Final = "mdi:garage-variant"
+
 IDENTITY_BASE_URL: Final = "https://partner-identity.myq-cloud.com"
 ACCOUNTS_BASE_URL: Final = "https://accounts.myq-cloud.com"
 DEVICES_BASE_URL: Final = "https://devices.myq-cloud.com"

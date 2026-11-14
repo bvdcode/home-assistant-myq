@@ -140,10 +140,18 @@
   "options": {
     "step": {
       "init": {
-        "title": "Trasmissione video della videocamera",
-        "description": "Richiede che il video in diretta provenga dall’indirizzo IP privato della videocamera sulla rete locale. L’autorizzazione e la configurazione della connessione richiedono ancora l’accesso al cloud. Se la videocamera non è raggiungibile sulla rete locale, la riproduzione non riesce e non viene usato un indirizzo pubblico. La modifica di questa opzione chiude le sessioni attive della videocamera. Le istantanee continuano a essere recuperate dal cloud.",
         "data": {
-          "camera_lan_only": "Usa solo la rete locale per il video in diretta"
+          "camera_lan_only": "Usa solo la rete locale per il video in diretta",
+          "panel_enabled": "Mostra il pannello garage nella barra laterale",
+          "panel_title": "Titolo nella barra laterale",
+          "panel_icon": "Icona nella barra laterale",
+          "panel_require_admin": "Solo gli amministratori possono aprire il pannello"
+        },
+        "data_description": {
+          "camera_lan_only": "Richiede che il video in diretta provenga dall’indirizzo IP privato della videocamera sulla rete locale. L’autorizzazione e la configurazione della connessione richiedono ancora l’accesso al cloud. Se la videocamera non è raggiungibile sulla rete locale, la riproduzione non riesce e non viene usato un indirizzo pubblico. La modifica di questa opzione chiude le sessioni attive della videocamera. Le istantanee continuano a essere recuperate dal cloud.",
+          "panel_enabled": "Le porte del garage e le telecamere di questo account vengono aggiunte automaticamente al pannello.",
+          "panel_title": "Con più account MyQ, il primo account che mostra il pannello ne stabilisce titolo e icona.",
+          "panel_require_admin": "Solo gli amministratori possono modificare l'aspetto delle porte."
         }
       }
     }

@@ -140,10 +140,18 @@
   "options": {
     "step": {
       "init": {
-        "title": "Overførsel af kameravideo",
-        "description": "Kræv, at livevideo kommer fra kameraets private IP-adresse på lokalnetværket. Godkendelse og oprettelse af forbindelsen kræver stadig adgang til skyen. Hvis kameraet ikke kan nås på lokalnetværket, mislykkes afspilningen uden at bruge en offentlig adresse. Ændring af indstillingen lukker aktive kameraforbindelser. Stillbilleder hentes fortsat fra skyen.",
         "data": {
-          "camera_lan_only": "Kræv livevideo via lokalnetværket"
+          "camera_lan_only": "Kræv livevideo via lokalnetværket",
+          "panel_enabled": "Vis garagepanelet i sidepanelet",
+          "panel_title": "Titel i sidepanelet",
+          "panel_icon": "Ikon i sidepanelet",
+          "panel_require_admin": "Kun administratorer kan åbne panelet"
+        },
+        "data_description": {
+          "camera_lan_only": "Kræv, at livevideo kommer fra kameraets private IP-adresse på lokalnetværket. Godkendelse og oprettelse af forbindelsen kræver stadig adgang til skyen. Hvis kameraet ikke kan nås på lokalnetværket, mislykkes afspilningen uden at bruge en offentlig adresse. Ændring af indstillingen lukker aktive kameraforbindelser. Stillbilleder hentes fortsat fra skyen.",
+          "panel_enabled": "Garageporte og kameraer på denne konto føjes automatisk til panelet.",
+          "panel_title": "Med flere MyQ-konti bestemmer den første konto, der viser panelet, titlen og ikonet.",
+          "panel_require_admin": "Portenes udseende kan kun ændres af administratorer."
         }
       }
     }

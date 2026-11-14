@@ -2,6 +2,8 @@
   "domain": "myq",
   "name": "MyQ",
   "after_dependencies": [
+    "frontend",
+    "http",
     "stream"
   ],
   "codeowners": [

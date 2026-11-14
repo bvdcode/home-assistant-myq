@@ -140,10 +140,18 @@
   "options": {
     "step": {
       "init": {
-        "title": "Transmisión de vídeo de la cámara",
-        "description": "Exige que el vídeo en directo proceda de la dirección IP privada de la cámara en la red local. La autorización y el establecimiento de la conexión siguen requiriendo acceso a la nube. Si no se puede acceder a la cámara por la red local, la reproducción falla sin usar una dirección pública. Cambiar esta opción cierra las sesiones de cámara activas. Las imágenes fijas se siguen obteniendo de la nube.",
         "data": {
-          "camera_lan_only": "Usar solo la red local para el vídeo en directo"
+          "camera_lan_only": "Usar solo la red local para el vídeo en directo",
+          "panel_enabled": "Mostrar el panel del garaje en la barra lateral",
+          "panel_title": "Título en la barra lateral",
+          "panel_icon": "Icono en la barra lateral",
+          "panel_require_admin": "Solo los administradores pueden abrir el panel"
+        },
+        "data_description": {
+          "camera_lan_only": "Exige que el vídeo en directo proceda de la dirección IP privada de la cámara en la red local. La autorización y el establecimiento de la conexión siguen requiriendo acceso a la nube. Si no se puede acceder a la cámara por la red local, la reproducción falla sin usar una dirección pública. Cambiar esta opción cierra las sesiones de cámara activas. Las imágenes fijas se siguen obteniendo de la nube.",
+          "panel_enabled": "Las puertas de garaje y las cámaras de esta cuenta se añaden al panel automáticamente.",
+          "panel_title": "Con varias cuentas de MyQ, la primera cuenta que muestra el panel define su título e icono.",
+          "panel_require_admin": "Solo los administradores pueden cambiar el aspecto de las puertas."
         }
       }
     }

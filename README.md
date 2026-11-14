@@ -24,6 +24,8 @@ The integration provides:
 - vacation mode, work-light, fault, cycle-count, and activation diagnostics
   when provided by MyQ;
 - snapshots from attached and standalone cameras and experimental live video for TC cameras;
+- a sidebar panel and dashboard card with realistic, customizable garage doors, controls, status,
+  recent activity, and camera video;
 - cloud polling every 2 minutes, temporarily more frequently after a command.
 
 ## Alarmo
@@ -86,6 +88,87 @@ stores the issued OAuth tokens in the config entry and refreshes them
 automatically. If MyQ rejects token refresh or account access, Home Assistant
 requests reauthentication.
 
+## Garage panel
+
+The integration can add a **MyQ** page to the Home Assistant sidebar. The page
+is off by default. To turn it on, open **Settings → Devices & services → MyQ →
+Configure** and select **Show the garage panel in the sidebar**. It finds every
+garage door and camera on the account automatically and updates as soon as
+devices are added, renamed, or removed in Home Assistant.
+
+Each door is drawn as a realistic garage door framed by its trim. The door moves
+when it opens or closes, the garage interior shows through windows and open
+doors, and the interior lights up when the opener's work light is on. Below each
+door are **Open** and **Close** buttons, the time of the last change, and chips
+for the work light, vacation mode, faults, and battery backup. **Details** lists
+every entity of the door; select one to open its details and history. It also
+lists the last five times the door opened or closed in the past week, with the
+person or automation that caused each change when Home Assistant knows it, and
+the MyQ source of the latest change, such as the MyQ app.
+
+Open doors show how long they have been open. A door left open longer than the
+panel's limit, 30 minutes unless changed in the panel settings, gets an amber
+outline, and the summary at the top names it.
+
+Door states can be up to 2 minutes old because MyQ is polled. The refresh
+button next to a door's name asks MyQ for the current state right away; it then
+rests for 15 seconds. In the Home Assistant phone apps, the phone vibrates when
+a command is sent, when a second tap is needed, and when a command fails.
+
+The list button in the toolbar switches to compact cards, with the door picture
+beside the name and only the button that applies, so several doors fit on a
+phone screen. Narrow screens use compact cards automatically when there are
+three or more doors. Each browser remembers its own choice.
+
+Doors with an attached camera have a camera button that swaps the drawing for
+snapshots, with **Live** video for TC cameras. Standalone cameras such as the
+myQ Video Keypad appear in their own section. Snapshots refresh every 30 seconds,
+and only while a camera is on screen in a visible browser tab. All viewers share
+the integration's 30-second snapshot cache, so several open panels do not
+multiply MyQ requests. Live video starts only when requested. When a door with a
+camera stops moving, a new snapshot appears over the door for 20 seconds, so you
+can see where it stopped; select it to switch to the camera.
+
+Administrators can select the palette button on a door to change its look:
+
+- single or double width;
+- raised panel, long panel, shaker, carriage house, farmhouse, flush, plank, or
+  full-view glass style;
+- painted, wood-look, or any custom color;
+- plain, grid, arched, or side windows, depending on the style, with tinted,
+  clear, or frosted glass;
+- decorative handles and hinges for carriage styles;
+- the color of the trim around the door.
+
+The look is stored in Home Assistant and shared by everyone who opens the panel,
+and it can be applied to every door at once. The gear button holds panel-wide
+settings: the order of the doors, an option to require a second tap before a
+door moves, and how long a door may stay open before it is highlighted. **Close
+all** always asks for a second tap.
+
+The same **Configure** page sets the panel's title, icon, and audience. With
+several MyQ accounts, the panel shows the doors of every account that enables
+it, and the first such account sets the sidebar title and icon.
+
+## Dashboard card
+
+Each garage door is also available as a dashboard card with the same picture,
+controls, status, camera, and recent activity as the panel. The integration
+loads the card itself, so no dashboard resource is needed, and the card works
+without the sidebar panel. In a dashboard, select **Add card** and
+search for **MyQ garage door**, or add it in YAML:
+
+```yaml
+type: custom:myq-door-card
+entity: cover.main_garage
+compact: false
+```
+
+Set `compact` to `true` for a short card with the door picture beside the
+controls. Administrators can change the door's look from the card; the look is
+shared with the panel. Cards use the panel's settings for the second tap and the
+open-door highlight.
+
 ## Cameras
 
 Cameras that are not attached to an opener, including the myQ Video Keypad,
@@ -94,7 +177,8 @@ can also be added.
 
 Openers with an attached camera get a camera entity on the same device.
 Snapshots are fetched on demand from the Tend cloud using the existing MyQ
-authorization. All viewers share one cached image per camera for 30 seconds.
+authorization. All viewers share one cached image per camera for 30 seconds;
+when the door moves, the next request takes a new image.
 
 TC cameras also offer experimental live H.264 video. Home Assistant must be able
 to reach the camera over the local network. Playback uses the `stream`

@@ -1,0 +1,167 @@
+{
+  "panel": {
+    "loading": "Načítání garáže…",
+    "error": "Panel garáže se nepodařilo načíst.",
+    "retry": "Zkusit znovu",
+    "empty_title": "Zatím žádná garážová vrata",
+    "empty_text": "Garážová vrata a kamery, které MyQ najde, se zde zobrazí automaticky.",
+    "open_settings": "Otevřít nastavení MyQ",
+    "menu": "Zobrazit postranní panel",
+    "settings": "Nastavení panelu",
+    "cameras": "Kamery",
+    "compact": "Kompaktní zobrazení"
+  },
+  "summary": {
+    "all_closed": "Všechna vrata jsou zavřená",
+    "open": {
+      "one": "{count} vrata jsou otevřená",
+      "few": "{count} vrata jsou otevřená",
+      "many": "{count} vrat je otevřeno",
+      "other": "{count} vrat je otevřeno"
+    },
+    "moving": {
+      "one": "{count} vrata se pohybují",
+      "few": "{count} vrata se pohybují",
+      "many": "{count} vrat se pohybuje",
+      "other": "{count} vrat se pohybuje"
+    },
+    "unavailable": {
+      "one": "{count} vrata jsou nedostupná",
+      "few": "{count} vrata jsou nedostupná",
+      "many": "{count} vrat je nedostupných",
+      "other": "{count} vrat je nedostupných"
+    },
+    "last_change": "{name} · {state} {time}",
+    "left_open": "{name}: otevřeno {duration}",
+    "close_all": "Zavřít vše",
+    "confirm_close_all": "Dalším klepnutím zavřete vše"
+  },
+  "account": {
+    "connecting": "Připojování k MyQ…",
+    "retrying": "MyQ je momentálně nedostupné. Home Assistant se bude dál pokoušet o připojení.",
+    "error": "Účet MyQ vyžaduje pozornost."
+  },
+  "door": {
+    "open": "Otevřít",
+    "close": "Zavřít",
+    "confirm": "Klepnutím potvrďte",
+    "changed": "Změněno {time}",
+    "open_for": "Otevřeno {duration}",
+    "camera": "Zobrazit kameru",
+    "door_view": "Zobrazit vrata",
+    "customize": "Přizpůsobit",
+    "details": "Podrobnosti",
+    "light_on": "Světlo svítí",
+    "vacation": "Režim dovolené",
+    "fault": "Porucha {codes}",
+    "battery": "Záložní baterie",
+    "command_failed": "{name}: příkaz nebyl přijat.",
+    "check": "Zkontrolovat nyní",
+    "checked": "Právě zkontrolováno",
+    "check_failed": "{name}: stav se nepodařilo zkontrolovat: {error}",
+    "activity": "Nedávná aktivita",
+    "no_activity": "Za posledních 7 dní beze změn",
+    "by": "Spuštěno: {name}",
+    "via": "přes {source}"
+  },
+  "camera": {
+    "live": "Živě",
+    "stop_live": "Snímek",
+    "expand": "Otevřít kameru",
+    "unavailable": "Kamera nedostupná",
+    "updated": "Aktualizováno {time}",
+    "loading": "Načítání obrázku…"
+  },
+  "card": {
+    "name": "Garážová vrata MyQ",
+    "description": "Garážová vrata s ovládáním, stavem a kamerou.",
+    "entity": "Garážová vrata",
+    "compact": "Kompaktní rozložení",
+    "choose": "Vyberte garážová vrata MyQ.",
+    "not_found": "Garážová vrata MyQ nebyla nalezena: {entity}",
+    "error": "Garážová vrata se nepodařilo načíst."
+  },
+  "customize": {
+    "title": "Přizpůsobit: {name}",
+    "preview_closed": "Zavřená",
+    "preview_open": "Otevřená",
+    "preview_light": "Světlo",
+    "size": "Velikost",
+    "style": "Styl",
+    "color": "Barva",
+    "painted": "Lakované",
+    "wood": "Dřevodekor",
+    "custom_color": "Vlastní barva",
+    "windows": "Okna",
+    "glass": "Sklo",
+    "hardware": "Ozdobná madla a panty",
+    "trim": "Barva rámu",
+    "apply_all": "Použít tento vzhled pro všechna vrata",
+    "apply_all_help": "Každá vrata si ponechají svou velikost.",
+    "reset": "Obnovit výchozí",
+    "cancel": "Zrušit",
+    "save": "Uložit",
+    "close": "Zavřít",
+    "saved": "Vzhled vrat byl uložen",
+    "save_failed": "Vzhled se nepodařilo uložit: {error}"
+  },
+  "settings": {
+    "confirm": "Potvrzovat otevření a zavření",
+    "confirm_help": "Vrata se pohnou až po druhém klepnutí, takže se nikdy nespustí omylem.",
+    "open_warning": "Zvýraznit vrata ponechaná otevřená",
+    "open_warning_help": "Vrata otevřená déle než tuto dobu dostanou oranžový rámeček a souhrn je uvede.",
+    "off": "Vypnuto",
+    "order": "Pořadí vrat",
+    "move_up": "Posunout nahoru: {name}",
+    "move_down": "Posunout dolů: {name}",
+    "sidebar_help": "Název a ikonu v postranním panelu i to, kdo panel uvidí, nastavíte v možnostech integrace MyQ.",
+    "done": "Hotovo"
+  },
+  "width": {
+    "single": "Pro 1 auto",
+    "double": "Pro 2 auta"
+  },
+  "style": {
+    "traditional": "Kazety",
+    "long_panel": "Dlouhé kazety",
+    "shaker": "Styl Shaker",
+    "carriage": "Kočárovna",
+    "farmhouse": "Venkovský styl",
+    "modern": "Hladká",
+    "plank": "Prkna",
+    "glass": "Celoprosklená"
+  },
+  "windows": {
+    "none": "Žádná",
+    "plain": "Jednoduchá",
+    "grid": "Mřížka",
+    "arched": "Oblouková",
+    "side": "Boční"
+  },
+  "glass": {
+    "tinted": "Tónované",
+    "clear": "Čiré",
+    "frosted": "Matné"
+  },
+  "color": {
+    "white": "Bílá",
+    "almond": "Mandlová",
+    "sandstone": "Pískovcová",
+    "clay": "Hliněná",
+    "gray": "Šedá",
+    "charcoal": "Antracitová",
+    "black": "Černá",
+    "brown": "Hnědá",
+    "bronze": "Bronzová",
+    "green": "Myslivecká zelená",
+    "navy": "Námořnická modrá",
+    "red": "Oxidová červená",
+    "aluminum": "Hliníková",
+    "light_oak": "Světlý dub",
+    "cedar": "Cedr",
+    "walnut": "Ořech",
+    "mahogany": "Mahagon",
+    "espresso": "Espresso",
+    "driftwood": "Naplavené dřevo"
+  }
+}

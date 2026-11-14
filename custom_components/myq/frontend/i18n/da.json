@@ -1,0 +1,161 @@
+{
+  "panel": {
+    "loading": "Indlæser din garage…",
+    "error": "Garagepanelet kunne ikke indlæses.",
+    "retry": "Prøv igen",
+    "empty_title": "Ingen garageporte endnu",
+    "empty_text": "Garageporte og kameraer, som MyQ finder, vises automatisk her.",
+    "open_settings": "Åbn MyQ-indstillinger",
+    "menu": "Vis sidepanel",
+    "settings": "Panelindstillinger",
+    "cameras": "Kameraer",
+    "compact": "Kompakt visning"
+  },
+  "summary": {
+    "all_closed": "Alle porte er lukket",
+    "open": {
+      "one": "{count} port er åben",
+      "other": "{count} porte er åbne"
+    },
+    "moving": {
+      "one": "{count} port er i bevægelse",
+      "other": "{count} porte er i bevægelse"
+    },
+    "unavailable": {
+      "one": "{count} port er utilgængelig",
+      "other": "{count} porte er utilgængelige"
+    },
+    "last_change": "{name} · {state} {time}",
+    "left_open": "{name} har været åben i {duration}",
+    "close_all": "Luk alle",
+    "confirm_close_all": "Tryk igen for at lukke alle"
+  },
+  "account": {
+    "connecting": "Opretter forbindelse til MyQ…",
+    "retrying": "MyQ kan ikke nås lige nu. Home Assistant bliver ved med at prøve.",
+    "error": "MyQ-kontoen kræver opmærksomhed."
+  },
+  "door": {
+    "open": "Åbn",
+    "close": "Luk",
+    "confirm": "Tryk for at bekræfte",
+    "changed": "Ændret {time}",
+    "open_for": "Åben i {duration}",
+    "camera": "Vis kamera",
+    "door_view": "Vis port",
+    "customize": "Tilpas",
+    "details": "Detaljer",
+    "light_on": "Lys tændt",
+    "vacation": "Ferietilstand",
+    "fault": "Fejl {codes}",
+    "battery": "Backupbatteri",
+    "command_failed": "{name} accepterede ikke kommandoen.",
+    "check": "Tjek nu",
+    "checked": "Tjekket lige nu",
+    "check_failed": "{name} kunne ikke tjekkes: {error}",
+    "activity": "Seneste aktivitet",
+    "no_activity": "Ingen ændringer de seneste 7 dage",
+    "by": "af {name}",
+    "via": "via {source}"
+  },
+  "camera": {
+    "live": "Livebillede",
+    "stop_live": "Stillbillede",
+    "expand": "Åbn kamera",
+    "unavailable": "Kamera utilgængeligt",
+    "updated": "Opdateret {time}",
+    "loading": "Indlæser billede…"
+  },
+  "card": {
+    "name": "MyQ-garageport",
+    "description": "En garageport med betjening, status og kamera.",
+    "entity": "Garageport",
+    "compact": "Kompakt layout",
+    "choose": "Vælg en MyQ-garageport.",
+    "not_found": "MyQ-garageporten blev ikke fundet: {entity}",
+    "error": "Garageporten kunne ikke indlæses."
+  },
+  "customize": {
+    "title": "Tilpas {name}",
+    "preview_closed": "Lukket",
+    "preview_open": "Åben",
+    "preview_light": "Lys",
+    "size": "Størrelse",
+    "style": "Stil",
+    "color": "Farve",
+    "painted": "Malet",
+    "wood": "Træimitation",
+    "custom_color": "Egen farve",
+    "windows": "Vinduer",
+    "glass": "Glas",
+    "hardware": "Dekorative håndtag og hængsler",
+    "trim": "Karmfarve",
+    "apply_all": "Brug dette udseende til alle porte",
+    "apply_all_help": "Hver port beholder sin egen størrelse.",
+    "reset": "Nulstil",
+    "cancel": "Annuller",
+    "save": "Gem",
+    "close": "Luk",
+    "saved": "Portens udseende er gemt",
+    "save_failed": "Udseendet kunne ikke gemmes: {error}"
+  },
+  "settings": {
+    "confirm": "Kræv bekræftelse før åbning eller lukning",
+    "confirm_help": "Portene bevæger sig først efter endnu et tryk, så de aldrig betjenes ved et uheld.",
+    "open_warning": "Fremhæv porte, der står åbne",
+    "open_warning_help": "Porte, der står åbne længere end dette, får en ravgul kant og nævnes i oversigten.",
+    "off": "Fra",
+    "order": "Portenes rækkefølge",
+    "move_up": "Flyt {name} op",
+    "move_down": "Flyt {name} ned",
+    "sidebar_help": "Titlen og ikonet i sidepanelet, og hvem der kan se panelet, angives i indstillingerne for MyQ-integrationen.",
+    "done": "Færdig"
+  },
+  "width": {
+    "single": "Enkelt",
+    "double": "Dobbelt"
+  },
+  "style": {
+    "traditional": "Kassetter",
+    "long_panel": "Lange kassetter",
+    "shaker": "Shakerstil",
+    "carriage": "Fløjportstil",
+    "farmhouse": "Landstil",
+    "modern": "Glat",
+    "plank": "Brædder",
+    "glass": "Helglas"
+  },
+  "windows": {
+    "none": "Ingen",
+    "plain": "Enkle",
+    "grid": "Sprosser",
+    "arched": "Buede",
+    "side": "I siden"
+  },
+  "glass": {
+    "tinted": "Tonet",
+    "clear": "Klart",
+    "frosted": "Matteret"
+  },
+  "color": {
+    "white": "Hvid",
+    "almond": "Mandel",
+    "sandstone": "Sandsten",
+    "clay": "Ler",
+    "gray": "Grå",
+    "charcoal": "Antracit",
+    "black": "Sort",
+    "brown": "Brun",
+    "bronze": "Bronze",
+    "green": "Jægergrøn",
+    "navy": "Marineblå",
+    "red": "Svenskrød",
+    "aluminum": "Aluminium",
+    "light_oak": "Lys eg",
+    "cedar": "Ceder",
+    "walnut": "Valnød",
+    "mahogany": "Mahogni",
+    "espresso": "Espresso",
+    "driftwood": "Drivtømmer"
+  }
+}

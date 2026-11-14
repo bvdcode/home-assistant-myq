@@ -140,10 +140,18 @@
   "options": {
     "step": {
       "init": {
-        "title": "Přenos videa z kamery",
-        "description": "Vyžaduje příjem živého videa ze soukromé IP adresy kamery v místní síti. Ověření přístupu a navázání spojení stále probíhají přes cloud. Pokud kamera není v místní síti dostupná, přehrávání selže a veřejná adresa se nepoužije. Změna této volby ukončí aktivní spojení s kamerou. Snímky z kamery se nadále načítají z cloudu.",
         "data": {
-          "camera_lan_only": "Přijímat živé video pouze z místní sítě"
+          "camera_lan_only": "Přijímat živé video pouze z místní sítě",
+          "panel_enabled": "Zobrazit panel garáže v postranním panelu",
+          "panel_title": "Název v postranním panelu",
+          "panel_icon": "Ikona v postranním panelu",
+          "panel_require_admin": "Panel mohou otevřít pouze správci"
+        },
+        "data_description": {
+          "camera_lan_only": "Vyžaduje příjem živého videa ze soukromé IP adresy kamery v místní síti. Ověření přístupu a navázání spojení stále probíhají přes cloud. Pokud kamera není v místní síti dostupná, přehrávání selže a veřejná adresa se nepoužije. Změna této volby ukončí aktivní spojení s kamerou. Snímky z kamery se nadále načítají z cloudu.",
+          "panel_enabled": "Garážová vrata a kamery z tohoto účtu se do panelu přidají automaticky.",
+          "panel_title": "Při více účtech MyQ určuje název a ikonu první účet, který panel zobrazuje.",
+          "panel_require_admin": "Vzhled vrat mohou měnit pouze správci."
         }
       }
     }

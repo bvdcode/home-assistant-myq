@@ -3,7 +3,17 @@ from typing import Final, TypedDict
 import voluptuous as vol
 from homeassistant.helpers import selector
 
-from .const import CONF_MFA_METHOD, DEFAULT_MFA_METHOD, MFA_METHOD_EMAIL, MFA_METHOD_SMS
+from .const import (
+    CONF_MFA_METHOD,
+    CONF_PANEL_ENABLED,
+    CONF_PANEL_ICON,
+    CONF_PANEL_REQUIRE_ADMIN,
+    CONF_PANEL_TITLE,
+    DEFAULT_MFA_METHOD,
+    MFA_METHOD_EMAIL,
+    MFA_METHOD_SMS,
+)
+from .panel_options import PanelOptions
 
 
 class CredentialsInput(TypedDict):
@@ -73,3 +83,25 @@ BROWSER_CALLBACK_SCHEMA = vol.Schema(
         )
     }
 )
+
+
+def panel_option_fields(panel: PanelOptions) -> dict[vol.Marker, object]:
+    """Return the sidebar panel fields of the options form, showing the current values.
+
+    The switches default to their current values, so one option can be changed without
+    sending the others. A cleared title or icon returns to its default.
+    """
+    return {
+        vol.Required(
+            CONF_PANEL_ENABLED, default=panel["panel_enabled"]
+        ): selector.BooleanSelector(),
+        vol.Optional(
+            CONF_PANEL_TITLE, description={"suggested_value": panel["panel_title"]}
+        ): selector.TextSelector(),
+        vol.Optional(
+            CONF_PANEL_ICON, description={"suggested_value": panel["panel_icon"]}
+        ): selector.IconSelector(),
+        vol.Required(
+            CONF_PANEL_REQUIRE_ADMIN, default=panel["panel_require_admin"]
+        ): selector.BooleanSelector(),
+    }

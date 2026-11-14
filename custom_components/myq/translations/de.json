@@ -140,10 +140,18 @@
   "options": {
     "step": {
       "init": {
-        "title": "Übertragung von Kameravideos",
-        "description": "Das Livebild muss von der privaten IP-Adresse der Kamera im lokalen Netzwerk kommen. Für die Autorisierung und den Verbindungsaufbau wird weiterhin die Cloud benötigt. Ist die Kamera im lokalen Netzwerk nicht erreichbar, schlägt die Wiedergabe fehl, ohne eine öffentliche Adresse zu verwenden. Eine Änderung dieser Einstellung beendet aktive Kameraverbindungen. Standbilder werden weiterhin aus der Cloud abgerufen.",
         "data": {
-          "camera_lan_only": "Livevideo nur über das lokale Netzwerk zulassen"
+          "camera_lan_only": "Livevideo nur über das lokale Netzwerk zulassen",
+          "panel_enabled": "Garagen-Panel in der Seitenleiste anzeigen",
+          "panel_title": "Titel in der Seitenleiste",
+          "panel_icon": "Symbol in der Seitenleiste",
+          "panel_require_admin": "Nur Administratoren können das Panel öffnen"
+        },
+        "data_description": {
+          "camera_lan_only": "Das Livebild muss von der privaten IP-Adresse der Kamera im lokalen Netzwerk kommen. Für die Autorisierung und den Verbindungsaufbau wird weiterhin die Cloud benötigt. Ist die Kamera im lokalen Netzwerk nicht erreichbar, schlägt die Wiedergabe fehl, ohne eine öffentliche Adresse zu verwenden. Eine Änderung dieser Einstellung beendet aktive Kameraverbindungen. Standbilder werden weiterhin aus der Cloud abgerufen.",
+          "panel_enabled": "Garagentore und Kameras dieses Kontos werden automatisch zum Panel hinzugefügt.",
+          "panel_title": "Bei mehreren MyQ-Konten legt das erste Konto, das das Panel anzeigt, Titel und Symbol fest.",
+          "panel_require_admin": "Das Aussehen der Tore können nur Administratoren ändern."
         }
       }
     }
