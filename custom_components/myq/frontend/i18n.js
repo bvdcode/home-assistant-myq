@@ -15,7 +15,6 @@ export function resolveLanguage(code) {
   const base = code.split("-")[0].toLowerCase();
   if (base === "pt") return "pt-BR";
   if (base === "zh") return "zh-Hans";
-  if (base === "nb" || base === "nn" || base === "no") return "da";
   return AVAILABLE.find((language) => language.toLowerCase() === base) ?? "en";
 }
 
