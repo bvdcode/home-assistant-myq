@@ -90,7 +90,9 @@ requests reauthentication.
 
 ## Garage panel
 
-The integration adds a **MyQ** page to the Home Assistant sidebar. It finds every
+The integration can add a **MyQ** page to the Home Assistant sidebar. The page
+is off by default. To turn it on, open **Settings → Devices & services → MyQ →
+Configure** and select **Show the garage panel in the sidebar**. It finds every
 garage door and camera on the account automatically and updates as soon as
 devices are added, renamed, or removed in Home Assistant.
 
@@ -144,17 +146,16 @@ settings: the order of the doors, an option to require a second tap before a
 door moves, and how long a door may stay open before it is highlighted. **Close
 all** always asks for a second tap.
 
-To hide the panel or change its title, icon, or audience, open **Settings →
-Devices & services → MyQ → Configure**. With several MyQ accounts, the panel
-shows the doors of every account that enables it, and the first such account
-sets the sidebar title and icon.
+The same **Configure** page sets the panel's title, icon, and audience. With
+several MyQ accounts, the panel shows the doors of every account that enables
+it, and the first such account sets the sidebar title and icon.
 
 ## Dashboard card
 
 Each garage door is also available as a dashboard card with the same picture,
 controls, status, camera, and recent activity as the panel. The integration
 loads the card itself, so no dashboard resource is needed, and the card works
-even when the sidebar panel is hidden. In a dashboard, select **Add card** and
+without the sidebar panel. In a dashboard, select **Add card** and
 search for **MyQ garage door**, or add it in YAML:
 
 ```yaml

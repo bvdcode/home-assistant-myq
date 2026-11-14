@@ -62,6 +62,7 @@ DOOR = GarageDoor(
     camera=ATTACHED,
 )
 OTHER_DOOR = GarageDoor("account-2", "door-2", "Barn", "Wi-Fi GDO", "open", True)
+SHOWN = {CONF_PANEL_ENABLED: True}
 PANEL_OPTIONS = {
     CONF_PANEL_ENABLED: True,
     CONF_PANEL_TITLE: "Garage",
@@ -141,6 +142,11 @@ async def test_panel_follows_entry_options_and_lifecycle(
     with _clients(MyQDevices((DOOR,)), MyQDevices((DOOR,)), MyQDevices((DOOR,))):
         await _setup(hass, entry)
 
+        # The sidebar page is off until an account turns it on.
+        assert _panel(hass) is None
+        hass.config_entries.async_update_entry(entry, options=SHOWN)
+        await hass.async_block_till_done()
+
         panel = _panel(hass)
         assert panel is not None
         assert (panel.sidebar_title, panel.sidebar_icon, panel.require_admin) == (
@@ -181,7 +187,7 @@ async def test_panel_follows_entry_options_and_lifecycle(
         await hass.async_block_till_done()
         assert _panel(hass) is None
 
-        hass.config_entries.async_update_entry(entry, options={})
+        hass.config_entries.async_update_entry(entry, options=SHOWN)
         await hass.async_block_till_done()
         assert _panel(hass) is not None
 
@@ -208,7 +214,7 @@ async def test_panel_follows_entry_options_and_lifecycle(
 async def test_panel_combines_accounts_that_show_it(
     hass: HomeAssistant, ws_client: MockHAClientWebSocket
 ) -> None:
-    first = _entry(options={CONF_PANEL_TITLE: "Home"})
+    first = _entry(options={**SHOWN, CONF_PANEL_TITLE: "Home"})
     second = _entry("second@example.com", options={**PANEL_OPTIONS, CONF_PANEL_TITLE: "Cabin"})
     with _clients(MyQDevices((DOOR,)), MyQDevices((OTHER_DOOR,))):
         await _setup(hass, first)
@@ -245,7 +251,7 @@ async def test_dashboard_card_is_offered_without_the_sidebar_panel(
     # The frontend integration needs the built frontend package, so stand in for its module list.
     hass.data[frontend.DATA_EXTRA_MODULE_URL] = frontend.UrlManager(lambda *_: None, [])
     with _clients(MyQDevices((DOOR,))):
-        await _setup(hass, _entry(options={CONF_PANEL_ENABLED: False}))
+        await _setup(hass, _entry())
 
     assert _panel(hass) is None
     (card_url,) = hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
@@ -270,7 +276,7 @@ async def test_dashboard_card_is_offered_without_the_sidebar_panel(
 async def test_subscription_describes_devices_and_follows_registry_changes(
     hass: HomeAssistant, ws_client: MockHAClientWebSocket
 ) -> None:
-    entry = _entry()
+    entry = _entry(options=SHOWN)
     entry.add_to_hass(hass)
     # Disabled entities are left out; disable one before setup to avoid a delayed reload.
     er.async_get(hass).async_get_or_create(
@@ -346,7 +352,7 @@ async def test_appearance_and_settings_are_validated_stored_and_shared(
     hass_storage: dict[str, Any],
 ) -> None:
     with _clients(MyQDevices((DOOR,))):
-        await _setup(hass, _entry())
+        await _setup(hass, _entry(options=SHOWN))
     door_device = dr.async_get(hass).async_get_device(identifiers={(DOMAIN, DOOR.serial_number)})
     assert door_device is not None
     response, _ = await _call(ws_client, {"type": "myq/panel/subscribe"})
@@ -454,7 +460,7 @@ async def test_only_administrators_change_the_panel(
     hass_read_only_access_token: str,
 ) -> None:
     client = await hass_ws_client(hass, hass_read_only_access_token)
-    entry = _entry()
+    entry = _entry(options=SHOWN)
     with _clients(MyQDevices((DOOR,))):
         await _setup(hass, entry)
     door_device = dr.async_get(hass).async_get_device(identifiers={(DOMAIN, DOOR.serial_number)})
@@ -480,7 +486,7 @@ async def test_stored_appearance_is_loaded_and_invalid_values_are_dropped(
     hass_storage: dict[str, Any],
 ) -> None:
     devices = dr.async_get(hass)
-    entry = _entry()
+    entry = _entry(options=SHOWN)
     entry.add_to_hass(hass)
     door_device = devices.async_get_or_create(
         config_entry_id=entry.entry_id, identifiers={(DOMAIN, DOOR.serial_number)}
@@ -561,7 +567,7 @@ async def test_options_flow_configures_the_sidebar_panel(hass: HomeAssistant) ->
         str(key): key.description["suggested_value"] for key in result["data_schema"].schema
     }
     assert suggested == {
-        CONF_PANEL_ENABLED: True,
+        CONF_PANEL_ENABLED: False,
         CONF_PANEL_TITLE: "MyQ",
         CONF_PANEL_ICON: "mdi:garage-variant",
         CONF_PANEL_REQUIRE_ADMIN: False,

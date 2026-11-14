@@ -25,7 +25,7 @@ def panel_options(options: Mapping[str, object]) -> PanelOptions:
     enabled = options.get(CONF_PANEL_ENABLED)
     require_admin = options.get(CONF_PANEL_REQUIRE_ADMIN)
     return PanelOptions(
-        panel_enabled=enabled if isinstance(enabled, bool) else True,
+        panel_enabled=enabled if isinstance(enabled, bool) else False,
         panel_title=_text(options.get(CONF_PANEL_TITLE)) or DEFAULT_PANEL_TITLE,
         panel_icon=_text(options.get(CONF_PANEL_ICON)) or DEFAULT_PANEL_ICON,
         panel_require_admin=require_admin if isinstance(require_admin, bool) else False,
