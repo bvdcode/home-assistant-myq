@@ -13,6 +13,7 @@ from .const import (
     MFA_METHOD_EMAIL,
     MFA_METHOD_SMS,
 )
+from .panel_options import PanelOptions
 
 
 class CredentialsInput(TypedDict):
@@ -82,11 +83,25 @@ BROWSER_CALLBACK_SCHEMA = vol.Schema(
         )
     }
 )
-PANEL_OPTIONS_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_PANEL_ENABLED): selector.BooleanSelector(),
-        vol.Optional(CONF_PANEL_TITLE): selector.TextSelector(),
-        vol.Optional(CONF_PANEL_ICON): selector.IconSelector(),
-        vol.Required(CONF_PANEL_REQUIRE_ADMIN): selector.BooleanSelector(),
+
+
+def panel_option_fields(panel: PanelOptions) -> dict[vol.Marker, object]:
+    """Return the sidebar panel fields of the options form, showing the current values.
+
+    The switches default to their current values, so one option can be changed without
+    sending the others. A cleared title or icon returns to its default.
+    """
+    return {
+        vol.Required(
+            CONF_PANEL_ENABLED, default=panel["panel_enabled"]
+        ): selector.BooleanSelector(),
+        vol.Optional(
+            CONF_PANEL_TITLE, description={"suggested_value": panel["panel_title"]}
+        ): selector.TextSelector(),
+        vol.Optional(
+            CONF_PANEL_ICON, description={"suggested_value": panel["panel_icon"]}
+        ): selector.IconSelector(),
+        vol.Required(
+            CONF_PANEL_REQUIRE_ADMIN, default=panel["panel_require_admin"]
+        ): selector.BooleanSelector(),
     }
-)

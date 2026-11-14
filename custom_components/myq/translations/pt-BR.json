@@ -81,25 +81,6 @@
       "unknown": "O MyQ retornou uma resposta inesperada."
     }
   },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Painel da garagem",
-        "description": "Controle seus portões de garagem, confira o status e assista ao vídeo das câmeras em uma página na barra lateral do Home Assistant.",
-        "data": {
-          "panel_enabled": "Mostrar o painel da garagem na barra lateral",
-          "panel_title": "Título na barra lateral",
-          "panel_icon": "Ícone na barra lateral",
-          "panel_require_admin": "Somente administradores podem abrir o painel"
-        },
-        "data_description": {
-          "panel_enabled": "Os portões de garagem e as câmeras desta conta são adicionados ao painel automaticamente.",
-          "panel_title": "Com várias contas MyQ, a primeira conta que mostra o painel define o título e o ícone.",
-          "panel_require_admin": "Somente administradores podem alterar a aparência dos portões."
-        }
-      }
-    }
-  },
   "selector": {
     "mfa_method": {
       "options": {
@@ -154,6 +135,25 @@
     },
     "camera_image_failed": {
       "message": "Não foi possível obter uma imagem da câmera MyQ."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "camera_lan_only": "Usar apenas a rede local para o vídeo ao vivo",
+          "panel_enabled": "Mostrar o painel da garagem na barra lateral",
+          "panel_title": "Título na barra lateral",
+          "panel_icon": "Ícone na barra lateral",
+          "panel_require_admin": "Somente administradores podem abrir o painel"
+        },
+        "data_description": {
+          "camera_lan_only": "Exige que o vídeo ao vivo venha do endereço IP privado da câmera na rede local. A autorização e o estabelecimento da conexão ainda exigem acesso à nuvem. Se a câmera não estiver acessível pela rede local, a reprodução falhará sem usar um endereço público. Alterar esta opção encerra as sessões ativas da câmera. As imagens estáticas continuam sendo obtidas da nuvem.",
+          "panel_enabled": "Os portões de garagem e as câmeras desta conta são adicionados ao painel automaticamente.",
+          "panel_title": "Com várias contas MyQ, a primeira conta que mostra o painel define o título e o ícone.",
+          "panel_require_admin": "Somente administradores podem alterar a aparência dos portões."
+        }
+      }
     }
   }
 }

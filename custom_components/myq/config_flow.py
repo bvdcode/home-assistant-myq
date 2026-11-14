@@ -9,7 +9,7 @@ from typing import cast
 import voluptuous as vol
 from aiohttp import ClientError, ClientSession, CookieJar
 from homeassistant import config_entries
-from homeassistant.config_entries import ConfigEntry, ConfigFlowResult
+from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import (
     async_create_clientsession,
@@ -23,7 +23,6 @@ from .config_flow_forms import (
     BROWSER_START_SCHEMA,
     CREDENTIALS_SCHEMA,
     MFA_SCHEMA,
-    PANEL_OPTIONS_SCHEMA,
     REAUTH_MENU_OPTIONS,
     REAUTH_SCHEMA,
     USER_MENU_OPTIONS,
@@ -32,8 +31,10 @@ from .config_flow_forms import (
     CredentialsInput,
     MfaInput,
     PasswordInput,
+    panel_option_fields,
 )
 from .const import (
+    CONF_CAMERA_LAN_ONLY,
     CONF_EMAIL,
     CONF_MFA_METHOD,
     DEFAULT_MFA_METHOD,
@@ -67,6 +68,11 @@ class LoginAttempt:
 class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: MyQConfigEntry) -> MyQOptionsFlow:
+        return MyQOptionsFlow()
+
     def __init__(self) -> None:
         self._email: str | None = None
         self._mfa_method: str | None = None
@@ -74,12 +80,6 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._login: MyQLoginSession | None = None
         self._login_session: ClientSession | None = None
         self._reauth_entry: MyQConfigEntry | None = None
-
-    @staticmethod
-    @callback
-    def async_get_options_flow(config_entry: ConfigEntry) -> MyQOptionsFlow:
-        del config_entry
-        return MyQOptionsFlow()
 
     async def async_step_user(
         self,
@@ -406,17 +406,25 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class MyQOptionsFlow(config_entries.OptionsFlow):
-    """Configure the MyQ sidebar panel."""
+    """Configure camera video and the sidebar panel on one form."""
 
     async def async_step_init(
-        self,
-        user_input: dict[str, object] | None = None,
+        self, user_input: dict[str, object] | None = None
     ) -> ConfigFlowResult:
+        options = self.config_entry.options
         if user_input is not None:
-            return self.async_create_entry(data=dict(panel_options(user_input)))
+            return self.async_create_entry(
+                title="", data={**options, **user_input, **panel_options(user_input)}
+            )
         return self.async_show_form(
             step_id="init",
-            data_schema=self.add_suggested_values_to_schema(
-                PANEL_OPTIONS_SCHEMA, dict(panel_options(self.config_entry.options))
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_CAMERA_LAN_ONLY,
+                        default=options.get(CONF_CAMERA_LAN_ONLY, False),
+                    ): bool,
+                    **panel_option_fields(panel_options(options)),
+                }
             ),
         )

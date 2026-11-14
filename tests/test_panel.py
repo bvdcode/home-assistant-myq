@@ -21,6 +21,7 @@ from pytest_homeassistant_custom_component.typing import (
 )
 
 from custom_components.myq.const import (
+    CONF_CAMERA_LAN_ONLY,
     CONF_EMAIL,
     CONF_MFA_METHOD,
     CONF_PANEL_ENABLED,
@@ -562,16 +563,18 @@ async def test_options_flow_configures_the_sidebar_panel(hass: HomeAssistant) ->
     result = await hass.config_entries.options.async_init(entry.entry_id)
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "init"
-    assert result["data_schema"] is not None
-    suggested = {
-        str(key): key.description["suggested_value"] for key in result["data_schema"].schema
-    }
-    assert suggested == {
+    schema = result["data_schema"]
+    assert schema is not None
+    # Every switch has a default, so one option can be changed without sending the others.
+    assert schema({}) == {
+        CONF_CAMERA_LAN_ONLY: False,
         CONF_PANEL_ENABLED: False,
-        CONF_PANEL_TITLE: "MyQ",
-        CONF_PANEL_ICON: "mdi:garage-variant",
         CONF_PANEL_REQUIRE_ADMIN: False,
     }
+    suggested = {
+        str(key): key.description["suggested_value"] for key in schema.schema if key.description
+    }
+    assert suggested == {CONF_PANEL_TITLE: "MyQ", CONF_PANEL_ICON: "mdi:garage-variant"}
 
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
@@ -583,7 +586,17 @@ async def test_options_flow_configures_the_sidebar_panel(hass: HomeAssistant) ->
         },
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
-    assert entry.options == PANEL_OPTIONS
+    assert entry.options == {**PANEL_OPTIONS, CONF_CAMERA_LAN_ONLY: False}
+
+    # The camera option shares the form; changing only it keeps the panel's switches.
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {CONF_CAMERA_LAN_ONLY: True}
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert entry.options[CONF_CAMERA_LAN_ONLY] is True
+    assert entry.options[CONF_PANEL_ENABLED] is True
+    assert entry.options[CONF_PANEL_REQUIRE_ADMIN] is True
 
     result = await hass.config_entries.options.async_init(entry.entry_id)
     result = await hass.config_entries.options.async_configure(
@@ -591,6 +604,7 @@ async def test_options_flow_configures_the_sidebar_panel(hass: HomeAssistant) ->
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert entry.options == {
+        CONF_CAMERA_LAN_ONLY: True,
         CONF_PANEL_ENABLED: False,
         CONF_PANEL_TITLE: "MyQ",
         CONF_PANEL_ICON: "mdi:garage-variant",
