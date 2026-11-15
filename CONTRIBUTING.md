@@ -26,6 +26,14 @@ each door with `door-card.js`. Their strings live in
 `frontend/i18n/<language>.json`; add every new string to all languages, as for
 `strings.json`.
 
+The frontend tests in `tests/frontend` run these modules in Node with jsdom.
+With Node.js 24 or newer, run:
+
+```bash
+npm ci
+npm test
+```
+
 Keep changes focused and include tests for new behavior. Never include account
 credentials, verification codes, OAuth tokens, device serial numbers, or raw
 service responses in issues, fixtures, commits, or logs.

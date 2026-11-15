@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test --test-force-exit tests/frontend/"
+  },
+  "devDependencies": {
+    "jsdom": "31.0.1"
+  }
+}
