@@ -54,9 +54,8 @@ async def test_retention_cannot_follow_symlink_or_parent_path(
 async def test_failed_enrollment_does_not_mutate_ownership_ledger(
     hass: HomeAssistant, tmp_path: Path
 ) -> None:
-    from unittest.mock import AsyncMock
-
     import pytest
+    from homeassistant.util.file import WriteError
 
     recordings = KeypadRecordings(hass, "retention-save-failure")
     recordings.root = tmp_path
@@ -66,7 +65,7 @@ async def test_failed_enrollment_does_not_mutate_ownership_ledger(
     await recordings.async_add(str(old))
     previous = dict(recordings._clips)
     with (
-        patch.object(recordings._store, "async_save", new=AsyncMock(side_effect=OSError("full"))),
+        patch.object(recordings._store, "_async_write_data", side_effect=WriteError("full")),
         pytest.raises(OSError),
     ):
         await recordings.async_add(str(new))
@@ -91,3 +90,35 @@ async def test_last_retained_clip_is_durable_and_scoped_to_camera(
     assert first is not None and first[1] == paths[0].name
     assert second is not None and second[1] == paths[1].name
     assert reloaded.latest("third") is None
+
+
+async def test_custom_media_directory_resolves_published_sensor_link(
+    hass: HomeAssistant, tmp_path: Path
+) -> None:
+    from unittest.mock import MagicMock
+
+    from homeassistant.components.media_source.local_source import LocalSource
+    from homeassistant.components.media_source.models import MediaSourceItem
+
+    from custom_components.myq.models import MyQCamera
+    from custom_components.myq.sensor import LastRecordingSensor
+
+    hass.config.media_dirs = {"videos": str(tmp_path)}
+    store = KeypadRecordings(hass, "custom-directory")
+    assert store.root == tmp_path / "myq-keypad"
+    store.root.mkdir()
+    clip = store.root / ("a" * 32 + ".mp4")
+    clip.write_bytes(b"video")
+    camera = MyQCamera("TC-0007-20000001", True, "vkp-camera")
+    await store.async_add(str(clip), serial=camera.serial_number)
+    sensor = LastRecordingSensor(MagicMock(recordings=store), camera, "last_recording")
+    attrs = sensor.extra_state_attributes
+    assert attrs is not None
+    source = LocalSource(hass, "media_source", "Library", hass.config.media_dirs, "/media")
+    item = MediaSourceItem(
+        hass,
+        "media_source",
+        attrs["media_content_id"].removeprefix("media-source://media_source/"),
+        None,
+    )
+    assert (await source.async_resolve_media(item)).path == clip

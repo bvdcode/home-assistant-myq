@@ -490,3 +490,17 @@ async def test_camera_alias_lookup_has_a_short_deadline() -> None:
         await asyncio.wait_for(entity._async_camera_target(), 1)
     assert cancelled.is_set()
     coordinator.client.async_get_camera_alias.assert_awaited_once_with(DOOR.camera)
+
+
+async def test_cancel_immediately_finishes_recording_once(hass: HomeAssistant) -> None:
+    entity, coordinator = _keypad_entity(hass)
+    events: list[Event] = []
+    unsubscribe = hass.bus.async_listen("myq_keypad_recording_finished", events.append)
+    with patch.object(entity, "stream_source", side_effect=asyncio.Event().wait):
+        await entity.async_record_keypad(5)
+        await entity.async_cancel_keypad_recording()
+        await entity.async_cancel_keypad_recording()
+        await hass.async_block_till_done()
+    unsubscribe()
+    assert coordinator.recordings.status[KEYPAD.serial_number] == "cancelled"
+    assert [event.data["status"] for event in events] == ["cancelled"]

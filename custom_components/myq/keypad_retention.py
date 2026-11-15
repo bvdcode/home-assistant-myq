@@ -8,7 +8,7 @@ import re
 import time
 from pathlib import Path
 
-from homeassistant.core import HomeAssistant
+from homeassistant.core import CoreState, HomeAssistant
 from homeassistant.helpers.storage import Store
 
 _LOGGER = logging.getLogger(__name__)
@@ -37,11 +37,11 @@ def _remove_owned(root: Path, name: str, identity: dict[str, object]) -> bool:
 
 class KeypadRecordings:
     def __init__(self, hass: HomeAssistant, entry_id: str) -> None:
-        self.root = (
-            Path(hass.config.media_dirs.get("local", hass.config.path("media"))) / "myq-keypad"
-        )
+        dirs = hass.config.media_dirs
+        self.media_dir_id = "local" if "local" in dirs else next(iter(dirs), "local")
+        self.root = Path(dirs.get(self.media_dir_id, hass.config.path("media"))) / "myq-keypad"
         self._store = Store[dict[str, dict[str, object]]](
-            hass, 1, f"myq.{entry_id}.recordings", private=True
+            hass, 1, f"myq.{entry_id}.recordings", private=True, atomic_writes=True
         )
         self._clips: dict[str, dict[str, object]] = {}
         self.status: dict[str, str] = {}
@@ -61,7 +61,11 @@ class KeypadRecordings:
                 candidate.name: {"created_at": time.time(), "identity": identity, "serial": serial},
             }
             # A failed save must not enroll a failed publication in the in-memory ledger.
+            if self._store.hass.state is CoreState.stopping:
+                raise OSError("Cannot enroll a clip while storage is stopping")
             await self._store.async_save(updated)
+            if await self._store.async_load() != updated:
+                raise OSError("Recording ownership could not be persisted")
             self._clips = updated
 
     def latest(self, serial: str) -> tuple[float, str] | None:

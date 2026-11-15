@@ -113,7 +113,7 @@ class LastRecordingSensor(KeypadRecordingEntity, SensorEntity):
         if clip is None:
             return None
         return {
-            "media_content_id": "media-source://media_source/local/myq-keypad/" + clip[1],
+            "media_content_id": f"media-source://media_source/{self.coordinator.recordings.media_dir_id}/myq-keypad/{clip[1]}",
             "media_content_type": "video/mp4",
         }
 

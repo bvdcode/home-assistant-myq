@@ -222,11 +222,11 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
             raise HomeAssistantError("Keypad recording cooldown is active")
         self._last_record_started = time.monotonic()
         self._record_status("recording")
-        # Not eager: the reference is stored before the recording can run or finish.
+        # Enter the cancellation handler before an immediate cancel action can run.
         self._record_task = self.hass.async_create_background_task(
             self._async_run_recording(duration),
             f"myq keypad recording {self._camera_serial}",
-            eager_start=False,
+            eager_start=True,
         )
 
     async def _async_run_recording(self, duration: int) -> None:
