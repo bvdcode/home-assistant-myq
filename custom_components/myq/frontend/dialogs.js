@@ -25,9 +25,13 @@ class Sheet {
   constructor(panel, className) {
     this.panel = panel;
     this.dialog = h("dialog", { class: `sheet ${className}` });
-    // Clicks on the backdrop target the dialog itself; content fills the dialog box.
+    // Clicks on the backdrop target the dialog itself; content fills the dialog box. A press that starts
+    // inside and ends outside also targets the dialog, so close only if the press began on the backdrop.
+    this.dialog.addEventListener("pointerdown", (event) => {
+      this._pressedBackdrop = event.target === this.dialog;
+    });
     this.dialog.addEventListener("click", (event) => {
-      if (event.target === this.dialog) this.close();
+      if (event.target === this.dialog && this._pressedBackdrop) this.close();
     });
     // Escape closes the dialog natively; buttons close it through close(). Either way, tear down once.
     this.dialog.addEventListener("close", () => this._finish());

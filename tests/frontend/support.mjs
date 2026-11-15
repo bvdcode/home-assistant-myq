@@ -19,6 +19,7 @@ export function installPage() {
   });
   const names = [
     "window", "document", "customElements", "HTMLElement", "Node", "Element", "Text", "CustomEvent", "Event",
+    "MouseEvent", "PointerEvent",
     "HTMLImageElement", "DocumentFragment", "ShadowRoot", "MutationObserver", "getComputedStyle",
     "requestAnimationFrame", "cancelAnimationFrame", "localStorage", "CSS",
   ];
