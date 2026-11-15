@@ -117,6 +117,7 @@ export class CameraView {
     this._observer.disconnect();
     document.removeEventListener("visibilitychange", this._onVisibility);
     clearTimeout(this._timer);
+    this._timer = 0;
     this._stopLive();
   }
 
@@ -184,7 +185,9 @@ export class CameraView {
     player.setAttribute("allow-exoplayer", "");
     this._player = player;
     this.live = true;
+    // update() restarts snapshots only while no timer is set, so clear the ID along with the timer.
     clearTimeout(this._timer);
+    this._timer = 0;
     this.el.append(player);
     this._render();
   }
