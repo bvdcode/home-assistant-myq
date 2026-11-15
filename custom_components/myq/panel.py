@@ -129,9 +129,29 @@ SETTINGS_SCHEMA: Final = vol.Schema(
 )
 
 
+class DoorAppearance(TypedDict, total=False):
+    """A door's saved look, as APPEARANCE_SCHEMA accepts it; the drawing fills in missing fields."""
+
+    width: str
+    style: str
+    color: str
+    windows: str
+    glass: str
+    hardware: bool
+    trim: str
+
+
+class PanelSettings(TypedDict, total=False):
+    """Preferences shared by every user of the panel, as SETTINGS_SCHEMA accepts them."""
+
+    confirm: bool
+    order: list[str]
+    open_warning: int
+
+
 class StoredPanel(TypedDict):
-    appearance: dict[str, dict[str, Any]]
-    settings: dict[str, Any]
+    appearance: dict[str, DoorAppearance]
+    settings: PanelSettings
 
 
 class DoorPayload(TypedDict):
@@ -157,8 +177,8 @@ class AccountPayload(TypedDict):
 class PanelPayload(TypedDict):
     doors: list[DoorPayload]
     cameras: list[CameraPayload]
-    appearance: dict[str, dict[str, Any]]
-    settings: dict[str, Any]
+    appearance: dict[str, DoorAppearance]
+    settings: PanelSettings
     accounts: list[AccountPayload]
 
 
@@ -254,11 +274,11 @@ class MyQPanel:
             doors=doors,
             cameras=cameras,
             appearance={
-                device_id: dict(appearance)
+                device_id: appearance.copy()
                 for device_id, appearance in self._data["appearance"].items()
                 if device_id in known
             },
-            settings=dict(self._data["settings"]),
+            settings=self._data["settings"].copy(),
             accounts=accounts,
         )
 
@@ -286,9 +306,7 @@ class MyQPanel:
 
         return unsubscribe
 
-    async def async_save_appearance(
-        self, appearances: Mapping[str, Mapping[str, Any] | None]
-    ) -> None:
+    async def async_save_appearance(self, appearances: Mapping[str, DoorAppearance | None]) -> None:
         """Store the look of each listed door, or reset it to the default when None."""
         device_registry = dr.async_get(self.hass)
         for device_id in appearances:
@@ -304,17 +322,14 @@ class MyQPanel:
             if appearance is None:
                 stored.pop(device_id, None)
             else:
-                stored[device_id] = dict(appearance)
+                stored[device_id] = appearance.copy()
         await self._async_save(StoredPanel(appearance=stored, settings=self._data["settings"]))
 
-    async def async_save_settings(self, settings: Mapping[str, Any]) -> None:
+    async def async_save_settings(self, settings: PanelSettings) -> None:
         """Merge panel-wide preferences into the stored settings."""
-        await self._async_save(
-            StoredPanel(
-                appearance=self._data["appearance"],
-                settings={**self._data["settings"], **settings},
-            )
-        )
+        merged = self._data["settings"].copy()
+        merged.update(settings)
+        await self._async_save(StoredPanel(appearance=self._data["appearance"], settings=merged))
 
     async def _async_save(self, data: StoredPanel) -> None:
         self._data = data

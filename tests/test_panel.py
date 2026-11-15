@@ -34,15 +34,20 @@ from custom_components.myq.const import (
 )
 from custom_components.myq.models import GarageDoor, MyQCamera, MyQDevices
 from custom_components.myq.panel import (
+    APPEARANCE_SCHEMA,
     DOOR_COLORS,
     DOOR_GLASS,
     DOOR_STYLES,
     DOOR_WIDTHS,
     DOOR_WINDOWS,
     FRONTEND_PATH,
+    SETTINGS_SCHEMA,
     STORAGE_KEY,
     TRIM_COLORS,
+    DoorAppearance,
     MyQPanel,
+    PanelSettings,
+    StoredPanel,
     _frontend_version,
     _stored_panel,
 )
@@ -525,7 +530,14 @@ def test_stored_panel_data_is_sanitized() -> None:
             },
             "settings": {"confirm": "yes"},
         }
-    ) == {"appearance": {"keep": {"style": "glass", "hardware": True}}, "settings": {}}
+    ) == StoredPanel(appearance={"keep": DoorAppearance(style="glass", hardware=True)}, settings={})
+
+
+def test_panel_data_types_match_the_schemas() -> None:
+    """The typed views of the stored data list exactly the fields the schemas accept."""
+    for typed, schema in ((DoorAppearance, APPEARANCE_SCHEMA), (PanelSettings, SETTINGS_SCHEMA)):
+        fields = {str(key) for key in schema.schema}
+        assert typed.__required_keys__ | typed.__optional_keys__ == fields
 
 
 def test_appearance_choices_match_the_door_drawing() -> None:
