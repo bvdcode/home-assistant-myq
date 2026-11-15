@@ -94,3 +94,37 @@ test("a door that moves and stops in the same state is listed for each stop", as
   );
   assert.equal(await activityRows(), 2);
 });
+
+test("a door that moves again before its snapshot is taken shows no snapshot", async () => {
+  await mount(doorHass("closed"));
+  const before = snapshots();
+  await setState("opening");
+  await setState("open");
+  await clock.advance(500);
+  await setState("closing");
+  await clock.advance(2000);
+  assert.equal(snapshots(), before, "no snapshot is requested");
+  assert.ok(peek().hidden, "no preview shows over the moving door");
+});
+
+test("a snapshot that arrives after the door moves again is not shown", async () => {
+  await mount(doorHass("closed"));
+  const decode = window.HTMLImageElement.prototype.decode;
+  let finish = null;
+  window.HTMLImageElement.prototype.decode = function decodeSlowly() {
+    decoded.push(this.getAttribute("src") ?? "");
+    return new Promise((resolve) => (finish = resolve));
+  };
+  try {
+    await setState("opening");
+    await setState("open");
+    await clock.advance(2000);
+    assert.ok(finish, "the snapshot is loading");
+    await setState("closing");
+    finish();
+    await flush();
+    assert.ok(peek().hidden, "the late snapshot stays hidden");
+  } finally {
+    window.HTMLImageElement.prototype.decode = decode;
+  }
+});

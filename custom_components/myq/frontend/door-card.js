@@ -154,6 +154,7 @@ export class DoorCard {
     this._checkedUntil = 0;
     this._activity = null;
     this._activityToken = 0;
+    this._peekToken = 0;
     this._build();
     // Only a card on screen fetches a snapshot after its door moves.
     this._onScreen = true;
@@ -377,7 +378,12 @@ export class DoorCard {
     this.camera?.update(hass);
     const current = states.cover?.state;
     if (previous === undefined || previous === current) return null;
-    if (MOVING.has(current)) this._hidePeek();
+    if (MOVING.has(current)) {
+      // A door moving again drops the snapshot that was to show where it stopped.
+      clearTimeout(this._settleTimer);
+      this._peekToken += 1;
+      this._hidePeek();
+    }
     if (SETTLED.has(current) && (SETTLED.has(previous) || MOVING.has(previous))) this._afterMove();
     if (this._detailsOpen) this._scheduleActivity(LOGBOOK_DELAY_MS);
     return current;
@@ -669,8 +675,9 @@ export class DoorCard {
       return;
     }
     if (!this._onScreen) return;
+    const token = this._peekToken;
     const image = await this.camera.snapshot();
-    if (!image || !this.panel.isConnected || this._cameraShown()) return;
+    if (token !== this._peekToken || !image || !this.panel.isConnected || this._cameraShown()) return;
     image.className = "peek-image";
     this.peekImage.replaceWith(image);
     this.peekImage = image;
