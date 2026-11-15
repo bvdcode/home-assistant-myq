@@ -81,6 +81,7 @@
   },
   "customize": {
     "title": "{name} aanpassen",
+    "preview": "Voorbeeld",
     "preview_closed": "Gesloten",
     "preview_open": "Open",
     "preview_light": "Licht",

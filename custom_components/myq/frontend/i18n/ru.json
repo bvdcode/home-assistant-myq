@@ -89,6 +89,7 @@
   },
   "customize": {
     "title": "Настройка: {name}",
+    "preview": "Предпросмотр",
     "preview_closed": "Закрыта",
     "preview_open": "Открыта",
     "preview_light": "Свет",

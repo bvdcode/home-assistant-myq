@@ -19,6 +19,7 @@ import { currentLocale, t } from "./i18n.js";
 const INTEGRATION_URL = "/config/integrations/integration/myq";
 /** Choices for highlighting doors left open, in minutes; 0 turns the warning off. */
 const OPEN_WARNINGS = [0, 15, 30, 60, 120];
+let titleCount = 0;
 
 class Sheet {
   constructor(panel, className) {
@@ -40,10 +41,13 @@ class Sheet {
   }
 
   header(title) {
+    // The visible title also names the dialog for assistive technology.
+    const id = `myq-sheet-title-${++titleCount}`;
+    this.dialog.setAttribute("aria-labelledby", id);
     return h(
       "header",
       { class: "sheet-header" },
-      h("h2", { text: title, tabindex: "-1", autofocus: true }),
+      h("h2", { id, text: title, tabindex: "-1", autofocus: true }),
       h(
         "button",
         {
@@ -73,10 +77,10 @@ function field(label, ...content) {
   return h("div", { class: "field" }, h("div", { class: "field-label", text: label }), ...content);
 }
 
-function segmented(options, selected, onSelect, key) {
+function segmented(label, options, selected, onSelect, key) {
   return h(
     "div",
-    { class: "segmented", role: "group" },
+    { class: "segmented", role: "group", "aria-label": label },
     options.map(([value, label]) =>
       h("button", {
         class: "segment",
@@ -169,6 +173,7 @@ export class CustomizeDialog extends Sheet {
     this._renderPreview();
     this.previewToggle.replaceChildren(
       segmented(
+        t("customize.preview"),
         [
           ["closed", t("customize.preview_closed")],
           ["open", t("customize.preview_open")],
@@ -201,6 +206,7 @@ export class CustomizeDialog extends Sheet {
       field(
         t("customize.size"),
         segmented(
+          t("customize.size"),
           WIDTHS.map((width) => [width, t(`width.${width}`)]),
           a.width,
           (width) => this._set({ width }),
@@ -241,6 +247,7 @@ export class CustomizeDialog extends Sheet {
         field(
           t("customize.windows"),
           segmented(
+            t("customize.windows"),
             windows.map((value) => [value, t(`windows.${value}`)]),
             a.windows,
             (value) => this._set({ windows: value }),
@@ -254,6 +261,7 @@ export class CustomizeDialog extends Sheet {
         field(
           t("customize.glass"),
           segmented(
+            t("customize.glass"),
             GLASS.map((value) => [value, t(`glass.${value}`)]),
             a.glass,
             (glass) => this._set({ glass }),
@@ -449,6 +457,7 @@ export class SettingsDialog extends Sheet {
       field(
         t("settings.open_warning"),
         segmented(
+          t("settings.open_warning"),
           warnings.map((minutes) => [
             minutes,
             minutes ? formatDuration(minutes * 60000, currentLocale()) : t("settings.off"),

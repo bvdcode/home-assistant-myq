@@ -77,6 +77,7 @@
   },
   "customize": {
     "title": "自定义 {name}",
+    "preview": "预览",
     "preview_closed": "已关闭",
     "preview_open": "已打开",
     "preview_light": "灯光",

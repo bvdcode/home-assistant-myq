@@ -89,6 +89,7 @@
   },
   "customize": {
     "title": "Dostosuj: {name}",
+    "preview": "Podgląd",
     "preview_closed": "Zamknięta",
     "preview_open": "Otwarta",
     "preview_light": "Światło",

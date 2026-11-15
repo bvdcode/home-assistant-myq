@@ -81,6 +81,7 @@
   },
   "customize": {
     "title": "Tilpas {name}",
+    "preview": "Forhåndsvisning",
     "preview_closed": "Lukket",
     "preview_open": "Åben",
     "preview_light": "Lys",

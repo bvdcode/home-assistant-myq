@@ -89,6 +89,7 @@
   },
   "customize": {
     "title": "Přizpůsobit: {name}",
+    "preview": "Náhled",
     "preview_closed": "Zavřená",
     "preview_open": "Otevřená",
     "preview_light": "Světlo",

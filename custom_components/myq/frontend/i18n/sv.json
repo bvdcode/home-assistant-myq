@@ -81,6 +81,7 @@
   },
   "customize": {
     "title": "Anpassa {name}",
+    "preview": "Förhandsvisning",
     "preview_closed": "Stängd",
     "preview_open": "Öppen",
     "preview_light": "Belysning",

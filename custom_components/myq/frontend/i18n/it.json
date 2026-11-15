@@ -81,6 +81,7 @@
   },
   "customize": {
     "title": "Personalizza {name}",
+    "preview": "Anteprima",
     "preview_closed": "Chiusa",
     "preview_open": "Aperta",
     "preview_light": "Luce",
