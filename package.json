@@ -2,7 +2,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test --test-force-exit tests/frontend/",
+    "test": "node --test --test-force-exit tests/frontend/*.test.mjs",
     "typecheck": "tsc -p tsconfig.json"
   },
   "devDependencies": {
