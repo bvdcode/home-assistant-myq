@@ -11,6 +11,9 @@ const theme = `
   --myq-muted: var(--secondary-text-color, #6f6f6f);
   --myq-primary: var(--primary-color, #03a9f4);
   --myq-on-primary: var(--text-primary-color, #fff);
+  /* Darker shades of the theme color keep button text at WCAG AA contrast (4.5:1) on light surfaces. */
+  --myq-primary-fill: color-mix(in srgb, var(--myq-primary) 70%, #000);
+  --myq-primary-text: color-mix(in srgb, var(--myq-primary) 70%, #000);
   --myq-closed: var(--success-color, #43a047);
   --myq-open: var(--warning-color, #ffa600);
   --myq-moving: var(--info-color, #039be5);
@@ -105,10 +108,10 @@ button:focus-visible, input:focus-visible, label:focus-within:has(input[type="co
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   white-space: nowrap; --mdc-icon-size: 18px; transition: background 0.15s, color 0.15s;
 }
-.filled-button { background: var(--myq-primary); color: var(--myq-on-primary); }
-.filled-button:hover:not(:disabled) { background: color-mix(in srgb, var(--myq-primary) 88%, #000); }
+.filled-button { background: var(--myq-primary-fill); color: var(--myq-on-primary); }
+.filled-button:hover:not(:disabled) { background: color-mix(in srgb, var(--myq-primary) 60%, #000); }
 .filled-button:disabled { opacity: 0.6; cursor: default; }
-.text-button { background: none; color: var(--myq-primary); padding: 0 14px; }
+.text-button { background: none; color: var(--myq-primary-text); padding: 0 14px; }
 .text-button:hover { background: color-mix(in srgb, var(--myq-primary) 10%, transparent); }
 .text-button.inline { height: 32px; padding: 0 10px; margin-inline-start: -10px; }
 .tonal-button { background: color-mix(in srgb, var(--tone, var(--myq-primary)) 14%, transparent); color: var(--tone, var(--myq-primary)); }
@@ -180,6 +183,8 @@ button:focus-visible, input:focus-visible, label:focus-within:has(input[type="co
   --mdc-icon-size: 32px;
 }
 .door-card.unavailable .media > .scene { filter: grayscale(0.85) brightness(0.8); }
+/* On dark surfaces, text in the theme color needs a lighter shade instead. */
+:host([dark]) { --myq-primary-text: color-mix(in srgb, var(--myq-primary) 80%, #fff); }
 :host([dark]) .media > .scene { filter: brightness(0.93) saturate(0.95); }
 :host([dark]) .door-card.unavailable .media > .scene { filter: grayscale(0.85) brightness(0.7); }
 
@@ -215,12 +220,12 @@ button:focus-visible, input:focus-visible, label:focus-within:has(input[type="co
   border: 0; border-radius: 24px;
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   font-size: 15px; font-weight: 500; letter-spacing: 0.01em; cursor: pointer;
-  background: color-mix(in srgb, var(--myq-primary) 13%, transparent); color: var(--myq-primary);
+  background: color-mix(in srgb, var(--myq-primary) 13%, transparent); color: var(--myq-primary-text);
   --mdc-icon-size: 20px; transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.08s;
 }
 .action:hover:not(:disabled) { background: color-mix(in srgb, var(--myq-primary) 20%, transparent); }
-.action.primary { background: var(--myq-primary); color: var(--myq-on-primary); box-shadow: 0 2px 6px color-mix(in srgb, var(--myq-primary) 35%, transparent); }
-.action.primary:hover:not(:disabled) { background: color-mix(in srgb, var(--myq-primary) 88%, #000); }
+.action.primary { background: var(--myq-primary-fill); color: var(--myq-on-primary); box-shadow: 0 2px 6px color-mix(in srgb, var(--myq-primary) 35%, transparent); }
+.action.primary:hover:not(:disabled) { background: color-mix(in srgb, var(--myq-primary) 60%, #000); }
 .action:active:not(:disabled) { transform: scale(0.98); }
 .action:disabled {
   cursor: default; box-shadow: none;
