@@ -5,15 +5,45 @@
  *   entity: cover.main_garage
  *   compact: false
  *
- * The integration loads this module on every frontend page, so no dashboard resource is needed.
+ * The integration loads this module on every frontend page, so no dashboard resource is needed. It
+ * stays small: the door drawing, camera, dialogs, and styles load when the first card is shown.
  * All cards on a page share one subscription to the integration's door list and saved looks.
  */
 
-import { CustomizeDialog } from "./dialogs.js";
-import { DoorCard } from "./door-card.js";
 import { h, icon } from "./dom.js";
 import { loadTranslations, t, translationsLoaded } from "./i18n.js";
-import { cardStyles } from "./styles.js";
+
+/**
+ * The modules that draw and run a card, once loaded.
+ * @type {{
+ *   DoorCard: typeof import("./door-card.js").DoorCard,
+ *   CustomizeDialog: typeof import("./dialogs.js").CustomizeDialog,
+ *   cardStyles: string,
+ * } | null}
+ */
+let parts = null;
+/** @type {Promise<void> | null} */
+let loadingParts = null;
+
+/** Load the modules that draw and run a card; a failed load is tried again by the next card shown. */
+function loadParts() {
+  if (!loadingParts) {
+    loadingParts = Promise.all([import("./door-card.js"), import("./dialogs.js"), import("./styles.js")]).then(
+      ([doorCard, dialogs, styles]) => {
+        parts = {
+          DoorCard: doorCard.DoorCard,
+          CustomizeDialog: dialogs.CustomizeDialog,
+          cardStyles: styles.cardStyles,
+        };
+      },
+      (error) => {
+        loadingParts = null;
+        throw error;
+      },
+    );
+  }
+  return loadingParts;
+}
 
 const TICK_MS = 30000;
 /** Dashboards rebuild cards while being edited, so keep the subscription briefly after the last one. */
@@ -132,7 +162,8 @@ class MyQDoorCard extends HTMLElement {
     this._language = null;
     this._unwatch = null;
     this._content = h("div", { class: "card-root" });
-    this.shadowRoot.append(h("style", { text: cardStyles }), this._content);
+    this._style = h("style");
+    this.shadowRoot.append(this._style, this._content);
   }
 
   /** Lets the dashboard editor build a form instead of showing YAML. */
@@ -190,6 +221,15 @@ class MyQDoorCard extends HTMLElement {
   connectedCallback() {
     // If strings failed to load, the next update after the card is shown again fetches them again.
     if (!translationsLoaded()) this._language = null;
+    if (!this._style.textContent) {
+      loadParts().then(
+        () => {
+          this._style.textContent = parts.cardStyles;
+          this._render();
+        },
+        () => this._message("mdi:alert-circle-outline", text("card.error")),
+      );
+    }
     this._watch();
     clearInterval(this._timer);
     this._timer = setInterval(() => this._card?.tick(), TICK_MS);
@@ -232,7 +272,7 @@ class MyQDoorCard extends HTMLElement {
     const door = all.find((candidate) => candidate.device_id === deviceId);
     if (!door || !this._hass?.user?.is_admin) return;
     this._customize?.close();
-    this._customize = new CustomizeDialog(this, door, all, this.appearanceFor(deviceId));
+    this._customize = new parts.CustomizeDialog(this, door, all, this.appearanceFor(deviceId));
     this._customize.onClose = () => {
       this._customize.scene.destroy();
       this._customize = null;
@@ -248,7 +288,7 @@ class MyQDoorCard extends HTMLElement {
   }
 
   _render() {
-    if (!this._config || !this._ready) return;
+    if (!this._config || !this._ready || !this._style.textContent) return;
     if (!this._config.entity) {
       this._message("mdi:garage-variant", text("card.choose"));
       return;
@@ -272,7 +312,7 @@ class MyQDoorCard extends HTMLElement {
       this._card.destroy();
       this._card = null;
     }
-    this._card ??= new DoorCard(this);
+    this._card ??= new parts.DoorCard(this);
     this._card.setDoor(door, payload.appearance[door.device_id]);
     this._card.setCompact(Boolean(this._config.compact));
     if (this._content.firstChild !== this._card.el) this._content.replaceChildren(this._card.el);
