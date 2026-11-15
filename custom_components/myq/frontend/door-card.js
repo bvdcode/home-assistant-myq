@@ -90,18 +90,22 @@ function summarizeActivity(entries) {
     .sort((a, b) => a.time - b.time);
   const changes = [];
   let started = null;
+  // The last state listed, so a door coming back online after an outage does not count as a change.
+  let settled = null;
   for (const entry of sorted) {
     if (MOVING.has(entry.state)) {
       started = entry;
+      settled = null;
       continue;
     }
-    if (SETTLED.has(entry.state)) {
+    if (SETTLED.has(entry.state) && entry.state !== settled) {
       const startedRecently = started && entry.time - started.time < MOVE_MS && hasCause(started);
       changes.push({
         state: entry.state,
         time: entry.time,
         cause: hasCause(entry) ? entry : startedRecently ? started : null,
       });
+      settled = entry.state;
     }
     started = null;
   }

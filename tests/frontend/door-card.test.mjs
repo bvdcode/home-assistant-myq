@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { afterEach, test } from "node:test";
 import { answering, cover, decoded, flush, importFrontend, installClock, installPage, makeHass, setOnScreen, until } from "./support.mjs";
 
-installPage();
+const window = installPage();
 const clock = installClock();
 await importFrontend("myq-card.js");
 
 const door = { device_id: "dev-a", name: "Door A", model: "Opener", entities: { cover: "cover.door_a", camera: "camera.door_a" } };
-const hass = (coverState) =>
+const doorHass = (coverState, logbook = []) =>
   makeHass({
     states: {
       "cover.door_a": cover("cover.door_a", coverState),
@@ -18,35 +18,79 @@ const hass = (coverState) =>
       },
     },
     subscribe: answering(() => ({ doors: [door], cameras: [], appearance: {}, settings: {} })),
+    callWS: async () => logbook.map((entry) => ({ ...entry, entity_id: "cover.door_a" })),
+    components: ["logbook"],
   });
 const snapshots = () => decoded.filter((source) => source.startsWith("/api/camera_proxy/")).length;
 
-test("only a card on screen fetches a snapshot after its door moves", async () => {
-  const card = document.createElement("myq-door-card");
+let card = null;
+afterEach(async () => {
+  card?.remove();
+  card = null;
+  await clock.advance(6000);
+});
+
+async function mount(hass) {
+  card = document.createElement("myq-door-card");
   card.setConfig({ type: "custom:myq-door-card", entity: "cover.door_a" });
   document.body.append(card);
-  card.hass = hass("closed");
+  card.hass = hass;
   await until(() => card.shadowRoot.querySelector(".door-card"), "the door card");
-  const doorCard = card.shadowRoot.querySelector(".door-card");
-  const peek = card.shadowRoot.querySelector(".peek");
-  const move = async (through, to) => {
-    card.hass = hass(through);
-    await flush();
-    card.hass = hass(to);
-    // The card waits for the camera to catch up before taking the snapshot.
-    await clock.advance(2000);
-  };
+}
+const peek = () => card.shadowRoot.querySelector(".peek");
+const setState = async (state) => {
+  card.hass = doorHass(state);
+  await flush();
+};
+const activityRows = async () => {
+  card.shadowRoot.querySelector("button.details-toggle").click();
+  await clock.advance(0);
+  await until(() => !card.shadowRoot.querySelector(".activity").hidden, "the activity");
+  return card.shadowRoot.querySelectorAll(".activity-row").length;
+};
 
+test("only a card on screen fetches a snapshot after its door moves", async () => {
+  await mount(doorHass("closed"));
+  const doorCard = card.shadowRoot.querySelector(".door-card");
   setOnScreen(doorCard, false);
   let before = snapshots();
-  await move("opening", "open");
+  await setState("opening");
+  await setState("open");
+  await clock.advance(2000);
   assert.equal(snapshots(), before, "off screen: no snapshot");
-  assert.ok(peek.hidden, "off screen: no preview");
+  assert.ok(peek().hidden, "off screen: no preview");
 
   setOnScreen(doorCard, true);
   before = snapshots();
-  await move("closing", "closed");
+  await setState("closing");
+  await setState("closed");
+  await clock.advance(2000);
   assert.equal(snapshots(), before + 1, "on screen: one snapshot");
-  assert.ok(!peek.hidden, "on screen: the preview shows");
-  card.remove();
+  assert.ok(!peek().hidden, "on screen: the preview shows");
+});
+
+test("a door coming back online is not listed as a new change", async () => {
+  const now = Date.now() / 1000;
+  await mount(
+    doorHass("closed", [
+      { when: now - 5000, state: "closed" },
+      { when: now - 4000, state: "unavailable" },
+      { when: now - 3000, state: "closed" },
+      { when: now - 2000, state: "unavailable" },
+      { when: now - 1000, state: "closed" },
+    ]),
+  );
+  assert.equal(await activityRows(), 1);
+});
+
+test("a door that moves and stops in the same state is listed for each stop", async () => {
+  const now = Date.now() / 1000;
+  await mount(
+    doorHass("closed", [
+      { when: now - 3000, state: "closed" },
+      { when: now - 2000, state: "opening" },
+      { when: now - 1000, state: "closed" },
+    ]),
+  );
+  assert.equal(await activityRows(), 2);
 });
