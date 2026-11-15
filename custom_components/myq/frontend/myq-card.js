@@ -232,6 +232,11 @@ class MyQDoorCard extends HTMLElement {
       this._message("mdi:garage-alert-variant", t("card.not_found", { entity: this._config.entity }));
       return;
     }
+    // Another door gets a new DoorCard, so a pending confirmation, activity, or camera image cannot carry over.
+    if (this._card && this._card.door?.device_id !== door.device_id) {
+      this._card.destroy();
+      this._card = null;
+    }
     this._card ??= new DoorCard(this);
     this._card.setDoor(door, payload.appearance[door.device_id]);
     this._card.setCompact(Boolean(this._config.compact));
