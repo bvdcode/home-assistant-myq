@@ -3,6 +3,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+# pytest-aiohttp and Home Assistant's test plugin both define aiohttp_client, and whichever plugin
+# pytest loads last wins. Only Home Assistant's keeps routes open after the test server starts, as
+# Home Assistant does, so defining it here makes it apply whatever the plugin order.
+from pytest_homeassistant_custom_component.plugins import aiohttp_client  # noqa: F401
+
 from custom_components.myq.models import MyQDevices
 
 
