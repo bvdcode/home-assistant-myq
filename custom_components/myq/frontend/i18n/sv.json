@@ -25,6 +25,10 @@
       "one": "{count} port är otillgänglig",
       "other": "{count} portar är otillgängliga"
     },
+    "unknown": {
+      "one": "{count} port har okänd position",
+      "other": "{count} portar har okänd position"
+    },
     "last_change": "{name} · {state} {time}",
     "left_open": "{name} har varit öppen i {duration}",
     "close_all": "Stäng alla",

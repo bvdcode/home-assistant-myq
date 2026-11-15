@@ -25,6 +25,10 @@
       "one": "{count} door is unavailable",
       "other": "{count} doors are unavailable"
     },
+    "unknown": {
+      "one": "{count} door has an unknown position",
+      "other": "{count} doors have an unknown position"
+    },
     "last_change": "{name} · {state} {time}",
     "left_open": "{name} has been open for {duration}",
     "close_all": "Close all",

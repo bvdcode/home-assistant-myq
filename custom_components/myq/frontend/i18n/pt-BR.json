@@ -25,6 +25,10 @@
       "one": "{count} portão está indisponível",
       "other": "{count} portões estão indisponíveis"
     },
+    "unknown": {
+      "one": "{count} portão está em posição desconhecida",
+      "other": "{count} portões estão em posição desconhecida"
+    },
     "last_change": "{name} · {state} {time}",
     "left_open": "{name}: aberto há {duration}",
     "close_all": "Fechar todos",

@@ -31,6 +31,12 @@
       "many": "{count} bram jest niedostępnych",
       "other": "{count} bram jest niedostępnych"
     },
+    "unknown": {
+      "one": "{count} brama ma nieznane położenie",
+      "few": "{count} bramy mają nieznane położenie",
+      "many": "{count} bram ma nieznane położenie",
+      "other": "{count} bram ma nieznane położenie"
+    },
     "last_change": "{name} · {state} {time}",
     "left_open": "{name}: otwarta od {duration}",
     "close_all": "Zamknij wszystkie",

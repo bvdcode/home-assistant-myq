@@ -25,6 +25,10 @@
       "one": "{count} porta non è disponibile",
       "other": "{count} porte non sono disponibili"
     },
+    "unknown": {
+      "one": "{count} porta ha una posizione sconosciuta",
+      "other": "{count} porte hanno una posizione sconosciuta"
+    },
     "last_change": "{name} · {state} {time}",
     "left_open": "{name}: aperta da {duration}",
     "close_all": "Chiudi tutte",

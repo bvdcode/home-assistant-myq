@@ -490,20 +490,24 @@ class MyQPanel extends HTMLElement {
     const states = doors.map((door) => this._hass.states[door.entities.cover]?.state ?? "unavailable");
     const count = (predicate) => states.filter(predicate).length;
     const moving = count((state) => state === "opening" || state === "closing");
-    const unavailable = count((state) => state === "unavailable");
+    const open = count((state) => state === "open");
     const closed = count((state) => state === "closed");
-    const notClosed = doors.length - closed - unavailable - moving;
+    const unavailable = count((state) => state === "unavailable");
+    // Any other state, such as "unknown", means MyQ has not reported where the door is.
+    const unknown = doors.length - moving - open - closed - unavailable;
     let tone;
     let iconName;
     let title;
     if (moving) {
       [tone, iconName, title] = ["moving", "mdi:swap-vertical-bold", tp("summary.moving", moving)];
-    } else if (notClosed) {
-      [tone, iconName, title] = ["open", "mdi:garage-open-variant", tp("summary.open", notClosed)];
-    } else if (!unavailable) {
-      [tone, iconName, title] = ["closed", "mdi:shield-check-outline", t("summary.all_closed")];
-    } else {
+    } else if (open) {
+      [tone, iconName, title] = ["open", "mdi:garage-open-variant", tp("summary.open", open)];
+    } else if (unavailable) {
       [tone, iconName, title] = ["unavailable", "mdi:cloud-off-outline", tp("summary.unavailable", unavailable)];
+    } else if (unknown) {
+      [tone, iconName, title] = ["unknown", "mdi:help-circle-outline", tp("summary.unknown", unknown)];
+    } else {
+      [tone, iconName, title] = ["closed", "mdi:shield-check-outline", t("summary.all_closed")];
     }
     // Doors open longer than the panel's limit, longest first.
     const limit = openWarningMinutes(this.settings);
@@ -518,7 +522,12 @@ class MyQPanel extends HTMLElement {
       [tone, iconName] = ["left_open", "mdi:garage-alert-variant"];
     }
     let alert = false;
-    let sub = tone !== "unavailable" && unavailable ? tp("summary.unavailable", unavailable) : "";
+    let sub = [
+      tone !== "unavailable" && unavailable ? tp("summary.unavailable", unavailable) : "",
+      tone !== "unknown" && unknown ? tp("summary.unknown", unknown) : "",
+    ]
+      .filter(Boolean)
+      .join(" · ");
     if (leftOpen.length) {
       alert = true;
       sub = t("summary.left_open", {

@@ -31,6 +31,12 @@
       "many": "{count} vrat je nedostupných",
       "other": "{count} vrat je nedostupných"
     },
+    "unknown": {
+      "one": "{count} vrata mají neznámou polohu",
+      "few": "{count} vrata mají neznámou polohu",
+      "many": "{count} vrat má neznámou polohu",
+      "other": "{count} vrat má neznámou polohu"
+    },
     "last_change": "{name} · {state} {time}",
     "left_open": "{name}: otevřeno {duration}",
     "close_all": "Zavřít vše",

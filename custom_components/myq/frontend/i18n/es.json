@@ -25,6 +25,10 @@
       "one": "{count} puerta no está disponible",
       "other": "{count} puertas no están disponibles"
     },
+    "unknown": {
+      "one": "{count} puerta tiene una posición desconocida",
+      "other": "{count} puertas tienen una posición desconocida"
+    },
     "last_change": "{name} · {state} {time}",
     "left_open": "{name}: abierta desde hace {duration}",
     "close_all": "Cerrar todas",

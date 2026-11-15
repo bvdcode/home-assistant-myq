@@ -25,6 +25,10 @@
       "one": "{count} Tor ist nicht verfügbar",
       "other": "{count} Tore sind nicht verfügbar"
     },
+    "unknown": {
+      "one": "{count} Tor hat eine unbekannte Position",
+      "other": "{count} Tore haben eine unbekannte Position"
+    },
     "last_change": "{name} · {state} {time}",
     "left_open": "{name} ist seit {duration} offen",
     "close_all": "Alle schließen",

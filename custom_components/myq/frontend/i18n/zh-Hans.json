@@ -22,6 +22,9 @@
     "unavailable": {
       "other": "{count} 扇门不可用"
     },
+    "unknown": {
+      "other": "{count} 扇门位置未知"
+    },
     "last_change": "{name} · {time}{state}",
     "left_open": "{name}已打开 {duration}",
     "close_all": "全部关闭",

@@ -25,6 +25,10 @@
       "one": "{count} deur is niet beschikbaar",
       "other": "{count} deuren zijn niet beschikbaar"
     },
+    "unknown": {
+      "one": "{count} deur heeft een onbekende positie",
+      "other": "{count} deuren hebben een onbekende positie"
+    },
     "last_change": "{name} · {state} {time}",
     "left_open": "{name} staat al {duration} open",
     "close_all": "Alle sluiten",

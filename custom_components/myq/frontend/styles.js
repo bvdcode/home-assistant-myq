@@ -82,7 +82,7 @@ button:focus-visible, input:focus-visible, label:focus-within:has(input[type="co
 .summary[data-tone="open"], .summary[data-tone="left_open"] { --tone: var(--myq-open); }
 .summary-sub.alert { color: var(--myq-alert-text); font-weight: 500; }
 .summary[data-tone="moving"] { --tone: var(--myq-moving); }
-.summary[data-tone="unavailable"] { --tone: var(--myq-neutral); }
+.summary[data-tone="unavailable"], .summary[data-tone="unknown"] { --tone: var(--myq-neutral); }
 
 .banner {
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
