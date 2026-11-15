@@ -7,10 +7,10 @@ const clock = installClock();
 await importFrontend("myq-card.js");
 
 const door = { device_id: "dev-a", name: "Door A", model: "Opener", entities: { cover: "cover.door_a", camera: "camera.door_a" } };
-const doorHass = (coverState, logbook = []) =>
+const doorHass = (coverState, logbook = [], lastChanged = undefined) =>
   makeHass({
     states: {
-      "cover.door_a": cover("cover.door_a", coverState),
+      "cover.door_a": cover("cover.door_a", coverState, lastChanged),
       "camera.door_a": {
         entity_id: "camera.door_a",
         state: "idle",
@@ -127,4 +127,23 @@ test("a snapshot that arrives after the door moves again is not shown", async ()
   } finally {
     window.HTMLImageElement.prototype.decode = decode;
   }
+});
+
+test("an open door keeps its open time through a failed poll", async () => {
+  await mount(doorHass("open", [], new Date(clock.now - 2 * 3600000).toISOString()));
+  const doorCard = card.shadowRoot.querySelector(".door-card");
+  const subtitle = () => card.shadowRoot.querySelector(".subtitle").textContent;
+  assert.ok(doorCard.classList.contains("left-open"), "open for two hours: highlighted");
+  const before = subtitle();
+
+  // A failed poll makes the door unavailable; the next one finds it open with a new last_changed.
+  await setState("unavailable");
+  await setState("open");
+  assert.ok(doorCard.classList.contains("left-open"), "still highlighted");
+  assert.equal(subtitle(), before, "still counting from when it opened");
+
+  await setState("closing");
+  await setState("closed");
+  await setState("open");
+  assert.ok(!doorCard.classList.contains("left-open"), "opened again: counting starts over");
 });

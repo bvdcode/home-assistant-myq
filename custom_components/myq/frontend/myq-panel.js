@@ -517,7 +517,10 @@ class MyQPanel extends HTMLElement {
     const leftOpen = doors
       .map((door) => ({ door, stateObj: this._hass.states[door.entities.cover] }))
       .filter(({ stateObj }) => stateObj?.state === "open")
-      .map((item) => ({ ...item, elapsed: now - Date.parse(item.stateObj.last_changed) }))
+      .map((item) => {
+        const since = this._doorCards.get(item.door.device_id)?.openSince ?? Date.parse(item.stateObj.last_changed);
+        return { ...item, elapsed: now - since };
+      })
       .filter(({ elapsed }) => limit > 0 && elapsed >= limit * 60000)
       .sort((a, b) => b.elapsed - a.elapsed);
     if (tone === "open" && leftOpen.length) {

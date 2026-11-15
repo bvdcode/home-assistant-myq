@@ -155,6 +155,7 @@ export class DoorCard {
     this._activity = null;
     this._activityToken = 0;
     this._peekToken = 0;
+    this._openSince = null;
     this._build();
     // Only a card on screen fetches a snapshot after its door moves.
     this._onScreen = true;
@@ -374,6 +375,7 @@ export class DoorCard {
     if (!changed) return null;
     const previous = this._states.cover?.state;
     this._states = states;
+    this._trackOpenSince(states.cover);
     this._render();
     this.camera?.update(hass);
     const current = states.cover?.state;
@@ -392,6 +394,27 @@ export class DoorCard {
   tick() {
     this._renderTime();
     this.camera?.tick();
+  }
+
+  /** When the door opened, or null while it is not open. */
+  get openSince() {
+    return this._states.cover?.state === "open" ? this._openSince : null;
+  }
+
+  /**
+   * Remember when the door opened. A failed poll makes the door unavailable for a moment and restarts
+   * its last_changed time, so an open door keeps the time it opened through unavailable or unknown states.
+   */
+  _trackOpenSince(cover) {
+    const state = cover?.state ?? "unavailable";
+    if (state === "open") {
+      const changed = Date.parse(cover.last_changed);
+      if (Number.isFinite(changed) && (this._openSince === null || changed < this._openSince)) {
+        this._openSince = changed;
+      }
+    } else if (state !== "unavailable" && state !== "unknown") {
+      this._openSince = null;
+    }
   }
 
   destroy() {
@@ -452,7 +475,7 @@ export class DoorCard {
   _renderTime() {
     const cover = this._states.cover;
     const changed = cover?.last_changed ? Date.parse(cover.last_changed) : Number.NaN;
-    const elapsed = Date.now() - changed;
+    const elapsed = Date.now() - (this.openSince ?? changed);
     let text = this.door.model ?? "";
     let openFor = false;
     let alert = false;

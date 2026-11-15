@@ -10,9 +10,9 @@ const doors = [
   { device_id: "dev-b", name: "Door B", model: "Opener", entities: { cover: "cover.door_b" } },
 ];
 const tenMinutesAgo = new Date(Date.now() - 10 * 60000).toISOString();
-const hass = (a, b) =>
+const hass = (a, b, aChanged = tenMinutesAgo) =>
   makeHass({
-    states: { "cover.door_a": cover("cover.door_a", a, tenMinutesAgo), "cover.door_b": cover("cover.door_b", b, tenMinutesAgo) },
+    states: { "cover.door_a": cover("cover.door_a", a, aChanged), "cover.door_b": cover("cover.door_b", b, tenMinutesAgo) },
     subscribe: answering(() => ({ doors, cameras: [], appearance: {}, settings: {}, accounts: [] })),
   });
 
@@ -46,3 +46,18 @@ for (const [a, b, expectedTitle, expectedSubtitle] of cases) {
     if (expectedSubtitle) assert.equal(subtitle(), expectedSubtitle);
   });
 }
+
+test("the summary keeps a door left open through a failed poll", async () => {
+  panel.hass = hass("closed", "closed");
+  await flush();
+  panel.hass = hass("open", "closed", new Date(Date.now() - 2 * 3600000).toISOString());
+  await flush();
+  const before = subtitle();
+  assert.match(before, /^Door A has been open for /);
+  const now = new Date().toISOString();
+  panel.hass = hass("unavailable", "closed", now);
+  await flush();
+  panel.hass = hass("open", "closed", now);
+  await flush();
+  assert.equal(subtitle(), before);
+});
