@@ -151,6 +151,12 @@ export class DoorCard {
     this._activity = null;
     this._activityToken = 0;
     this._build();
+    // Only a card on screen fetches a snapshot after its door moves.
+    this._onScreen = true;
+    this._observer = new IntersectionObserver((entries) => {
+      this._onScreen = entries.some((entry) => entry.isIntersecting);
+    });
+    this._observer.observe(this.el);
   }
 
   _build() {
@@ -379,6 +385,7 @@ export class DoorCard {
   }
 
   destroy() {
+    this._observer.disconnect();
     this._clearConfirm();
     for (const timer of [this._settleTimer, this._peekTimer, this._activityTimer, this._checkTimer]) {
       clearTimeout(timer);
@@ -657,6 +664,7 @@ export class DoorCard {
       this.camera.refreshNow();
       return;
     }
+    if (!this._onScreen) return;
     const image = await this.camera.snapshot();
     if (!image || !this.panel.isConnected || this._cameraShown()) return;
     image.className = "peek-image";
