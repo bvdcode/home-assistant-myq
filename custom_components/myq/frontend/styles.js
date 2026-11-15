@@ -534,7 +534,7 @@ dialog.sheet[open] { animation: rise 0.22s cubic-bezier(0.2, 0.9, 0.3, 1); }
   background: color-mix(in srgb, var(--primary-text-color) 28%, transparent); transition: background 0.2s;
 }
 .switch::after {
-  content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+  content: ""; position: absolute; top: 3px; inset-inline-start: 3px; width: 20px; height: 20px; border-radius: 50%;
   background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); transition: transform 0.2s;
 }
 .switch:checked { background: var(--myq-primary); }
