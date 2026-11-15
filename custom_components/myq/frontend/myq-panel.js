@@ -21,7 +21,7 @@ import {
   toast,
   writePreference,
 } from "./dom.js";
-import { currentLocale, loadTranslations, t, tp } from "./i18n.js";
+import { currentLocale, loadTranslations, t, tp, translationsLoaded } from "./i18n.js";
 import { styles } from "./styles.js";
 
 const TICK_MS = 30000;
@@ -144,6 +144,8 @@ class MyQPanel extends HTMLElement {
   }
 
   connectedCallback() {
+    // If strings failed to load, the next update after the panel is shown again fetches them again.
+    if (!translationsLoaded()) this._language = null;
     this._subscribe();
     this._timer = setInterval(() => this._tick(), TICK_MS);
     for (const card of this._allCards()) card.setActive(true);

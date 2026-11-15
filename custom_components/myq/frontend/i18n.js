@@ -20,15 +20,18 @@ export function resolveLanguage(code) {
   return AVAILABLE.find((language) => language.toLowerCase() === base) ?? "en";
 }
 
+/** Resolves to a language's strings, or null if they could not be loaded. */
 async function fetchStrings(language) {
   if (!cache.has(language)) {
     const url = new URL(`./i18n/${language}.json`, import.meta.url);
-    cache.set(
-      language,
-      fetch(url)
-        .then((response) => (response.ok ? response.json() : {}))
-        .catch(() => ({})),
-    );
+    const request = fetch(url)
+      .then((response) => (response.ok ? response.json() : null))
+      .catch(() => null);
+    cache.set(language, request);
+    // Forget a failed load, so the next call asks again instead of keeping nothing for good.
+    request.then((table) => {
+      if (!table) cache.delete(language);
+    });
   }
   return cache.get(language);
 }
@@ -42,9 +45,11 @@ export async function loadTranslations(code) {
     const [english, selected] = await Promise.all([fetchStrings("en"), fetchStrings(language)]);
     // A later call chose a language while these loaded, so its choice stands.
     if (call !== latest) return false;
-    fallback = english;
-    strings = selected;
-    active = language;
+    fallback = english ?? fallback;
+    strings = selected ?? {};
+    // A language counts as loaded only once its strings and the English fallback arrived, so the
+    // next call fetches whatever failed again.
+    active = english && selected ? language : "";
     changed = true;
   }
   // The locale and plural rules change together with the strings they format.
@@ -59,6 +64,11 @@ export async function loadTranslations(code) {
 
 export function currentLocale() {
   return locale;
+}
+
+/** Whether the last load brought in every string it asked for. */
+export function translationsLoaded() {
+  return active !== "";
 }
 
 function lookup(table, key) {

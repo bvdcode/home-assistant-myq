@@ -12,7 +12,7 @@
 import { CustomizeDialog } from "./dialogs.js";
 import { DoorCard } from "./door-card.js";
 import { h, icon } from "./dom.js";
-import { loadTranslations, t } from "./i18n.js";
+import { loadTranslations, t, translationsLoaded } from "./i18n.js";
 import { cardStyles } from "./styles.js";
 
 const TICK_MS = 30000;
@@ -156,6 +156,8 @@ class MyQDoorCard extends HTMLElement {
   }
 
   connectedCallback() {
+    // If strings failed to load, the next update after the card is shown again fetches them again.
+    if (!translationsLoaded()) this._language = null;
     this._watch();
     clearInterval(this._timer);
     this._timer = setInterval(() => this._card?.tick(), TICK_MS);
