@@ -187,7 +187,8 @@ class MyQDoorCard extends HTMLElement {
   }
 
   get confirmCommands() {
-    return Boolean(this.settings.confirm);
+    // Until the settings arrive, for example while the card is shown again, ask rather than assume.
+    return doors.payload ? Boolean(this.settings.confirm) : true;
   }
 
   appearanceFor(deviceId) {
