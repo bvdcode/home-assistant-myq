@@ -453,6 +453,10 @@ dialog.sheet[open] { animation: rise 0.22s cubic-bezier(0.2, 0.9, 0.3, 1); }
   .preview-controls { margin-top: 10px; }
   .controls { padding: 18px 16px 24px; border: 0; }
 }
+/* On a short screen, such as a phone held sideways, a pinned preview would cover the controls. */
+@media (max-width: 760px) and (max-height: 600px) {
+  .preview { position: static; }
+}
 .field-help { margin: 8px 0 0; font-size: 13px; line-height: 1.4; color: var(--myq-muted); }
 .field-label {
   margin-bottom: 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.07em;
