@@ -40,6 +40,7 @@ const MOVING = new Set(["opening", "closing"]);
 const SETTLED = new Set(["open", "closed"]);
 
 /** Entity roles listed under Details, in display order, with an icon for each state. */
+/** @type {Array<[string, (stateObj: any) => string]>} */
 const DETAILS = [
   ["cover", (s) => (OPEN_STATES.has(s?.state) ? "mdi:garage-open-variant" : "mdi:garage-variant")],
   ["work_light", (s) => (s?.state === "on" ? "mdi:lightbulb-on" : "mdi:lightbulb-outline")],
@@ -135,8 +136,7 @@ function causeName(hass, cause) {
 
 export class DoorCard {
   /**
-   * @param host the panel or dashboard card that shows this door. It provides `hass`, `settings`,
-   *   `confirmCommands`, optionally `openCustomize`, and receives Home Assistant UI events.
+   * @param {import("./types.js").DoorCardHost} host the panel or dashboard card that shows this door.
    */
   constructor(host) {
     this.panel = host;
@@ -298,7 +298,11 @@ export class DoorCard {
     return button;
   }
 
-  /** Apply discovery data and appearance; returns nothing, rendering happens on update(). */
+  /**
+   * Apply discovery data and appearance; returns nothing, rendering happens on update().
+   * @param {import("./types.js").DoorPayload} door
+   * @param {import("./types.js").DoorAppearance | undefined} appearance
+   */
   setDoor(door, appearance) {
     this.door = door;
     this.scene.setAppearance(appearance);

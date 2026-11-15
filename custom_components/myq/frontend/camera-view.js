@@ -13,7 +13,7 @@ function ensureCameraPlayer() {
   if (customElements.get("ha-camera-stream")) return Promise.resolve(true);
   playerReady ??= (async () => {
     try {
-      const helpers = await window.loadCardHelpers?.();
+      const helpers = await /** @type {any} */ (window).loadCardHelpers?.();
       await helpers?.importMoreInfoControl?.("camera");
     } catch {
       // The timeout below decides whether the player became available.
@@ -41,6 +41,8 @@ export class CameraView {
     this._capturedAt = 0;
     this._attemptedAt = 0;
     this._loading = false;
+    /** Home Assistant's camera player element while live video plays. @type {any} */
+    this._player = null;
     this._image = h("img", { class: "camera-image", alt: "" });
     this._message = h("div", { class: "camera-message" });
     this._updated = h("span", { class: "camera-updated" });
@@ -171,7 +173,7 @@ export class CameraView {
       return;
     }
     if (!this.active || this.live) return;
-    const player = document.createElement("ha-camera-stream");
+    const player = /** @type {any} */ (document.createElement("ha-camera-stream"));
     player.className = "camera-player";
     // Older frontends read hass directly; newer ones use context from the page.
     player.hass = this.hass;

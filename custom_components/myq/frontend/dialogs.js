@@ -25,6 +25,8 @@ class Sheet {
   constructor(panel, className) {
     this.panel = panel;
     this.dialog = h("dialog", { class: `sheet ${className}` });
+    /** Called once the dialog has closed, however it closed. @type {(() => void) | null} */
+    this.onClose = null;
     // Clicks on the backdrop target the dialog itself; content fills the dialog box. A press that starts
     // inside and ends outside also targets the dialog, so close only if the press began on the backdrop.
     this.dialog.addEventListener("pointerdown", (event) => {

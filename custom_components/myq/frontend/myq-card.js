@@ -38,6 +38,7 @@ function text(key, params) {
 /** One subscription to the integration for every card on the page. */
 const doors = {
   listeners: new Set(),
+  /** @type {import("./types.js").PanelPayload | null} */
   payload: null,
   error: null,
   unsubscribe: null,
@@ -294,8 +295,9 @@ if (!customElements.get("myq-door-card")) {
   customElements.define("myq-door-card", MyQDoorCard);
   // The card picker lists cards from here; load the page's language so it can show translated text.
   loadTranslations(document.documentElement.lang || "en");
-  window.customCards = window.customCards || [];
-  window.customCards.push({
+  const page = /** @type {any} */ (window);
+  page.customCards = page.customCards || [];
+  page.customCards.push({
     type: "myq-door-card",
     get name() {
       return text("card.name");

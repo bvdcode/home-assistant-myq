@@ -47,5 +47,8 @@ jobs:
       - name: Install frontend test dependencies
         run: npm ci
 
+      - name: Type check frontend
+        run: npm run typecheck
+
       - name: Test frontend
         run: npm test

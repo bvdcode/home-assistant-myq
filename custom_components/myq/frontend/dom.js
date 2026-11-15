@@ -138,12 +138,16 @@ export function formatDuration(milliseconds, locale) {
 export function formatEventTime(time, locale, timeFormat) {
   const date = new Date(time);
   const now = new Date();
+  /** @type {Intl.DateTimeFormatOptions} */
   const clock = { hour: "numeric", minute: "2-digit" };
   if (timeFormat === "12") clock.hour12 = true;
   else if (timeFormat === "24") clock.hour12 = false;
   let options = clock;
   if (date.toDateString() !== now.toDateString()) {
-    options = now - date < 6 * 86400000 ? { weekday: "short", ...clock } : { month: "short", day: "numeric", ...clock };
+    options =
+      now.getTime() - date.getTime() < 6 * 86400000
+        ? { weekday: "short", ...clock }
+        : { month: "short", day: "numeric", ...clock };
   }
   try {
     return new Intl.DateTimeFormat(locale, options).format(date);

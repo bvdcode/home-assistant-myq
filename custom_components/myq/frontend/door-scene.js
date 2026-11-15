@@ -77,6 +77,19 @@ export const DOOR_COLORS = [
 /** Trim is painted, so it offers the painted door colors under the same names. */
 export const TRIM_COLORS = DOOR_COLORS.filter((color) => !color.finish);
 
+/**
+ * A door's complete look, as normalizeAppearance returns it.
+ * @typedef {object} Appearance
+ * @property {string} width
+ * @property {string} style
+ * @property {string} color
+ * @property {string} windows
+ * @property {string} glass
+ * @property {boolean} hardware
+ * @property {string} trim
+ */
+
+/** @type {Readonly<Appearance>} */
 const DEFAULT_APPEARANCE = Object.freeze({
   width: "single",
   style: "traditional",
@@ -89,7 +102,11 @@ const DEFAULT_APPEARANCE = Object.freeze({
 
 const HEX = /^#[0-9a-f]{6}$/;
 
-/** Return a complete appearance, replacing unknown or inapplicable values with defaults. */
+/**
+ * Return a complete appearance, replacing unknown or inapplicable values with defaults.
+ * @param {any} raw
+ * @returns {Appearance}
+ */
 export function normalizeAppearance(raw) {
   const a = { ...DEFAULT_APPEARANCE };
   if (raw && typeof raw === "object") {
@@ -138,7 +155,9 @@ function rgb(hex) {
   return [(value >> 16) & 255, (value >> 8) & 255, value & 255];
 }
 
-function toHex([r, g, b]) {
+/** @param {number[]} channels red, green, and blue from 0 to 255 */
+function toHex(channels) {
+  const [r, g, b] = channels;
   return `#${[r, g, b]
     .map((channel) => Math.round(Math.min(255, Math.max(0, channel))).toString(16).padStart(2, "0"))
     .join("")}`;

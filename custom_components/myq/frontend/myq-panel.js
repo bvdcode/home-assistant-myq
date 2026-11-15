@@ -99,6 +99,7 @@ class MyQPanel extends HTMLElement {
     this.attachShadow({ mode: "open" });
     this._doorCards = new Map();
     this._cameraCards = new Map();
+    /** @type {import("./types.js").PanelPayload | null} */
     this._data = null;
     this._error = null;
     this._ready = false;
@@ -256,6 +257,7 @@ class MyQPanel extends HTMLElement {
     }
   }
 
+  /** @param {import("./types.js").PanelPayload} payload */
   _onPayload(payload) {
     this._data = payload;
     this._error = null;

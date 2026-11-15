@@ -26,11 +26,13 @@ each door with `door-card.js`. Their strings live in
 `frontend/i18n/<language>.json`; add every new string to all languages, as for
 `strings.json`.
 
-The frontend tests in `tests/frontend` run these modules in Node with jsdom.
-With Node.js 24 or newer, run:
+The frontend tests in `tests/frontend` run these modules in Node with jsdom,
+and TypeScript checks them against the JSDoc types in `frontend/types.js`. With
+Node.js 24 or newer, run:
 
 ```bash
 npm ci
+npm run typecheck
 npm test
 ```
 
