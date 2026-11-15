@@ -5,6 +5,7 @@ import time
 
 from aiohttp import ClientError
 from homeassistant.components.camera import Camera, CameraEntityFeature
+from homeassistant.components.stream import Stream
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -127,6 +128,13 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
                 ) from error
             self._captured_at = time.monotonic()
             return self._image
+
+    async def async_create_stream(self) -> Stream | None:
+        stream = await super().async_create_stream()
+        camera = self.camera
+        if stream and camera and camera.device_model == "vkp-camera" and self._live_stream:
+            await self._live_stream.prepare_for_playback()
+        return stream
 
     async def stream_source(self) -> str | None:
         """Provide a local H.264 source for TC cameras."""

@@ -8,7 +8,7 @@ import time
 from collections.abc import Awaitable, Callable
 
 from .const import TEND_API_BASE_URL
-from .exceptions import MyQApiError
+from .exceptions import MyQApiError, MyQWakeTimeoutError
 
 _WAKE_TIMEOUT = 35
 _POLL_INTERVAL = 1
@@ -40,4 +40,4 @@ async def async_wake_keypad(device_id: str, request: WakeRequest) -> dict[str, o
                     return device
                 await asyncio.sleep(_POLL_INTERVAL)
     except TimeoutError:
-        raise MyQApiError("Keypad did not reach full power in time") from None
+        raise MyQWakeTimeoutError("Keypad did not reach full power in time") from None

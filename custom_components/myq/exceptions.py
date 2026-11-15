@@ -40,3 +40,7 @@ class MyQRateLimitError(MyQApiError):
 
 class MyQUnsupportedAuthPageError(MyQApiError):
     pass
+
+
+class MyQWakeTimeoutError(MyQApiError):
+    """The keypad did not report full power within the wake deadline."""

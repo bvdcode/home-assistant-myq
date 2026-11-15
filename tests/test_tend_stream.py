@@ -430,3 +430,53 @@ async def test_shared_session_passes_lazy_alias_lookup_without_calling_it(
         fallback.assert_not_awaited()
     finally:
         await stream.close()
+
+
+async def test_ha_playback_waits_for_wake_before_opening_http_source(
+    live: TendLiveStream, open_session: AsyncMock
+) -> None:
+    from homeassistant.components.camera import Camera
+
+    from custom_components.myq.camera import MyQCameraEntity
+    from custom_components.myq.models import MyQCamera
+
+    camera = MyQCamera("TC-0001-12345678", True, "vkp-camera")
+    entity = MyQCameraEntity(MagicMock(cameras={camera.serial_number: camera}), camera)
+    entity._live_stream = live
+    url = await live.source_url()
+    entered, release = asyncio.Event(), asyncio.Event()
+
+    async def slow_prepare() -> TendCameraTarget:
+        entered.set()
+        await release.wait()
+        return TendCameraTarget(destination="test:camera")
+
+    live._target_supplier = slow_prepare
+    with patch.object(Camera, "async_create_stream", new_callable=AsyncMock):
+        playback = asyncio.create_task(entity.async_create_stream())
+        await entered.wait()
+        assert not playback.done()
+        release.set()
+        await playback
+    async with ClientSession() as http, http.get(url) as response:
+        assert response.status == 200
+    open_session.assert_awaited_once()
+
+
+async def test_preparation_error_preserves_cooldown_and_category(live: TendLiveStream) -> None:
+    from custom_components.myq.exceptions import (
+        MyQAuthenticationError,
+        MyQRateLimitError,
+        MyQWakeTimeoutError,
+    )
+
+    for failure, expected in [
+        (MyQRateLimitError(90), "retry after 90s"),
+        (MyQAuthenticationError("private"), "MyQAuthenticationError"),
+        (OSError("private"), "OSError"),
+        (MyQWakeTimeoutError("private"), "MyQWakeTimeoutError"),
+    ]:
+        live._target_supplier = AsyncMock(side_effect=failure)
+        with pytest.raises(TendStreamError, match=expected) as result:
+            await live._subscribe()
+        assert "private" not in str(result.value)

@@ -9,7 +9,7 @@ from collections.abc import Awaitable, Callable
 
 from aiohttp import ClientError, web
 
-from .exceptions import MyQError
+from .exceptions import MyQError, MyQRateLimitError
 from .tend_protocol import CameraTargetSupplier, TendCameraTarget, TendStreamError
 from .tend_session import TendSession
 
@@ -120,8 +120,13 @@ class TendLiveStream:
                 self._target_task = asyncio.ensure_future(self._target_supplier())
                 try:
                     target = await self._target_task
-                except ClientError, MyQError, OSError, TimeoutError:
-                    raise TendStreamError("Camera could not prepare for live video") from None
+                except (ClientError, MyQError, OSError) as error:
+                    reason = type(error).__name__
+                    if isinstance(error, MyQRateLimitError):
+                        reason += f" (retry after {error.retry_after:.0f}s)"
+                    raise TendStreamError(
+                        f"Camera could not prepare for live video: {reason}"
+                    ) from None
                 finally:
                     self._target_task = None
                 if bool(self._closed):
@@ -202,15 +207,21 @@ class TendLiveStream:
                 raise web.HTTPServiceUnavailable() from error
         finally:
             if viewer is not None:
-                self._viewers.discard(viewer)
-                if not self._viewers and not self._closed:
-                    delay = _IDLE_SECONDS
-                    if self._session is not None and self._session.ended:
-                        delay = 0
-                    self._idle_timer = asyncio.get_running_loop().call_later(
-                        delay, self._start_idle_close
-                    )
+                self._unsubscribe(viewer)
         return response
+
+    async def prepare_for_playback(self) -> None:
+        """Open the shared session before HA hands the URL to its timed media reader."""
+        viewer = await self._subscribe()
+        self._unsubscribe(viewer)
+
+    def _unsubscribe(self, viewer: _Viewer) -> None:
+        self._viewers.discard(viewer)
+        if not self._viewers and not self._closed:
+            delay = _IDLE_SECONDS
+            if self._session is not None and self._session.ended:
+                delay = 0
+            self._idle_timer = asyncio.get_running_loop().call_later(delay, self._start_idle_close)
 
     def _start_idle_close(self) -> None:
         self._idle_timer = None
