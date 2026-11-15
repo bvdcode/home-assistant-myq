@@ -389,12 +389,16 @@ async def test_reauthentication_retries_mfa_without_replacing_entry(
 
 @pytest.mark.parametrize(
     ("error_type", "error_key"),
-    [(MyQInvalidCredentialsError, "invalid_auth"), (ClientConnectionError, "cannot_connect")],
+    [
+        (MyQInvalidCredentialsError, "invalid_auth"),
+        (ClientConnectionError, "cannot_connect"),
+        (TimeoutError, "cannot_connect"),
+    ],
 )
 async def test_reauthentication_credential_failure_preserves_entry(
     hass: HomeAssistant,
     mock_login_session: MagicMock,
-    error_type: type[MyQInvalidCredentialsError | ClientConnectionError],
+    error_type: type[MyQInvalidCredentialsError | ClientConnectionError | TimeoutError],
     error_key: str,
 ) -> None:
     original_data = _entry_data()

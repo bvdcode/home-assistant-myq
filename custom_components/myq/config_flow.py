@@ -260,7 +260,7 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return LoginAttempt(error="invalid_auth")
         except (MyQCloudflareChallengeError, MyQUnsupportedAuthPageError) as error:
             return self._browser_fallback(error, step="login")
-        except ClientError:
+        except ClientError, TimeoutError:
             self._close_login()
             return LoginAttempt(error="cannot_connect")
         except MyQError:
@@ -280,7 +280,7 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self._restart_browser("browser_session_expired")
         except MyQAuthenticationError:
             return self._restart_browser("browser_auth_failed")
-        except ClientError:
+        except ClientError, TimeoutError:
             return self._restart_browser("cannot_connect")
         except MyQError:
             _LOGGER.exception("Unexpected MyQ error while completing browser authentication")
@@ -296,7 +296,7 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return LoginAttempt(error="invalid_mfa")
         except (MyQCloudflareChallengeError, MyQUnsupportedAuthPageError) as error:
             return self._browser_fallback(error, step="MFA verification")
-        except ClientError:
+        except ClientError, TimeoutError:
             return LoginAttempt(error="cannot_connect")
         except MyQError:
             _LOGGER.exception("Unexpected MyQ error while submitting MFA")
@@ -310,7 +310,7 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         client = MyQClient(async_get_clientsession(self.hass), auth)
         try:
             devices = await client.async_get_devices()
-        except ClientError:
+        except ClientError, TimeoutError:
             self._close_login()
             return self.async_abort(reason="cannot_connect")
         except MyQError:

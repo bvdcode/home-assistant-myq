@@ -76,7 +76,7 @@ class MyQGarageDoor(MyQEntity, CoverEntity):
         try:
             door = self._required_door()
             await command(door)
-        except (ClientError, MyQError) as error:
+        except (ClientError, MyQError, TimeoutError) as error:
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
                 translation_key="command_failed",

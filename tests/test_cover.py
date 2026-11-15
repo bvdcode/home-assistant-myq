@@ -73,10 +73,12 @@ async def test_cover_commands_client_once_then_schedules_updates(operation: str)
 
 
 @pytest.mark.parametrize("operation", ["open", "close"])
-@pytest.mark.parametrize("error_type", [MyQApiError, MyQAuthenticationError, ClientConnectionError])
+@pytest.mark.parametrize(
+    "error_type", [MyQApiError, MyQAuthenticationError, ClientConnectionError, TimeoutError]
+)
 async def test_cover_translates_command_failure_without_retry_or_refresh(
     operation: str,
-    error_type: type[MyQApiError | MyQAuthenticationError | ClientConnectionError],
+    error_type: type[MyQApiError | MyQAuthenticationError | ClientConnectionError | TimeoutError],
 ) -> None:
     entity, coordinator = _entity("closed")
     commands = {"open": entity.async_open_cover, "close": entity.async_close_cover}
