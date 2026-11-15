@@ -172,7 +172,12 @@ button:focus-visible, input:focus-visible, label:focus-within:has(input[type="co
   --mdc-icon-size: 20px; transition: background 0.15s, color 0.15s;
 }
 .glass-button:hover { background: rgba(16, 17, 19, 0.72); }
-.glass-button.wide { padding: 0 14px 0 10px; font-size: 13px; font-weight: 500; }
+.glass-button.wide { flex: 0 3 auto; padding: 0 14px 0 10px; font-size: 13px; font-weight: 500; }
+/* On a narrow card the state and the Live label shorten instead of sliding under the buttons. */
+.pill { overflow: hidden; }
+.pill > span:last-child, .glass-button.wide > span {
+  min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+}
 .glass-button[aria-pressed="true"] { background: rgba(255, 255, 255, 0.94); color: #1b1c1e; }
 .glass-button:disabled { opacity: 0.5; cursor: default; }
 
