@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
-import { answering, cover, flush, importFrontend, installClock, installPage, makeHass, until } from "./support.mjs";
+import { answering, cover, fakeConnection, flush, importFrontend, installClock, installPage, makeHass, until } from "./support.mjs";
 
 installPage();
 const clock = installClock();
@@ -118,4 +118,25 @@ test("a card shown again asks for confirmation until its settings arrive", async
   openButton().click();
   await flush();
   assert.deepEqual(calls, ["cover.open_cover cover.door_a"], "the confirming tap opens the door");
+});
+
+test("a card subscribes again after Home Assistant restarts", async () => {
+  let loaded = true;
+  let name = "Door A";
+  const connection = fakeConnection(async (callback) => {
+    if (!loaded) throw { code: "unknown_command", message: "Unknown command." };
+    callback({ doors: [{ ...DOOR_A, name }], cameras: [], appearance: {}, settings: {} });
+    return () => {};
+  });
+  mount(makeHass({ states: closed(), connection }));
+  await until(() => openLabel() === "Open: Door A", "door A");
+
+  // Home Assistant restarts: the websocket is back before MyQ has loaded, and meanwhile the door was renamed.
+  loaded = false;
+  name = "Front door";
+  connection.reconnect();
+  await flush();
+  loaded = true;
+  await clock.advance(10000);
+  assert.equal(openLabel(), "Open: Front door");
 });

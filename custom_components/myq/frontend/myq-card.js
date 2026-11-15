@@ -18,6 +18,8 @@ import { cardStyles } from "./styles.js";
 const TICK_MS = 30000;
 /** Dashboards rebuild cards while being edited, so keep the subscription briefly after the last one. */
 const RELEASE_MS = 5000;
+/** How soon to try again after the subscription fails, as it does while MyQ is still starting. */
+const RETRY_MS = 10000;
 
 /** Text the card picker and editor can show before translations finish loading. */
 const ENGLISH = {
@@ -41,6 +43,9 @@ const doors = {
   unsubscribe: null,
   connecting: false,
   releaseTimer: 0,
+  retryTimer: 0,
+  attempt: 0,
+  connection: null,
 
   watch(hass, listener) {
     clearTimeout(this.releaseTimer);
@@ -56,6 +61,9 @@ const doors = {
   async connect(hass) {
     if (this.unsubscribe || this.connecting) return;
     this.connecting = true;
+    const attempt = ++this.attempt;
+    clearTimeout(this.retryTimer);
+    this.followReconnects(hass);
     try {
       const unsubscribe = await hass.connection.subscribeMessage(
         (payload) => {
@@ -65,19 +73,42 @@ const doors = {
         },
         // Cards may show doors of accounts that hide the sidebar panel.
         { type: "myq/panel/subscribe", scope: "all" },
+        { resubscribe: false },
       );
-      if (this.listeners.size) this.unsubscribe = unsubscribe;
+      if (attempt === this.attempt && this.listeners.size) this.unsubscribe = unsubscribe;
       else unsubscribe();
     } catch (error) {
+      if (attempt !== this.attempt) return;
       this.error = error;
       this.notify();
+      this.retryTimer = setTimeout(() => {
+        if (this.listeners.size) this.connect(hass);
+      }, RETRY_MS);
     } finally {
-      this.connecting = false;
+      if (attempt === this.attempt) this.connecting = false;
     }
+  },
+
+  /**
+   * Subscribe again whenever the websocket reconnects. The library can do that itself, but it drops a
+   * subscription that fails then, and right after Home Assistant restarts the websocket is back before
+   * MyQ has registered its commands. A request still in flight when the connection dropped never
+   * settles, so a reconnect starts a new attempt instead of waiting for it.
+   */
+  followReconnects(hass) {
+    if (this.connection === hass.connection) return;
+    this.connection = hass.connection;
+    hass.connection.addEventListener("ready", () => {
+      this.attempt += 1;
+      this.connecting = false;
+      this.unsubscribe = null;
+      if (this.listeners.size) this.connect(hass);
+    });
   },
 
   release() {
     if (this.listeners.size) return;
+    clearTimeout(this.retryTimer);
     this.unsubscribe?.();
     this.unsubscribe = null;
     this.payload = null;

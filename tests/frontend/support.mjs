@@ -138,10 +138,45 @@ export function cover(entityId, state, lastChanged = new Date(Date.now()).toISOS
 }
 
 /**
- * A stand-in for the `hass` object Home Assistant gives panels and cards. `subscribe` answers the
- * panel's subscription; service calls are recorded in `calls`.
+ * A websocket connection that behaves like home-assistant-js-websocket's. `subscribe` answers each
+ * subscription. `reconnect()` does what the library does after the socket comes back: it subscribes
+ * again to everything not made with `resubscribe: false`, silently dropping any that fail, and then
+ * fires "ready".
  */
-export function makeHass({ states, subscribe, callWS, components = [], calls = [] }) {
+export function fakeConnection(subscribe) {
+  const ready = new Set();
+  let kept = [];
+  return {
+    async subscribeMessage(callback, message, options) {
+      const unsubscribe = await subscribe(callback, message, options);
+      const entry = { callback, message, options };
+      if (options?.resubscribe !== false) kept.push(entry);
+      return () => {
+        kept = kept.filter((item) => item !== entry);
+        return unsubscribe?.();
+      };
+    },
+    addEventListener(type, callback) {
+      if (type === "ready") ready.add(callback);
+    },
+    removeEventListener(type, callback) {
+      if (type === "ready") ready.delete(callback);
+    },
+    reconnect() {
+      const again = kept;
+      kept = [];
+      for (const { callback, message, options } of again) this.subscribeMessage(callback, message, options).catch(() => {});
+      for (const callback of ready) callback();
+    },
+  };
+}
+
+/**
+ * A stand-in for the `hass` object Home Assistant gives panels and cards. `subscribe` answers the
+ * panel's subscription, or `connection` replaces the whole connection; service calls are recorded in
+ * `calls`.
+ */
+export function makeHass({ states, subscribe, connection, callWS, components = [], calls = [] }) {
   return {
     states,
     entities: {},
@@ -150,7 +185,7 @@ export function makeHass({ states, subscribe, callWS, components = [], calls = [
     language: "en",
     themes: { darkMode: false },
     config: { components },
-    connection: { subscribeMessage: subscribe },
+    connection: connection ?? fakeConnection(subscribe),
     async callService(domain, service, data) {
       calls.push(`${domain}.${service} ${data.entity_id}`);
     },

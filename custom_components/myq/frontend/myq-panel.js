@@ -26,6 +26,8 @@ import { styles } from "./styles.js";
 
 const TICK_MS = 30000;
 const CONFIRM_MS = 4000;
+/** How soon to try again after the subscription fails, as it does while MyQ is still starting. */
+const RETRY_MS = 10000;
 const INTEGRATION_URL = "/config/integrations/integration/myq";
 const CLOSABLE = new Set(["open", "opening", "unknown"]);
 /** With this many doors, narrow screens switch to compact cards unless the viewer chose a layout. */
@@ -103,7 +105,17 @@ class MyQPanel extends HTMLElement {
     this._language = null;
     this._unsubscribe = null;
     this._subscribing = false;
+    this._attempt = 0;
+    this._connection = null;
     this._closeAllConfirm = 0;
+    // See myq-card.js: the library drops a subscription that fails while Home Assistant restarts, so
+    // subscribe again after each reconnect.
+    this._onReconnect = () => {
+      this._attempt += 1;
+      this._subscribing = false;
+      this._unsubscribe = null;
+      this._subscribe();
+    };
     this._buildShell();
   }
 
@@ -153,6 +165,7 @@ class MyQPanel extends HTMLElement {
 
   disconnectedCallback() {
     clearInterval(this._timer);
+    clearTimeout(this._retryTimer);
     this._unsubscribe?.();
     this._unsubscribe = null;
     for (const card of this._allCards()) card.setActive(false);
@@ -218,18 +231,28 @@ class MyQPanel extends HTMLElement {
   async _subscribe() {
     if (!this._hass || !this.isConnected || this._unsubscribe || this._subscribing) return;
     this._subscribing = true;
+    const attempt = ++this._attempt;
+    clearTimeout(this._retryTimer);
+    if (this._connection !== this._hass.connection) {
+      this._connection?.removeEventListener("ready", this._onReconnect);
+      this._connection = this._hass.connection;
+      this._connection.addEventListener("ready", this._onReconnect);
+    }
     try {
       const unsubscribe = await this._hass.connection.subscribeMessage(
         (payload) => this._onPayload(payload),
         { type: "myq/panel/subscribe" },
+        { resubscribe: false },
       );
-      if (this.isConnected) this._unsubscribe = unsubscribe;
+      if (attempt === this._attempt && this.isConnected) this._unsubscribe = unsubscribe;
       else unsubscribe();
     } catch (error) {
+      if (attempt !== this._attempt) return;
       this._error = error;
       this._renderContent();
+      this._retryTimer = setTimeout(() => this._subscribe(), RETRY_MS);
     } finally {
-      this._subscribing = false;
+      if (attempt === this._attempt) this._subscribing = false;
     }
   }
 
