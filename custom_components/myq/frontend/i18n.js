@@ -7,6 +7,8 @@ let fallback = {};
 let active = "";
 let locale = "en";
 let plurals = new Intl.PluralRules("en");
+/** Counts loadTranslations calls, so a slow response cannot replace a newer choice. */
+let latest = 0;
 
 /** Map a Home Assistant language code to the closest bundled translation. */
 export function resolveLanguage(code) {
@@ -33,19 +35,26 @@ async function fetchStrings(language) {
 
 /** Load translations for a language; resolves once strings are ready. Returns true if they changed. */
 export async function loadTranslations(code) {
+  const call = ++latest;
   const language = resolveLanguage(code);
+  let changed = false;
+  if (language !== active) {
+    const [english, selected] = await Promise.all([fetchStrings("en"), fetchStrings(language)]);
+    // A later call chose a language while these loaded, so its choice stands.
+    if (call !== latest) return false;
+    fallback = english;
+    strings = selected;
+    active = language;
+    changed = true;
+  }
+  // The locale and plural rules change together with the strings they format.
   locale = code || "en";
-  if (language === active) return false;
-  const [english, selected] = await Promise.all([fetchStrings("en"), fetchStrings(language)]);
-  fallback = english;
-  strings = selected;
-  active = language;
   try {
     plurals = new Intl.PluralRules(locale);
   } catch {
     plurals = new Intl.PluralRules("en");
   }
-  return true;
+  return changed;
 }
 
 export function currentLocale() {
