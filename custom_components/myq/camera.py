@@ -271,7 +271,9 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
         if task is not None and not task.done():
             if not task.cancelling():
                 task.cancel()
-            await asyncio.gather(task, return_exceptions=True)
+            # The caller may be a script that is itself stopped while cleanup runs.
+            # Do not propagate its cancellation into the recording a second time.
+            await asyncio.shield(asyncio.gather(task, return_exceptions=True))
 
     def _record_status(self, status: str) -> None:
         self.coordinator.recordings.status[self._camera_serial] = status

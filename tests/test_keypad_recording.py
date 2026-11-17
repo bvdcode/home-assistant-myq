@@ -57,6 +57,10 @@ async def test_cancellation_during_reservation_waits_for_worker_then_cleans(
         try:
             await asyncio.wait_for(started.wait(), 2)
             task.cancel()
+            await asyncio.sleep(0)
+            task.cancel()
+            await asyncio.sleep(0.05)
+            assert not task.done()
         finally:
             finish.set()
         with pytest.raises(asyncio.CancelledError):

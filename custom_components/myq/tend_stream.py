@@ -160,8 +160,16 @@ class TendLiveStream:
     async def frames(self) -> AsyncIterator[asyncio.Queue[bytes]]:
         """Lease the same session used by HLS; cancellation releases only this reader."""
         viewer = await self._subscribe()
+        session = self._session
         try:
             yield viewer.frames
+        except TimeoutError:
+            # Missing media can leave signaling connected. Retire this lease's
+            # session so a retry reconnects, just like the HTTP consumer does.
+            if session is not None and self._session is session:
+                session.ended = True
+                self._on_frame(b"")
+            raise
         finally:
             self._unsubscribe(viewer)
 

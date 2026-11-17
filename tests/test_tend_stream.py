@@ -302,3 +302,29 @@ async def test_shared_session_passes_lazy_alias_lookup_without_calling_it(
         fallback.assert_not_awaited()
     finally:
         await stream.close()
+
+
+async def test_recording_only_timeout_opens_fresh_session(
+    live: TendLiveStream, open_session: AsyncMock
+) -> None:
+    previous = open_session.return_value
+    with pytest.raises(TimeoutError):
+        async with live.frames() as queue:
+            async with asyncio.timeout(0.01):
+                await queue.get()
+    open_session.return_value = MagicMock(ended=False, close=AsyncMock())
+    async with live.frames():
+        assert open_session.await_count == 2
+        previous.close.assert_awaited_once()
+
+
+async def test_cancelled_recording_lease_preserves_shared_session(
+    live: TendLiveStream, open_session: AsyncMock
+) -> None:
+    async with live.frames() as other:
+        with pytest.raises(asyncio.CancelledError):
+            async with live.frames():
+                raise asyncio.CancelledError
+        assert not open_session.return_value.ended
+        assert other.empty()
+        open_session.return_value.close.assert_not_awaited()

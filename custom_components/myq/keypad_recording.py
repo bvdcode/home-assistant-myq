@@ -118,7 +118,13 @@ async def record_keypad(
         except asyncio.CancelledError:
             # Cancelling to_thread does not stop its worker. Wait before deleting
             # the file so the worker cannot recreate it after cleanup.
-            await asyncio.gather(reservation, return_exceptions=True)
+            completion = asyncio.gather(reservation, return_exceptions=True)
+            while not completion.done():
+                try:
+                    await asyncio.shield(completion)
+                except asyncio.CancelledError:
+                    # A second cancellation must not detach the filesystem worker.
+                    continue
             raise
         process = await asyncio.create_subprocess_exec(
             ffmpeg,

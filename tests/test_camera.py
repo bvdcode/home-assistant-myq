@@ -504,3 +504,46 @@ async def test_cancel_immediately_finishes_recording_once(hass: HomeAssistant) -
     unsubscribe()
     assert coordinator.recordings.status[KEYPAD.serial_number] == "cancelled"
     assert [event.data["status"] for event in events] == ["cancelled"]
+
+
+async def test_stopping_cancel_action_does_not_interrupt_recording_cleanup(
+    hass: HomeAssistant,
+) -> None:
+    entity, coordinator = _keypad_entity(hass)
+    started, cleaning, finish = asyncio.Event(), asyncio.Event(), asyncio.Event()
+    events: list[Event] = []
+    unsubscribe = hass.bus.async_listen("myq_keypad_recording_finished", events.append)
+
+    async def recording(*args: object, **kwargs: object) -> None:
+        started.set()
+        try:
+            await asyncio.Event().wait()
+        finally:
+            cleaning.set()
+            await finish.wait()
+
+    entity._live_stream = MagicMock()
+    with (
+        patch.object(entity, "stream_source", new_callable=AsyncMock, return_value="local"),
+        patch("custom_components.myq.camera.get_ffmpeg_manager"),
+        patch("custom_components.myq.camera.record_keypad", side_effect=recording),
+    ):
+        await entity.async_record_keypad(5)
+        await started.wait()
+        task = entity._record_task
+        assert task is not None
+        cancel = asyncio.create_task(entity.async_cancel_keypad_recording())
+        await cleaning.wait()
+        cancel.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await cancel
+        assert not task.done()
+        assert task.cancelling() == 1
+        assert coordinator.recordings.status[KEYPAD.serial_number] == "recording"
+        finish.set()
+        await entity.async_cancel_keypad_recording()
+        await hass.async_block_till_done()
+    unsubscribe()
+    assert task.cancelled()
+    assert coordinator.recordings.status[KEYPAD.serial_number] == "cancelled"
+    assert [event.data["status"] for event in events] == ["cancelled"]
