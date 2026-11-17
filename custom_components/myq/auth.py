@@ -35,6 +35,8 @@ from .oauth import async_exchange_code, create_authorization_url
 
 
 class MyQLoginSession:
+    """Carry the cookies and verification context of one sign-in attempt."""
+
     def __init__(self, session: ClientSession) -> None:
         self._session = session
         self._verifier: str | None = None
@@ -47,6 +49,7 @@ class MyQLoginSession:
         password: str,
         mfa_method: str,
     ) -> OAuthTokens | None:
+        """Submit credentials and return tokens when no verification step is needed."""
         authorization_url, verifier = create_authorization_url()
         self._verifier = verifier
         page = await self._request_page(
@@ -85,6 +88,7 @@ class MyQLoginSession:
         return None
 
     async def async_submit_mfa(self, code: str) -> OAuthTokens:
+        """Exchange a verification code using the current sign-in cookies."""
         if self._mfa_form is None:
             raise MyQApiError("No active MyQ MFA challenge")
         fields = dict(self._mfa_form.fields)
@@ -116,6 +120,7 @@ class MyQLoginSession:
         return await self._async_exchange_code(authorization_code)
 
     def start_browser(self) -> str:
+        """Create a bounded browser authorization tied to this sign-in attempt."""
         authorization_url, verifier = create_authorization_url()
         self._verifier = verifier
         self._mfa_form = None
@@ -123,6 +128,7 @@ class MyQLoginSession:
         return self._browser_authorization.url
 
     async def async_complete_browser(self, callback_url: str) -> OAuthTokens:
+        """Consume the matching browser callback and exchange its authorization code."""
         if self._browser_authorization is None:
             raise MyQBrowserSessionExpiredError
         authorization_code = self._browser_authorization.consume(callback_url)

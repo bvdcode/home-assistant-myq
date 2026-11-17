@@ -8,6 +8,8 @@ from urllib.parse import urljoin, urlsplit
 
 @dataclass(frozen=True, slots=True)
 class ParsedForm:
+    """Successful form controls and the unambiguous credential or verification fields."""
+
     action: str
     fields: dict[str, str]
     email_field: str | None
@@ -74,9 +76,7 @@ def _parse_form(
         if field_type in {"button", "image", "reset", "submit", "file"}:
             continue
         if field_type in {"checkbox", "radio"}:
-            if "checked" in attributes:
-                value = attributes.get("value")
-                fields[name] = "on" if value is None else value
+            _add_checked_field(fields, name, attributes)
             continue
         fields[name] = attributes.get("value") or ""
         if field_type == "hidden":
@@ -100,6 +100,14 @@ def _parse_form(
         _single_field(password_fields),
         _otp_field(action, page_url, otp_fields, visible_fields),
     )
+
+
+def _add_checked_field(
+    fields: dict[str, str], name: str, attributes: dict[str, str | None]
+) -> None:
+    if "checked" in attributes:
+        value = attributes.get("value")
+        fields[name] = "on" if value is None else value
 
 
 def _otp_field(

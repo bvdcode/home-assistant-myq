@@ -102,6 +102,12 @@
       },
       "active_fault": {
         "name": "Aktiv fejl"
+      },
+      "keypad_streaming": {
+        "name": "Streaming"
+      },
+      "keypad_session_problem": {
+        "name": "Sessionsproblem"
       }
     },
     "cover": {
@@ -111,21 +117,77 @@
     },
     "sensor": {
       "battery_backup_state": {
-        "name": "Status for backupbatteri"
+        "name": "Status for backupbatteri",
+        "state": {
+          "charged": "Opladet"
+        }
       },
       "absolute_cycle_count": {
-        "name": "Samlet antal cyklusser"
+        "name": "Samlet antal cyklusser",
+        "unit_of_measurement": "cyklusser"
       },
       "service_cycle_count": {
-        "name": "Cyklusser siden service"
+        "name": "Cyklusser siden service",
+        "unit_of_measurement": "cyklusser"
       },
       "last_activation_source": {
-        "name": "Seneste aktiveringskilde"
+        "name": "Seneste aktiveringskilde",
+        "state": {
+          "myq_app": "MyQ-app"
+        }
+      },
+      "keypad_battery": {
+        "name": "Batteri"
+      },
+      "keypad_power_state": {
+        "name": "Rapporteret strømtilstand",
+        "state": {
+          "fp": "Fuld effekt",
+          "lpds": "Dyb dvale"
+        }
+      },
+      "keypad_power_sample_time": {
+        "name": "Tidspunkt for batterimåling"
+      },
+      "keypad_session_state": {
+        "name": "Sessionsstatus",
+        "state": {
+          "idle": "Inaktiv",
+          "connecting": "Opretter forbindelse",
+          "streaming": "Streamer",
+          "error": "Fejl"
+        }
+      },
+      "keypad_session_errors": {
+        "name": "Sessionsfejl"
+      },
+      "keypad_startup_time": {
+        "name": "Seneste opstartstid"
+      },
+      "keypad_active_consumers": {
+        "name": "Aktive videomodtagere"
+      },
+      "keypad_credential_renewals": {
+        "name": "Fornyelser af loginoplysninger"
+      },
+      "keypad_transport": {
+        "name": "Videotransport",
+        "state": {
+          "idle": "Inaktiv",
+          "lan": "Lokalt netværk",
+          "p2p": "Direkte forbindelse",
+          "cloud_relay": "Via skyen"
+        }
       }
     },
     "camera": {
       "camera": {
         "name": "Kamera"
+      }
+    },
+    "button": {
+      "keypad_refresh_power": {
+        "name": "Opdater batteri- og strømstatus"
       }
     }
   },
@@ -135,6 +197,21 @@
     },
     "camera_image_failed": {
       "message": "Billedet fra MyQ-kameraet kunne ikke hentes."
+    },
+    "invalid_auth": {
+      "message": "MyQ afviste det gemte login. Godkend kontoen igen."
+    },
+    "cannot_connect": {
+      "message": "Der kan ikke oprettes forbindelse til MyQ."
+    },
+    "api_error": {
+      "message": "Uventet MyQ-fejl. Se logfilerne for detaljer."
+    },
+    "update_failed": {
+      "message": "MyQ-enhederne kunne ikke opdateres."
+    },
+    "keypad_power_refresh_failed": {
+      "message": "Batteri- og strømstatus for tastaturet kunne ikke opdateres."
     }
   },
   "options": {

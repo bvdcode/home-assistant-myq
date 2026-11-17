@@ -1,3 +1,4 @@
+import asyncio
 from unittest.mock import AsyncMock, MagicMock, call
 
 import pytest
@@ -73,10 +74,12 @@ async def test_cover_commands_client_once_then_schedules_updates(operation: str)
 
 
 @pytest.mark.parametrize("operation", ["open", "close"])
-@pytest.mark.parametrize("error_type", [MyQApiError, MyQAuthenticationError, ClientConnectionError])
+@pytest.mark.parametrize(
+    "error_type", [MyQApiError, MyQAuthenticationError, ClientConnectionError, TimeoutError]
+)
 async def test_cover_translates_command_failure_without_retry_or_refresh(
     operation: str,
-    error_type: type[MyQApiError | MyQAuthenticationError | ClientConnectionError],
+    error_type: type[MyQApiError | MyQAuthenticationError | ClientConnectionError | TimeoutError],
 ) -> None:
     entity, coordinator = _entity("closed")
     commands = {"open": entity.async_open_cover, "close": entity.async_close_cover}
@@ -95,6 +98,23 @@ async def test_cover_translates_command_failure_without_retry_or_refresh(
     assert raised.value.translation_key == "command_failed"
     expected = {"open": call.open(entity.door), "close": call.close(entity.door)}[operation]
     assert calls.mock_calls == [expected]
+    coordinator.async_schedule_command_updates.assert_not_called()
+
+
+@pytest.mark.parametrize("operation", ["open", "close"])
+async def test_cancelled_door_command_stays_cancelled(operation: str) -> None:
+    entity, coordinator = _entity("closed")
+    coordinator.client.async_open_door.side_effect = asyncio.CancelledError
+    coordinator.client.async_close_door.side_effect = asyncio.CancelledError
+    commands = {"open": entity.async_open_cover, "close": entity.async_close_cover}
+
+    with pytest.raises(asyncio.CancelledError):
+        await commands[operation]()
+
+    assert (
+        coordinator.client.async_open_door.await_count
+        + coordinator.client.async_close_door.await_count
+    ) == 1
     coordinator.async_schedule_command_updates.assert_not_called()
 
 

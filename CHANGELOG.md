@@ -2,6 +2,35 @@
 
 <!-- version list -->
 
+## v0.2.14 (2026-11-16)
+
+Improve localization and integration maintainability
+
+- Add Ukrainian, Finnish and Norwegian Bokmål, with 16 complete translations.
+- Localize errors, sensor states and cycle units.
+- Simplify camera transport and stream handling, and enforce source checks.
+- Close sign-in sessions when configuration flows are dismissed.
+- Define contribution scope and review requirements.
+
+
+## v0.2.13 (2026-11-12)
+
+Fix live video selection for attached cameras
+
+- Resolve cameras by their exact destination when no opener matches.
+- Request camera aliases only when needed, with a five-second timeout.
+- Add regression coverage for camera selection, timeouts, and session cleanup.
+
+
+## v0.2.12 (2026-11-12)
+
+Add optional LAN-only camera video
+
+- Add a setting that restricts live video to the camera's private LAN address and negotiated UDP ports.
+- Keep the setting disabled by default and reload the integration when it changes.
+- Translate the camera video setting into all 13 supported languages.
+
+
 ## v0.2.11 (2026-11-08)
 
 Reduce MyQ cloud request volume

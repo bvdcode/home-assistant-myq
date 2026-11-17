@@ -37,6 +37,8 @@ _APP_CHECK_DATA: Final = bytes.fromhex(
 
 
 class MyQAuth:
+    """Serialize token renewal and persist accepted replacement credentials."""
+
     def __init__(
         self,
         session: ClientSession,
@@ -50,6 +52,7 @@ class MyQAuth:
         self._request_cooldown = RequestCooldown()
 
     async def async_access_token(self) -> str:
+        """Renew expiring authorization before returning a usable access token."""
         if self._tokens.expires_at - TOKEN_EXPIRY_MARGIN.total_seconds() > time.time():
             return self._tokens.access_token
         async with self._refresh_lock:
@@ -58,6 +61,7 @@ class MyQAuth:
             return (await self.async_refresh()).access_token
 
     async def async_refresh(self) -> OAuthTokens:
+        """Serialize refresh requests and publish the replacement token pair."""
         payload = await _post_json(
             self._session,
             f"{IDENTITY_BASE_URL}/connect/token",

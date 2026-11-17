@@ -16,5 +16,9 @@ strict = true
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
+module = "custom_components.myq.*"
+disallow_any_explicit = true
+
+[[tool.mypy.overrides]]
 module = "pytest_homeassistant_custom_component.*"
 ignore_missing_imports = true

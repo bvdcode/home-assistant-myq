@@ -1,0 +1,7 @@
+extend = "../pyproject.toml"
+
+[lint]
+extend-select = ["ANN", "C90", "D101", "D102", "D103"]
+
+[lint.mccabe]
+max-complexity = 10

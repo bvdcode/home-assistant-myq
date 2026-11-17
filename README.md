@@ -110,13 +110,6 @@ The `camera_serial_prefix` attribute identifies the camera generation. Connectio
 failures are logged with `TC camera live video unavailable`. Standalone camera playback
 and recovery after a network interruption still require device validation.
 
-## Safety
-
-Opening or closing a garage door can cause injury or property damage. Keep the
-door area clear and maintain the opener's photo eyes, obstruction detection,
-and other safety equipment. Do not use remote control where unattended
-operation is prohibited.
-
 ## Development
 
 Use Python 3.14 or newer and install the test dependencies:

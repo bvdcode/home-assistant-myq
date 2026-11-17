@@ -102,6 +102,12 @@
       },
       "active_fault": {
         "name": "Активная неисправность"
+      },
+      "keypad_streaming": {
+        "name": "Трансляция видео"
+      },
+      "keypad_session_problem": {
+        "name": "Проблема с сеансом"
       }
     },
     "cover": {
@@ -111,21 +117,77 @@
     },
     "sensor": {
       "battery_backup_state": {
-        "name": "Состояние резервной батареи"
+        "name": "Состояние резервной батареи",
+        "state": {
+          "charged": "Заряжена"
+        }
       },
       "absolute_cycle_count": {
-        "name": "Общее количество циклов"
+        "name": "Общее количество циклов",
+        "unit_of_measurement": "циклов"
       },
       "service_cycle_count": {
-        "name": "Количество сервисных циклов"
+        "name": "Количество сервисных циклов",
+        "unit_of_measurement": "циклов"
       },
       "last_activation_source": {
-        "name": "Последний источник активации"
+        "name": "Последний источник активации",
+        "state": {
+          "myq_app": "Приложение MyQ"
+        }
+      },
+      "keypad_battery": {
+        "name": "Батарея"
+      },
+      "keypad_power_state": {
+        "name": "Переданный режим питания",
+        "state": {
+          "fp": "Полная мощность",
+          "lpds": "Глубокий сон"
+        }
+      },
+      "keypad_power_sample_time": {
+        "name": "Время измерения заряда батареи"
+      },
+      "keypad_session_state": {
+        "name": "Состояние сеанса",
+        "state": {
+          "idle": "Бездействие",
+          "connecting": "Подключение",
+          "streaming": "Трансляция",
+          "error": "Ошибка"
+        }
+      },
+      "keypad_session_errors": {
+        "name": "Ошибки сеанса"
+      },
+      "keypad_startup_time": {
+        "name": "Длительность последнего запуска"
+      },
+      "keypad_active_consumers": {
+        "name": "Активные получатели видео"
+      },
+      "keypad_credential_renewals": {
+        "name": "Обновления учётных данных"
+      },
+      "keypad_transport": {
+        "name": "Способ передачи видео",
+        "state": {
+          "idle": "Бездействие",
+          "lan": "Локальная сеть",
+          "p2p": "Прямое соединение",
+          "cloud_relay": "Облачная ретрансляция"
+        }
       }
     },
     "camera": {
       "camera": {
         "name": "Камера"
+      }
+    },
+    "button": {
+      "keypad_refresh_power": {
+        "name": "Обновить состояние батареи и питания"
       }
     }
   },
@@ -135,6 +197,21 @@
     },
     "camera_image_failed": {
       "message": "Не удалось получить снимок с камеры MyQ."
+    },
+    "invalid_auth": {
+      "message": "MyQ отклонил сохранённые данные для входа. Выполните повторный вход в учётную запись."
+    },
+    "cannot_connect": {
+      "message": "Не удалось подключиться к MyQ."
+    },
+    "api_error": {
+      "message": "Неожиданная ошибка MyQ. Подробности доступны в журнале."
+    },
+    "update_failed": {
+      "message": "Не удалось обновить данные устройств MyQ."
+    },
+    "keypad_power_refresh_failed": {
+      "message": "Не удалось обновить состояние батареи и питания клавиатуры."
     }
   },
   "options": {

@@ -58,17 +58,22 @@ _LOGGER = logging.getLogger(__name__)
 
 @dataclass(frozen=True, slots=True)
 class LoginAttempt:
+    """The tokens, recoverable error or browser continuation of a sign-in step."""
+
     tokens: OAuthTokens | None = None
     error: str | None = None
     browser_url: str | None = None
 
 
 class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+    """Configure an account or renew its authorization through supported sign-in flows."""
+
     VERSION = 1
 
     @staticmethod
     @callback
     def async_get_options_flow(config_entry: MyQConfigEntry) -> MyQOptionsFlow:
+        """Create the options flow for an existing account entry."""
         return MyQOptionsFlow()
 
     def __init__(self) -> None:
@@ -79,10 +84,16 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._login_session: ClientSession | None = None
         self._reauth_entry: MyQConfigEntry | None = None
 
+    @callback
+    def async_remove(self) -> None:
+        """Release the sign-in session when the flow is dismissed before it finishes."""
+        self._close_login()
+
     async def async_step_user(
         self,
         user_input: dict[str, object] | None = None,
     ) -> ConfigFlowResult:
+        """Offer the supported sign-in methods for a new account."""
         del user_input
         return self.async_show_menu(
             step_id="user",
@@ -93,6 +104,7 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self,
         user_input: dict[str, object] | None = None,
     ) -> ConfigFlowResult:
+        """Reject duplicate accounts before starting credential verification."""
         if user_input is not None:
             credentials = cast(CredentialsInput, user_input)
             self._email = credentials["email"].strip().casefold()
@@ -108,6 +120,7 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self,
         user_input: dict[str, object] | None = None,
     ) -> ConfigFlowResult:
+        """Associate browser authorization with the new or reconnecting account."""
         if self._reauth_entry is not None:
             self._begin_browser_login()
             return await self.async_step_browser()
@@ -129,12 +142,14 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self,
         user_input: dict[str, object] | None = None,
     ) -> ConfigFlowResult:
+        """Continue verification for a new account."""
         return await self._async_mfa_step("mfa", user_input)
 
     async def async_step_reauth(
         self,
         entry_data: Mapping[str, object],
     ) -> ConfigFlowResult:
+        """Load the existing account identity before renewing authorization."""
         del entry_data
         self._reauth_entry = cast(MyQConfigEntry, self._get_reauth_entry())
         data = cast(MyQConfigData, self._reauth_entry.data)
@@ -146,6 +161,7 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self,
         user_input: dict[str, object] | None = None,
     ) -> ConfigFlowResult:
+        """Offer sign-in methods while retaining the existing account identity."""
         del user_input
         return self.async_show_menu(
             step_id="reauth_confirm",
@@ -157,6 +173,7 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self,
         user_input: dict[str, object] | None = None,
     ) -> ConfigFlowResult:
+        """Verify the current password for the account being reconnected."""
         return await self._async_credentials_step(
             user_input,
             step_id="reauth_credentials",
@@ -169,12 +186,14 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self,
         user_input: dict[str, object] | None = None,
     ) -> ConfigFlowResult:
+        """Continue verification for the account being reconnected."""
         return await self._async_mfa_step("reauth_mfa", user_input)
 
     async def async_step_browser(
         self,
         user_input: dict[str, object] | None = None,
     ) -> ConfigFlowResult:
+        """Accept a matching callback or display the current browser authorization link."""
         errors: dict[str, str] = {}
         if user_input is not None:
             callback_input = cast(BrowserCallbackInput, user_input)
@@ -260,7 +279,7 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return LoginAttempt(error="invalid_auth")
         except (MyQCloudflareChallengeError, MyQUnsupportedAuthPageError) as error:
             return self._browser_fallback(error, step="login")
-        except ClientError:
+        except ClientError, TimeoutError:
             self._close_login()
             return LoginAttempt(error="cannot_connect")
         except MyQError:
@@ -280,7 +299,7 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self._restart_browser("browser_session_expired")
         except MyQAuthenticationError:
             return self._restart_browser("browser_auth_failed")
-        except ClientError:
+        except ClientError, TimeoutError:
             return self._restart_browser("cannot_connect")
         except MyQError:
             _LOGGER.exception("Unexpected MyQ error while completing browser authentication")
@@ -296,7 +315,7 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return LoginAttempt(error="invalid_mfa")
         except (MyQCloudflareChallengeError, MyQUnsupportedAuthPageError) as error:
             return self._browser_fallback(error, step="MFA verification")
-        except ClientError:
+        except ClientError, TimeoutError:
             return LoginAttempt(error="cannot_connect")
         except MyQError:
             _LOGGER.exception("Unexpected MyQ error while submitting MFA")
@@ -310,7 +329,7 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         client = MyQClient(async_get_clientsession(self.hass), auth)
         try:
             devices = await client.async_get_devices()
-        except ClientError:
+        except ClientError, TimeoutError:
             self._close_login()
             return self.async_abort(reason="cannot_connect")
         except MyQError:
@@ -404,9 +423,12 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class MyQOptionsFlow(config_entries.OptionsFlow):
+    """Configure the camera transport policy for an existing account."""
+
     async def async_step_init(
         self, user_input: dict[str, object] | None = None
     ) -> ConfigFlowResult:
+        """Retain existing options while updating the selected camera policy."""
         if user_input is not None:
             return self.async_create_entry(
                 title="", data={**self.config_entry.options, **user_input}

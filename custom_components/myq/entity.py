@@ -7,6 +7,8 @@ from .models import GarageDoor
 
 
 class MyQEntity(CoordinatorEntity[MyQDataUpdateCoordinator]):
+    """Share door identity and coordinator availability across entity platforms."""
+
     _attr_has_entity_name = True
 
     def __init__(
@@ -23,10 +25,12 @@ class MyQEntity(CoordinatorEntity[MyQDataUpdateCoordinator]):
 
     @property
     def door(self) -> GarageDoor | None:
+        """Resolve the latest discovery result for this entity identity."""
         return self.coordinator.data.get(self._serial_number)
 
     @property
     def available(self) -> bool:
+        """Require successful discovery and a door that is not reported offline."""
         if not super().available:
             return False
         door = self.door

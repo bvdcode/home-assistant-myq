@@ -211,12 +211,14 @@ class CxsConnection:
                 writer.transport.abort()
 
     def close_transport(self) -> None:
+        """Stop the read loop and close the broker connection."""
         if self._writer is not None:
             self._writer.close()
         self._writer = None
         self._reader = None
 
     def close(self) -> None:
+        """Release the broker connection and await its pending shutdown work."""
         self._on_lost = None
         for task in (self._keepalive_task, self._read_task):
             if task is not None:

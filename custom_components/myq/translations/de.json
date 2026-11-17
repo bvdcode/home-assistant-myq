@@ -102,6 +102,12 @@
       },
       "active_fault": {
         "name": "Aktiver Fehler"
+      },
+      "keypad_streaming": {
+        "name": "Videoübertragung"
+      },
+      "keypad_session_problem": {
+        "name": "Sitzungsproblem"
       }
     },
     "cover": {
@@ -111,21 +117,77 @@
     },
     "sensor": {
       "battery_backup_state": {
-        "name": "Status der Notstrombatterie"
+        "name": "Status der Notstrombatterie",
+        "state": {
+          "charged": "Geladen"
+        }
       },
       "absolute_cycle_count": {
-        "name": "Gesamtzahl der Zyklen"
+        "name": "Gesamtzahl der Zyklen",
+        "unit_of_measurement": "Zyklen"
       },
       "service_cycle_count": {
-        "name": "Zyklen seit der Wartung"
+        "name": "Zyklen seit der Wartung",
+        "unit_of_measurement": "Zyklen"
       },
       "last_activation_source": {
-        "name": "Letzte Auslösequelle"
+        "name": "Letzte Auslösequelle",
+        "state": {
+          "myq_app": "MyQ-App"
+        }
+      },
+      "keypad_battery": {
+        "name": "Batterie"
+      },
+      "keypad_power_state": {
+        "name": "Gemeldeter Energiezustand",
+        "state": {
+          "fp": "Volle Leistung",
+          "lpds": "Tiefschlaf"
+        }
+      },
+      "keypad_power_sample_time": {
+        "name": "Zeitpunkt der Batteriemessung"
+      },
+      "keypad_session_state": {
+        "name": "Sitzungsstatus",
+        "state": {
+          "idle": "Inaktiv",
+          "connecting": "Verbindung wird hergestellt",
+          "streaming": "Übertragung läuft",
+          "error": "Fehler"
+        }
+      },
+      "keypad_session_errors": {
+        "name": "Sitzungsfehler"
+      },
+      "keypad_startup_time": {
+        "name": "Letzte Startdauer"
+      },
+      "keypad_active_consumers": {
+        "name": "Aktive Videoempfänger"
+      },
+      "keypad_credential_renewals": {
+        "name": "Erneuerungen der Zugangsdaten"
+      },
+      "keypad_transport": {
+        "name": "Videoübertragungsweg",
+        "state": {
+          "idle": "Inaktiv",
+          "lan": "Lokales Netzwerk",
+          "p2p": "Direktverbindung",
+          "cloud_relay": "Cloud-Relay"
+        }
       }
     },
     "camera": {
       "camera": {
         "name": "Kamera"
+      }
+    },
+    "button": {
+      "keypad_refresh_power": {
+        "name": "Batterie- und Energiezustand aktualisieren"
       }
     }
   },
@@ -135,6 +197,21 @@
     },
     "camera_image_failed": {
       "message": "Das Standbild der MyQ-Kamera konnte nicht abgerufen werden."
+    },
+    "invalid_auth": {
+      "message": "MyQ hat die gespeicherte Anmeldung abgelehnt. Authentifiziere das Konto erneut."
+    },
+    "cannot_connect": {
+      "message": "Verbindung zu MyQ nicht möglich."
+    },
+    "api_error": {
+      "message": "Unerwarteter MyQ-Fehler. Details findest du in den Protokollen."
+    },
+    "update_failed": {
+      "message": "Die MyQ-Gerätedaten konnten nicht aktualisiert werden."
+    },
+    "keypad_power_refresh_failed": {
+      "message": "Der Batterie- und Energiezustand des Tastenfelds konnte nicht aktualisiert werden."
     }
   },
   "options": {

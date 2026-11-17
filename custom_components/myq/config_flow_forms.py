@@ -7,25 +7,35 @@ from .const import CONF_MFA_METHOD, DEFAULT_MFA_METHOD, MFA_METHOD_EMAIL, MFA_ME
 
 
 class CredentialsInput(TypedDict):
+    """Account identity and credentials submitted for automatic sign-in."""
+
     email: str
     mfa_method: str
     password: str
 
 
 class PasswordInput(TypedDict):
+    """Credentials submitted after the account identity has been established."""
+
     mfa_method: str
     password: str
 
 
 class BrowserStartInput(TypedDict):
+    """Account identity submitted before opening browser authorization."""
+
     email: str
 
 
 class MfaInput(TypedDict):
+    """The verification code submitted for the pending sign-in attempt."""
+
     code: str
 
 
 class BrowserCallbackInput(TypedDict):
+    """The complete callback address returned by browser authorization."""
+
     callback_url: str
 
 

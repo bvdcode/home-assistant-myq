@@ -1,33 +1,33 @@
 class MyQError(Exception):
-    pass
+    """Base failure raised by the MyQ client and sign-in flows."""
 
 
 class MyQAuthenticationError(MyQError):
-    pass
+    """The account authorization was rejected or could not be renewed."""
 
 
 class MyQInvalidCredentialsError(MyQAuthenticationError):
-    pass
+    """The identity provider rejected the submitted credentials."""
 
 
 class MyQInvalidMfaError(MyQAuthenticationError):
-    pass
+    """The verification code was rejected without ending the sign-in attempt."""
 
 
 class MyQCloudflareChallengeError(MyQError):
-    pass
+    """Automatic sign-in encountered an interactive browser challenge."""
 
 
 class MyQBrowserSessionExpiredError(MyQError):
-    pass
+    """Browser authorization expired or its callback was already consumed."""
 
 
 class MyQInvalidCallbackError(MyQError):
-    pass
+    """A callback does not belong to the pending browser authorization."""
 
 
 class MyQApiError(MyQError):
-    pass
+    """A cloud response could not be used by the requested operation."""
 
 
 class MyQRateLimitError(MyQApiError):
@@ -39,7 +39,7 @@ class MyQRateLimitError(MyQApiError):
 
 
 class MyQUnsupportedAuthPageError(MyQApiError):
-    pass
+    """A successful identity response contains an unsupported verification page."""
 
 
 class MyQWakeTimeoutError(MyQApiError):

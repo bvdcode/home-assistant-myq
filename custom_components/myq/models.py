@@ -5,6 +5,8 @@ from typing import TypedDict
 
 
 class StoredTokens(TypedDict):
+    """Serializable OAuth credentials retained in an account configuration entry."""
+
     access_token: str
     refresh_token: str
     expires_at: float
@@ -12,6 +14,8 @@ class StoredTokens(TypedDict):
 
 @dataclass(frozen=True, slots=True)
 class OAuthTokens:
+    """An immutable access token, refresh token and absolute expiry."""
+
     access_token: str
     refresh_token: str
     expires_at: float
@@ -19,16 +23,25 @@ class OAuthTokens:
 
 @dataclass(frozen=True, slots=True)
 class MyQAccount:
+    """The account identity required to discover and control its devices."""
+
     account_id: str
     name: str
 
 
 @dataclass(frozen=True, slots=True)
 class MyQCamera:
+    """A discovered camera identity and its optional availability metadata."""
+
     serial_number: str
     online: bool | None = None
     device_model: str | None = None
     name: str | None = None
+
+    @property
+    def is_video_keypad(self) -> bool:
+        """Identify Video Keypads by their reported device model."""
+        return self.device_model == "vkp-camera"
 
     @property
     def serial_prefix(self) -> str | None:
@@ -46,6 +59,8 @@ class MyQCamera:
 
 @dataclass(frozen=True, slots=True)
 class GarageDoor:
+    """A discovered opener state and the optional diagnostics reported for it."""
+
     account_id: str
     serial_number: str
     name: str

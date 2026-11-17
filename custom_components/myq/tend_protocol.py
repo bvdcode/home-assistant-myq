@@ -31,6 +31,8 @@ class TendCameraNotFoundError(TendStreamError):
 
 @dataclass(slots=True)
 class CxsPacket:
+    """A broker command envelope before binary CXS serialization."""
+
     action: int
     body: bytes = b""
     options: bytes = bytes(16)
@@ -124,6 +126,8 @@ def load_properties(data: bytes) -> dict[str, str]:
 
 @dataclass(slots=True)
 class TendCamera:
+    """A signaling destination and the transport parameters returned for that camera."""
+
     device_id: str
     destination: str
     aes_key: str
@@ -191,6 +195,8 @@ def parse_cameras(properties: dict[str, str]) -> list[TendCamera]:
 
 @dataclass(slots=True)
 class VideoOffer:
+    """The relay allocation and encryption context for one requested video session."""
+
     relay_host: str
     relay_port: int
     aes_key: str

@@ -82,6 +82,8 @@ class VideoTransport:
         self.channels: list[_Channel] = []
         self.local_ip = ""
         self._relay_ip = ""
+        self._last_media_peer = ""
+        self.media_path = "unknown"
         self._camera_ips = {camera.local_ip} if camera.local_ip else set[str]()
         self._connected = asyncio.Event()
         self._report_task: asyncio.Task[None] | None = None
@@ -191,82 +193,100 @@ class VideoTransport:
         self._report_task = asyncio.create_task(self._report_loop())
 
     def on_datagram(self, control: bool, data: bytes, remote: tuple[str, int]) -> None:
-        """Handle a Seedonk setup packet or an RTP/RTCP datagram."""
+        """Dispatch packets after applying the active peer-selection policy."""
         if len(self.channels) < 2:
             return
         channel = self.channels[int(control)]
-        if self._lan_only:
-            if data[:4] == _SDNK_MAGIC and len(data) >= 20 and data[7] == 2:
-                if (
-                    remote != (self._relay_ip, self.offer.relay_port)
-                    or channel.peer is not None
-                    or len(data) != 110
-                    or data[:7] != _SDNK_MAGIC + b"\x01\x00\x00"
-                    or struct.unpack_from(">I", data, 16)[0] != 90
-                ):
-                    return
-                # Only the private identity supplied by authenticated TLS signaling is eligible.
-                channel.peer = next(
-                    (peer for peer in parse_peer_packet(data) if peer[0] == self._lan_ip), None
-                )
-                if channel.peer is not None:
-                    media_id = _media_id(self.camera.device_id)
-                    self._send(
-                        channel,
-                        _sdnk(100, bytes((1, int(control))) + b"V" + media_id + media_id),
-                        remote,
-                    )
-                return
-            # Broker packets never carry media; neither IP nor port may change after selection.
-            if channel.peer is None or remote != channel.peer:
-                return
-        # Only the relay and the camera addresses it announced may set peers or send media.
-        if remote[0] != self._relay_ip and remote[0] not in self._camera_ips:
+        setup = data[:4] == _SDNK_MAGIC and len(data) >= 20
+        if self._lan_only and setup and data[7] == 2:
+            self._select_lan_peer(channel, data, remote)
             return
-        if data[:4] == _SDNK_MAGIC and len(data) >= 20:
-            kind = data[7]
-            if kind == 2:
+        if not self._accept_remote(channel, remote):
+            return
+        if setup:
+            self._handle_setup(channel, data, remote)
+        elif control:
+            self._handle_rtcp(data)
+        elif len(data) >= 8:
+            if remote[0] != self._last_media_peer:
+                self._last_media_peer = remote[0]
+                self.media_path = self._media_path(remote[0])
+            self._handle_media(data)
+
+    def _accept_remote(self, channel: _Channel, remote: tuple[str, int]) -> bool:
+        if self._lan_only and remote != channel.peer:
+            return False
+        return remote[0] == self._relay_ip or remote[0] in self._camera_ips
+
+    def _select_lan_peer(self, channel: _Channel, data: bytes, remote: tuple[str, int]) -> None:
+        if (
+            remote != (self._relay_ip, self.offer.relay_port)
+            or channel.peer is not None
+            or len(data) != 110
+            or data[:7] != _SDNK_MAGIC + b"\x01\x00\x00"
+            or struct.unpack_from(">I", data, 16)[0] != 90
+        ):
+            return
+        channel.peer = next(
+            (peer for peer in parse_peer_packet(data) if peer[0] == self._lan_ip), None
+        )
+        if channel.peer is not None:
+            self._ack_peer(channel, remote)
+
+    def _ack_peer(self, channel: _Channel, relay: tuple[str, int]) -> None:
+        media_id = _media_id(self.camera.device_id)
+        self._send(
+            channel,
+            _sdnk(100, bytes((1, int(channel.control))) + b"V" + media_id + media_id),
+            relay,
+        )
+
+    def _select_announced_peer(self, peers: list[tuple[str, int]]) -> tuple[str, int] | None:
+        self._camera_ips.update(address for address, _ in peers)
+        private = [
+            peer
+            for peer in peers
+            if ipaddress.ip_address(peer[0]).is_private and peer[0] != self.local_ip
+        ]
+        return (
+            next((peer for peer in peers if peer[0] == self.camera.local_ip), None)
+            or (private[0] if private else None)
+            or (peers[-1] if peers else None)
+        )
+
+    def _handle_setup(self, channel: _Channel, data: bytes, remote: tuple[str, int]) -> None:
+        match data[7]:
+            case 2:
                 if remote[0] != self._relay_ip:
                     return
-                peers = parse_peer_packet(data)
-                self._camera_ips.update(address for address, _ in peers)
-                private = [
-                    peer
-                    for peer in peers
-                    if ipaddress.ip_address(peer[0]).is_private and peer[0] != self.local_ip
-                ]
-                channel.peer = (
-                    next((peer for peer in peers if peer[0] == self.camera.local_ip), None)
-                    or (private[0] if private else None)
-                    or (peers[-1] if peers else None)
-                )
+                channel.peer = self._select_announced_peer(parse_peer_packet(data))
                 if channel.peer is not None:
-                    media_id = _media_id(self.camera.device_id)
-                    self._send(
-                        channel,
-                        _sdnk(100, bytes((1, int(control))) + b"V" + media_id + media_id),
-                        (self._relay_ip, self.offer.relay_port),
-                    )
-            elif kind == 3:
+                    self._ack_peer(channel, (self._relay_ip, self.offer.relay_port))
+            case 3:
                 channel.peer = remote
                 media_id = _media_id(self.camera.device_id)
                 for sequence in range(3):
                     self._send(
                         channel, _sdnk(3, bytes((1, sequence)) + media_id + media_id), remote
                     )
-            elif kind == 4:
+            case 4:
                 channel.peer = remote
                 self._send(channel, _sdnk(5, data[20:21] or b"\x01"), remote)
-            elif kind == 5:
+            case 5:
                 channel.peer = remote
                 channel.connected = True
                 if all(item.connected for item in self.channels):
                     self._connected.set()
-            return
-        if control:
-            self._handle_rtcp(data)
-        else:
-            self._handle_media(data)
+
+    def _media_path(self, host: str) -> str:
+        """Classify the observed media sender using authenticated camera metadata."""
+        if host == self._relay_ip:
+            return "cloud_relay"
+        if host == self.camera.local_ip:
+            address = ipaddress.ip_address(host)
+            if any(address in network for network in _LAN_NETWORKS):
+                return "lan"
+        return "p2p"
 
     def _handle_media(self, data: bytes) -> None:
         if len(data) < 8:
@@ -368,6 +388,7 @@ class VideoTransport:
         return bytes(report)
 
     def close(self) -> None:
+        """Stop receiver reports and release every allocated UDP channel."""
         if self._report_task is not None:
             self._report_task.cancel()
             self._report_task = None

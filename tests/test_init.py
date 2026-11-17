@@ -5,11 +5,13 @@ from typing import cast
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from aiohttp import ClientConnectionError
 from freezegun.api import FrozenDateTimeFactory
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.translation import async_get_translations
 from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import MockConfigEntry, async_fire_time_changed
 
@@ -23,6 +25,7 @@ from custom_components.myq.const import (
     DOMAIN,
     MFA_METHOD_EMAIL,
 )
+from custom_components.myq.exceptions import MyQAuthenticationError
 from custom_components.myq.models import GarageDoor, MyQDevices, OAuthTokens
 from custom_components.myq.runtime import MyQRuntimeData
 
@@ -125,6 +128,70 @@ async def test_setup_creates_cover_and_persists_refreshed_tokens(
     assert await hass.config_entries.async_unload(entry.entry_id)
     await hass.async_block_till_done()
     assert _entry_state(entry) is ConfigEntryState.NOT_LOADED
+
+
+@pytest.mark.parametrize(
+    ("error", "expected_state", "reason"),
+    [
+        (
+            MyQAuthenticationError,
+            ConfigEntryState.SETUP_ERROR,
+            "MyQ rejected the saved sign-in. Reauthenticate the account",
+        ),
+        (
+            ClientConnectionError,
+            ConfigEntryState.SETUP_RETRY,
+            "Unable to update MyQ devices",
+        ),
+    ],
+)
+async def test_setup_errors_report_translated_reasons(
+    hass: HomeAssistant,
+    error: type[MyQAuthenticationError] | type[ClientConnectionError],
+    expected_state: ConfigEntryState,
+    reason: str,
+) -> None:
+    entry = _entry()
+    entry.add_to_hass(hass)
+    client = MagicMock()
+    client.async_get_devices = AsyncMock(side_effect=error)
+    with patch("custom_components.myq.MyQClient", return_value=client):
+        assert not await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+    assert _entry_state(entry) is expected_state
+    assert entry.reason == reason
+
+
+async def test_sensor_translations_preserve_machine_values(hass: HomeAssistant) -> None:
+    entry = _entry()
+    entry.add_to_hass(hass)
+    client = MagicMock()
+    door = replace(DOOR, battery_backup_state="charged")
+    client.async_get_devices = AsyncMock(return_value=MyQDevices((door,)))
+    with patch("custom_components.myq.MyQClient", return_value=client):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+    registry = er.async_get(hass)
+    for key, value in (("battery_backup_state", "charged"), ("last_activation_source", "myq_app")):
+        entity_id = registry.async_get_entity_id("sensor", DOMAIN, f"door-1_{key}")
+        assert entity_id is not None
+        state = hass.states.get(entity_id)
+        assert state is not None
+        assert state.state == value
+    for key in ("absolute_cycle_count", "service_cycle_count"):
+        entity_id = registry.async_get_entity_id("sensor", DOMAIN, f"door-1_{key}")
+        assert entity_id is not None
+        state = hass.states.get(entity_id)
+        assert state is not None
+        assert state.attributes["unit_of_measurement"] == "cycles"
+
+    russian = await async_get_translations(hass, "ru", "entity", {DOMAIN})
+    prefix = "component.myq.entity.sensor"
+    assert russian[f"{prefix}.battery_backup_state.state.charged"] == "Заряжена"
+    assert russian[f"{prefix}.last_activation_source.state.myq_app"] == "Приложение MyQ"
+    assert russian[f"{prefix}.absolute_cycle_count.unit_of_measurement"] == "циклов"
 
 
 async def test_door_open_sensor_tracks_cover_without_additional_polling(

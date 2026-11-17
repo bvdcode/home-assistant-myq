@@ -1,0 +1,228 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Velg innloggingsmetode",
+        "description": "Automatisk innlogging anbefales. Du kan også logge inn i en nettleser hvis MyQ blokkerer automatisk innlogging.",
+        "menu_options": {
+          "credentials": "Logg inn automatisk",
+          "browser_start": "Logg inn i en nettleser"
+        }
+      },
+      "credentials": {
+        "title": "Koble til MyQ",
+        "description": "Skriv inn påloggingsinformasjonen for MyQ-kontoen din.",
+        "data": {
+          "email": "E-post",
+          "password": "Passord",
+          "mfa_method": "Send bekreftelseskoder via"
+        }
+      },
+      "browser_start": {
+        "title": "Logg inn i en nettleser",
+        "description": "Skriv inn e-postadressen for MyQ-kontoen din. Passordet og bekreftelseskoden oppgis bare på MyQ-nettstedet.",
+        "data": {
+          "email": "E-post"
+        }
+      },
+      "mfa": {
+        "title": "Bekreftelseskode",
+        "description": "Skriv inn den sekssifrede bekreftelseskoden du mottok.",
+        "data": {
+          "code": "Bekreftelseskode"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Koble til MyQ på nytt",
+        "description": "Velg hvordan du vil koble til {email} på nytt.",
+        "menu_options": {
+          "reauth_credentials": "Logg inn automatisk",
+          "browser_start": "Logg inn i en nettleser"
+        }
+      },
+      "reauth_credentials": {
+        "title": "Koble til MyQ på nytt",
+        "description": "Skriv inn gjeldende passord for {email}.",
+        "data": {
+          "password": "Passord",
+          "mfa_method": "Send bekreftelseskoder via"
+        }
+      },
+      "reauth_mfa": {
+        "title": "Bekreftelseskode",
+        "description": "Skriv inn den sekssifrede bekreftelseskoden du mottok.",
+        "data": {
+          "code": "Bekreftelseskode"
+        }
+      },
+      "browser": {
+        "title": "Logg inn i en nettleser",
+        "description": "[Åpne MyQ-innlogging]({authorization_url}) i en nettleser og logg inn med {email}. Når nettleseren prøver å åpne `com.myqops://android`, kopierer du hele tilbakekallingsadressen og limer den inn nedenfor. Hvis ingen adresse vises, trykker du på F12, åpner nettleserkonsollen, finner meldingen `Failed to launch 'com.myqops://android?...'` og kopierer hele adressen fra den. Lenken utløper etter 10 minutter.",
+        "data": {
+          "callback_url": "Tilbakekallingsadresse"
+        }
+      }
+    },
+    "error": {
+      "authentication_expired": "Innloggingsøkten er utløpt. Start på nytt.",
+      "cannot_connect": "Kan ikke koble til MyQ.",
+      "browser_auth_failed": "MyQ avviste autoriseringen i nettleseren. Åpne den nye innloggingslenken og prøv igjen.",
+      "browser_session_expired": "Innloggingsøkten i nettleseren er utløpt. Åpne den nye innloggingslenken og prøv igjen.",
+      "invalid_auth": "E-postadressen eller passordet er feil.",
+      "invalid_callback": "Tilbakekallingsadressen er ugyldig eller tilhører et annet innloggingsforsøk.",
+      "invalid_mfa": "Bekreftelseskoden er ugyldig eller utløpt.",
+      "unknown": "Uventet MyQ-feil. Se loggene for mer informasjon."
+    },
+    "abort": {
+      "already_configured": "Denne MyQ-kontoen er allerede konfigurert. Ingen ytterligere konfigurasjon er nødvendig.",
+      "cannot_connect": "Autentiseringen var vellykket, men MyQs tjeneste for enhetsoppdagelse kunne ikke nås.",
+      "no_devices": "Ingen garasjeporter eller kameraer ble funnet på denne MyQ-kontoen.",
+      "reauth_successful": "MyQ ble koblet til på nytt.",
+      "unknown": "MyQ returnerte et uventet svar."
+    }
+  },
+  "selector": {
+    "mfa_method": {
+      "options": {
+        "email": "E-post",
+        "sms": "Tekstmelding (SMS)"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "door_open": {
+        "name": "Port åpen"
+      },
+      "vacation_mode": {
+        "name": "Feriemodus"
+      },
+      "work_light": {
+        "name": "Arbeidslys"
+      },
+      "active_fault": {
+        "name": "Aktiv feil"
+      },
+      "keypad_session_problem": {
+        "name": "Øktproblem"
+      },
+      "keypad_streaming": {
+        "name": "Videostrømming"
+      }
+    },
+    "cover": {
+      "garage_door": {
+        "name": "Garasjeport"
+      }
+    },
+    "sensor": {
+      "battery_backup_state": {
+        "name": "Reservebatteriets tilstand",
+        "state": {
+          "charged": "Ladet"
+        }
+      },
+      "absolute_cycle_count": {
+        "name": "Totalt antall sykluser",
+        "unit_of_measurement": "sykluser"
+      },
+      "service_cycle_count": {
+        "name": "Antall servicesykluser",
+        "unit_of_measurement": "sykluser"
+      },
+      "last_activation_source": {
+        "name": "Kilde til siste aktivering",
+        "state": {
+          "myq_app": "MyQ-app"
+        }
+      },
+      "keypad_active_consumers": {
+        "name": "Aktive videomottakere"
+      },
+      "keypad_battery": {
+        "name": "Batteri"
+      },
+      "keypad_credential_renewals": {
+        "name": "Fornyelser av påloggingsinformasjon"
+      },
+      "keypad_power_sample_time": {
+        "name": "Tidspunkt for batterimåling"
+      },
+      "keypad_power_state": {
+        "name": "Rapportert strømtilstand",
+        "state": {
+          "fp": "Full effekt",
+          "lpds": "Dyp dvale"
+        }
+      },
+      "keypad_session_errors": {
+        "name": "Øktfeil"
+      },
+      "keypad_session_state": {
+        "name": "Øktstatus",
+        "state": {
+          "connecting": "Kobler til",
+          "error": "Feil",
+          "idle": "Inaktiv",
+          "streaming": "Strømmer"
+        }
+      },
+      "keypad_startup_time": {
+        "name": "Siste oppstartsvarighet"
+      },
+      "keypad_transport": {
+        "name": "Videooverføring",
+        "state": {
+          "cloud_relay": "Skyrelé",
+          "idle": "Inaktiv",
+          "lan": "Lokalnett",
+          "p2p": "Direkteforbindelse"
+        }
+      }
+    },
+    "camera": {
+      "camera": {
+        "name": "Kamera"
+      }
+    },
+    "button": {
+      "keypad_refresh_power": {
+        "name": "Oppdater batteri- og strømstatus"
+      }
+    }
+  },
+  "exceptions": {
+    "command_failed": {
+      "message": "MyQ-kommandoen for garasjeporten mislyktes."
+    },
+    "camera_image_failed": {
+      "message": "Kunne ikke hente et øyeblikksbilde fra MyQ-kameraet."
+    },
+    "invalid_auth": {
+      "message": "MyQ avviste den lagrede innloggingen. Autentiser kontoen på nytt."
+    },
+    "cannot_connect": {
+      "message": "Kan ikke koble til MyQ."
+    },
+    "api_error": {
+      "message": "Uventet MyQ-feil. Se loggene for mer informasjon."
+    },
+    "update_failed": {
+      "message": "Kan ikke oppdatere MyQ-enheter."
+    },
+    "keypad_power_refresh_failed": {
+      "message": "Kunne ikke oppdatere batteri- og strømstatusen til kodepanelet."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Videooverføring fra kamera",
+        "description": "Krev at video kommer fra kameraets private IP-adresse i lokalnettet. Autorisering og opprettelse av tilkoblingen via skyen er fortsatt nødvendig. Hvis tilkoblingen i lokalnettet ikke er tilgjengelig, mislykkes avspillingen i stedet for å bruke en offentlig tilkoblingskandidat. Endring av dette alternativet lukker aktive kameraøkter. Innstillingen gjelder bare direktevideo; øyeblikksbilder bruker fortsatt skyen.",
+        "data": {
+          "camera_lan_only": "Krev kameravideo kun via lokalnettet"
+        }
+      }
+    }
+  }
+}

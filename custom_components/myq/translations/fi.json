@@ -1,0 +1,228 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Valitse kirjautumistapa",
+        "description": "Suosittelemme automaattista kirjautumista. Voit myös kirjautua selaimella, jos MyQ estää automaattisen kirjautumisen.",
+        "menu_options": {
+          "credentials": "Kirjaudu automaattisesti",
+          "browser_start": "Kirjaudu selaimella"
+        }
+      },
+      "credentials": {
+        "title": "Yhdistä MyQ",
+        "description": "Anna MyQ-tilisi kirjautumistiedot.",
+        "data": {
+          "email": "Sähköposti",
+          "password": "Salasana",
+          "mfa_method": "Vahvistuskoodien toimitustapa"
+        }
+      },
+      "browser_start": {
+        "title": "Kirjaudu selaimella",
+        "description": "Anna MyQ-tilisi sähköpostiosoite. Salasana ja vahvistuskoodi annetaan vain MyQ:n verkkosivustolla.",
+        "data": {
+          "email": "Sähköposti"
+        }
+      },
+      "mfa": {
+        "title": "Vahvistuskoodi",
+        "description": "Anna saamasi kuusinumeroinen vahvistuskoodi.",
+        "data": {
+          "code": "Vahvistuskoodi"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Yhdistä MyQ uudelleen",
+        "description": "Valitse, miten yhdistät tilin {email} uudelleen.",
+        "menu_options": {
+          "reauth_credentials": "Kirjaudu automaattisesti",
+          "browser_start": "Kirjaudu selaimella"
+        }
+      },
+      "reauth_credentials": {
+        "title": "Yhdistä MyQ uudelleen",
+        "description": "Anna tilin {email} nykyinen salasana.",
+        "data": {
+          "password": "Salasana",
+          "mfa_method": "Vahvistuskoodien toimitustapa"
+        }
+      },
+      "reauth_mfa": {
+        "title": "Vahvistuskoodi",
+        "description": "Anna saamasi kuusinumeroinen vahvistuskoodi.",
+        "data": {
+          "code": "Vahvistuskoodi"
+        }
+      },
+      "browser": {
+        "title": "Kirjaudu selaimella",
+        "description": "[Avaa MyQ:n kirjautumissivu]({authorization_url}) selaimessa ja kirjaudu tilillä {email}. Kun selain yrittää avata osoitteen `com.myqops://android`, kopioi koko palautusosoite ja liitä se alle. Jos osoitetta ei näy, paina F12, avaa selaimen konsoli, etsi viesti `Failed to launch 'com.myqops://android?...'` ja kopioi siitä koko osoite. Linkki vanhenee 10 minuutin kuluttua.",
+        "data": {
+          "callback_url": "Palautusosoite"
+        }
+      }
+    },
+    "error": {
+      "authentication_expired": "Kirjautumisistunto on vanhentunut. Aloita uudelleen.",
+      "cannot_connect": "MyQ-yhteyden muodostaminen epäonnistui.",
+      "browser_auth_failed": "MyQ hylkäsi selaimella tehdyn valtuutuksen. Avaa uusi kirjautumislinkki ja yritä uudelleen.",
+      "browser_session_expired": "Selaimen kirjautumisistunto on vanhentunut. Avaa uusi kirjautumislinkki ja yritä uudelleen.",
+      "invalid_auth": "Sähköpostiosoite tai salasana on virheellinen.",
+      "invalid_callback": "Palautusosoite on virheellinen tai kuuluu toiseen kirjautumisyritykseen.",
+      "invalid_mfa": "Vahvistuskoodi on virheellinen tai vanhentunut.",
+      "unknown": "Odottamaton MyQ-virhe. Katso lisätiedot lokeista."
+    },
+    "abort": {
+      "already_configured": "Tämä MyQ-tili on jo määritetty. Lisämäärityksiä ei tarvita.",
+      "cannot_connect": "Tunnistautuminen onnistui, mutta MyQ:n laitehakupalveluun ei saatu yhteyttä.",
+      "no_devices": "Tältä MyQ-tililtä ei löytynyt autotallin ovia tai kameroita.",
+      "reauth_successful": "MyQ yhdistettiin uudelleen.",
+      "unknown": "MyQ palautti odottamattoman vastauksen."
+    }
+  },
+  "selector": {
+    "mfa_method": {
+      "options": {
+        "email": "Sähköposti",
+        "sms": "Tekstiviesti (SMS)"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "door_open": {
+        "name": "Ovi auki"
+      },
+      "vacation_mode": {
+        "name": "Lomatila"
+      },
+      "work_light": {
+        "name": "Työvalo"
+      },
+      "active_fault": {
+        "name": "Aktiivinen vika"
+      },
+      "keypad_session_problem": {
+        "name": "Istunnon ongelma"
+      },
+      "keypad_streaming": {
+        "name": "Videon suoratoisto"
+      }
+    },
+    "cover": {
+      "garage_door": {
+        "name": "Autotallin ovi"
+      }
+    },
+    "sensor": {
+      "battery_backup_state": {
+        "name": "Vara-akun tila",
+        "state": {
+          "charged": "Ladattu"
+        }
+      },
+      "absolute_cycle_count": {
+        "name": "Syklien kokonaismäärä",
+        "unit_of_measurement": "sykliä"
+      },
+      "service_cycle_count": {
+        "name": "Huoltosyklien määrä",
+        "unit_of_measurement": "sykliä"
+      },
+      "last_activation_source": {
+        "name": "Viimeisin aktivointilähde",
+        "state": {
+          "myq_app": "MyQ-sovellus"
+        }
+      },
+      "keypad_active_consumers": {
+        "name": "Aktiiviset videovastaanottajat"
+      },
+      "keypad_battery": {
+        "name": "Akku"
+      },
+      "keypad_credential_renewals": {
+        "name": "Kirjautumistietojen uusimiset"
+      },
+      "keypad_power_sample_time": {
+        "name": "Akun mittausaika"
+      },
+      "keypad_power_state": {
+        "name": "Ilmoitettu virtatila",
+        "state": {
+          "fp": "Täysi teho",
+          "lpds": "Syvä lepotila"
+        }
+      },
+      "keypad_session_errors": {
+        "name": "Istuntovirheet"
+      },
+      "keypad_session_state": {
+        "name": "Istunnon tila",
+        "state": {
+          "connecting": "Yhdistetään",
+          "error": "Virhe",
+          "idle": "Toimeton",
+          "streaming": "Suoratoisto käynnissä"
+        }
+      },
+      "keypad_startup_time": {
+        "name": "Viimeisimmän käynnistyksen kesto"
+      },
+      "keypad_transport": {
+        "name": "Videon siirtotapa",
+        "state": {
+          "cloud_relay": "Pilvivälitys",
+          "idle": "Toimeton",
+          "lan": "Lähiverkko",
+          "p2p": "Vertaisyhteys"
+        }
+      }
+    },
+    "camera": {
+      "camera": {
+        "name": "Kamera"
+      }
+    },
+    "button": {
+      "keypad_refresh_power": {
+        "name": "Päivitä akun ja virransyötön tila"
+      }
+    }
+  },
+  "exceptions": {
+    "command_failed": {
+      "message": "MyQ-autotallin oven komento epäonnistui."
+    },
+    "camera_image_failed": {
+      "message": "MyQ-kameran tilannekuvaa ei voitu hakea."
+    },
+    "invalid_auth": {
+      "message": "MyQ hylkäsi tallennetut kirjautumistiedot. Tunnistaudu tilille uudelleen."
+    },
+    "cannot_connect": {
+      "message": "MyQ-yhteyden muodostaminen epäonnistui."
+    },
+    "api_error": {
+      "message": "Odottamaton MyQ-virhe. Katso lisätiedot lokeista."
+    },
+    "update_failed": {
+      "message": "MyQ-laitteiden päivittäminen epäonnistui."
+    },
+    "keypad_power_refresh_failed": {
+      "message": "Näppäimistön akun ja virransyötön tilan päivittäminen epäonnistui."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Kameran videonsiirto",
+        "description": "Vaadi videon vastaanotto kameran yksityisestä lähiverkon IP-osoitteesta. Valtuutus ja yhteyden muodostaminen pilvipalvelun kautta ovat edelleen tarpeen. Jos lähiverkkoyhteys ei ole käytettävissä, toisto epäonnistuu eikä julkista yhteysehdokasta käytetä. Tämän asetuksen muuttaminen sulkee aktiiviset kameraistunnot. Asetus koskee vain suoraa videota; tilannekuvat haetaan edelleen pilvipalvelusta.",
+        "data": {
+          "camera_lan_only": "Salli kameran video vain lähiverkosta"
+        }
+      }
+    }
+  }
+}

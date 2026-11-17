@@ -25,6 +25,7 @@ from .runtime import (
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 PLATFORMS: tuple[Platform, ...] = (
     Platform.BINARY_SENSOR,
+    Platform.BUTTON,
     Platform.CAMERA,
     Platform.COVER,
     Platform.SENSOR,
@@ -32,7 +33,10 @@ PLATFORMS: tuple[Platform, ...] = (
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: MyQConfigEntry) -> bool:
+    """Validate the account, register platforms and persist refreshed credentials."""
     data = cast(MyQConfigData, entry.data)
+
+    coordinator: MyQDataUpdateCoordinator | None = None
 
     @callback
     def async_store_tokens(tokens: OAuthTokens) -> None:
@@ -40,6 +44,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyQConfigEntry) -> bool:
             entry,
             data={**entry.data, CONF_TOKENS: tokens_to_data(tokens)},
         )
+
+        if coordinator is not None:
+            coordinator.async_keypad_token_refreshed()
 
     try:
         token_data = cast(Mapping[str, object], data[CONF_TOKENS])
@@ -51,6 +58,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyQConfigEntry) -> bool:
         client = MyQClient(async_get_clientsession(hass), auth)
         coordinator = MyQDataUpdateCoordinator(hass, entry, client)
         await coordinator.async_config_entry_first_refresh()
+        await coordinator.async_load_keypad_state()
     except MyQAuthenticationError as error:
         raise ConfigEntryAuthFailed(
             translation_domain=DOMAIN,
@@ -84,4 +92,5 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyQConfigEntry) -> bool:
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: MyQConfigEntry) -> bool:
+    """Unload all entity platforms belonging to the account."""
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)

@@ -14,6 +14,8 @@ if TYPE_CHECKING:
 
 
 class MyQConfigData(TypedDict):
+    """Persisted account identity, verification method and OAuth credentials."""
+
     email: str
     mfa_method: str
     tokens: StoredTokens
@@ -24,6 +26,8 @@ type MyQCoordinatorData = dict[str, GarageDoor]
 
 @dataclass(frozen=True, slots=True)
 class MyQRuntimeData:
+    """The client and shared coordinator owned by one loaded account entry."""
+
     client: MyQClient
     coordinator: MyQDataUpdateCoordinator
 
@@ -32,6 +36,7 @@ type MyQConfigEntry = ConfigEntry[MyQRuntimeData]
 
 
 def tokens_to_data(tokens: OAuthTokens) -> StoredTokens:
+    """Serialize credentials using the configuration entry token schema."""
     return StoredTokens(
         access_token=tokens.access_token,
         refresh_token=tokens.refresh_token,
@@ -40,6 +45,7 @@ def tokens_to_data(tokens: OAuthTokens) -> StoredTokens:
 
 
 def tokens_from_data(data: Mapping[str, object]) -> OAuthTokens:
+    """Validate persisted token fields before constructing runtime credentials."""
     access_token = data.get("access_token")
     refresh_token = data.get("refresh_token")
     expires_at = data.get("expires_at")

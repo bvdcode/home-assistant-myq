@@ -21,6 +21,7 @@ from .const import (
     USER_AGENT,
 )
 from .exceptions import MyQApiError, MyQAuthenticationError
+from .keypad_state import KeypadPower
 from .keypad_wake import async_wake_keypad
 from .models import GarageDoor, MyQAccount, MyQCamera, MyQDevices
 from .oauth import MyQAuth
@@ -30,6 +31,8 @@ type HeadersFn = Callable[[str], dict[str, str]]
 
 
 class MyQClient:
+    """Access account devices and camera metadata with shared OAuth and cooldowns."""
+
     def __init__(self, session: ClientSession, auth: MyQAuth) -> None:
         self._session = session
         self._auth = auth
@@ -44,14 +47,14 @@ class MyQClient:
 
     async def async_prepare_keypad(self, camera: MyQCamera) -> str | None:
         """Prepare only a battery keypad, retaining this client's refresh ownership."""
-        if camera.device_model != "vkp-camera":
+        if not camera.is_video_keypad:
             return None
 
         async def request(method: str, url: str, body: dict[str, object] | None) -> bytes:
             return await self._async_request(
                 method,
                 url,
-                lambda token: {**_api_headers(token), **_tend_headers(token)},
+                _metadata_headers,
                 json_body=body,
                 allow_redirects=False,
                 max_body_bytes=1_024_000,
@@ -117,9 +120,11 @@ class MyQClient:
         )
 
     async def async_open_door(self, door: GarageDoor) -> None:
+        """Request opening for the door in its owning account."""
         await self._async_command(door, "open")
 
     async def async_close_door(self, door: GarageDoor) -> None:
+        """Request closing for the door in its owning account."""
         await self._async_command(door, "close")
 
     async def async_get_camera_image(self, camera: MyQCamera) -> bytes:
@@ -133,11 +138,33 @@ class MyQClient:
             raise MyQApiError("Tend returned a camera snapshot that is not a JPEG")
         return image
 
+    async def _async_camera_metadata(self, camera: MyQCamera) -> dict[str, object]:
+        if not camera.tend_device_id.isdecimal():
+            raise MyQApiError("Invalid camera video identifier")
+        payload = await self._async_request_json(
+            "GET",
+            f"{TEND_API_BASE_URL}/devices/{camera.tend_device_id}",
+            _metadata_headers,
+            bounded=True,
+        )
+        if payload.get("id") != camera.tend_device_id:
+            raise MyQApiError("Tend returned a different camera identity")
+        return payload
+
+    async def async_get_keypad_power(self, camera: MyQCamera) -> KeypadPower:
+        """Read this keypad's reported power with one explicit metadata GET."""
+        if not camera.is_video_keypad:
+            raise MyQApiError("Camera is not a Video Keypad")
+        async with asyncio.timeout(15):
+            metadata = await self._async_camera_metadata(camera)
+        try:
+            return KeypadPower.from_device(metadata)
+        except ValueError:
+            raise MyQApiError("Keypad returned an invalid power report") from None
+
     async def async_get_camera_alias(self, camera: MyQCamera) -> str:
         """Resolve one camera's signaling destination from its Tend device ID."""
-        payload = await self._async_request_json(
-            "GET", f"{TEND_API_BASE_URL}/devices/{camera.tend_device_id}", _tend_headers
-        )
+        payload = await self._async_camera_metadata(camera)
         return _camera_alias(camera, payload)
 
     async def _async_get_account_devices(
@@ -185,9 +212,15 @@ class MyQClient:
         await self._async_request("PUT", url)
 
     async def _async_request_json(
-        self, method: str, url: str, headers: HeadersFn | None = None
+        self, method: str, url: str, headers: HeadersFn | None = None, *, bounded: bool = False
     ) -> dict[str, object]:
-        body = await self._async_request(method, url, headers)
+        body = (
+            await self._async_request(
+                method, url, headers, allow_redirects=False, max_body_bytes=1_024_000
+            )
+            if bounded
+            else await self._async_request(method, url, headers)
+        )
         try:
             parsed = json.loads(body)
         except (UnicodeDecodeError, json.JSONDecodeError) as error:
@@ -341,3 +374,7 @@ def _tend_headers(access_token: str) -> dict[str, str]:
         "SeedonkLocale": TEND_LOCALE,
         "partnerId": TEND_PARTNER_ID,
     }
+
+
+def _metadata_headers(access_token: str) -> dict[str, str]:
+    return {**_api_headers(access_token), **_tend_headers(access_token)}

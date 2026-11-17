@@ -102,6 +102,12 @@
       },
       "active_fault": {
         "name": "Aktivní porucha"
+      },
+      "keypad_streaming": {
+        "name": "Přenos videa"
+      },
+      "keypad_session_problem": {
+        "name": "Problém s relací"
       }
     },
     "cover": {
@@ -111,21 +117,77 @@
     },
     "sensor": {
       "battery_backup_state": {
-        "name": "Stav záložní baterie"
+        "name": "Stav záložní baterie",
+        "state": {
+          "charged": "Nabito"
+        }
       },
       "absolute_cycle_count": {
-        "name": "Celkový počet cyklů"
+        "name": "Celkový počet cyklů",
+        "unit_of_measurement": "cykly"
       },
       "service_cycle_count": {
-        "name": "Cykly od servisu"
+        "name": "Cykly od servisu",
+        "unit_of_measurement": "cykly"
       },
       "last_activation_source": {
-        "name": "Zdroj poslední aktivace"
+        "name": "Zdroj poslední aktivace",
+        "state": {
+          "myq_app": "Aplikace MyQ"
+        }
+      },
+      "keypad_battery": {
+        "name": "Baterie"
+      },
+      "keypad_power_state": {
+        "name": "Hlášený stav napájení",
+        "state": {
+          "fp": "Plný výkon",
+          "lpds": "Hluboký spánek"
+        }
+      },
+      "keypad_power_sample_time": {
+        "name": "Čas měření baterie"
+      },
+      "keypad_session_state": {
+        "name": "Stav relace",
+        "state": {
+          "idle": "Nečinný",
+          "connecting": "Připojování",
+          "streaming": "Přenos videa",
+          "error": "Chyba"
+        }
+      },
+      "keypad_session_errors": {
+        "name": "Chyby relace"
+      },
+      "keypad_startup_time": {
+        "name": "Doba posledního spuštění"
+      },
+      "keypad_active_consumers": {
+        "name": "Aktivní odběratelé videa"
+      },
+      "keypad_credential_renewals": {
+        "name": "Obnovení přihlašovacích údajů"
+      },
+      "keypad_transport": {
+        "name": "Přenos videa",
+        "state": {
+          "idle": "Nečinný",
+          "lan": "Místní síť",
+          "p2p": "Přímé spojení",
+          "cloud_relay": "Přenos přes cloud"
+        }
       }
     },
     "camera": {
       "camera": {
         "name": "Kamera"
+      }
+    },
+    "button": {
+      "keypad_refresh_power": {
+        "name": "Aktualizovat stav baterie a napájení"
       }
     }
   },
@@ -135,6 +197,21 @@
     },
     "camera_image_failed": {
       "message": "Snímek z kamery MyQ se nepodařilo načíst."
+    },
+    "invalid_auth": {
+      "message": "MyQ odmítlo uložené přihlášení. Znovu ověřte účet."
+    },
+    "cannot_connect": {
+      "message": "Nelze se připojit k MyQ."
+    },
+    "api_error": {
+      "message": "Neočekávaná chyba MyQ. Podrobnosti najdete v protokolech."
+    },
+    "update_failed": {
+      "message": "Údaje zařízení MyQ se nepodařilo aktualizovat."
+    },
+    "keypad_power_refresh_failed": {
+      "message": "Stav baterie a napájení klávesnice se nepodařilo aktualizovat."
     }
   },
   "options": {

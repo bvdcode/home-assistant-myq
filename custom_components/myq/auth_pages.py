@@ -15,6 +15,8 @@ from .exceptions import (
 
 @dataclass(frozen=True, slots=True)
 class HttpPage:
+    """An identity-provider response needed for redirects and form parsing."""
+
     url: str
     status: int
     location: str | None
@@ -23,6 +25,8 @@ class HttpPage:
 
 @dataclass(frozen=True, slots=True)
 class MfaForm:
+    """The verification endpoint and fields for a pending MFA challenge."""
+
     page_url: str
     action: str
     fields: dict[str, str]

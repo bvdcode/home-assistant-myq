@@ -94,3 +94,20 @@ def test_receiver_report_counts_each_full_sequence_cycle_once(
     assert struct.unpack_from(">I", report, 16)[0] == 131074
     assert int.from_bytes(report[13:16], "big", signed=True) == -2
     assert report[12] == 0
+
+
+def test_reported_transport_uses_actual_media_sender(transport: VideoTransport) -> None:
+    from unittest.mock import MagicMock
+
+    transport._relay_ip = "203.0.113.8"
+    transport.channels = [MagicMock(), MagicMock()]
+    assert transport.media_path == "unknown"
+    transport.on_datagram(False, bytes(8), ("198.51.100.9", 5001))
+    assert transport.media_path == "unknown"
+    transport.on_datagram(False, bytes(8), (transport.camera.local_ip, 5001))
+    assert transport.media_path == "lan"
+    transport.on_datagram(False, bytes(8), (transport._relay_ip, 5001))
+    assert transport.media_path == "cloud_relay"
+    transport._camera_ips.add("198.51.100.9")
+    transport.on_datagram(False, bytes(8), ("198.51.100.9", 5001))
+    assert transport.media_path == "p2p"
