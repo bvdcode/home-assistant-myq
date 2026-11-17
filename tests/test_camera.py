@@ -72,6 +72,8 @@ async def test_live_stream_is_available_only_for_tc_camera() -> None:
             coordinator.client.async_access_token,
             lan_only=False,
             fallback_target_supplier=tc_entity._async_camera_target,
+            on_diagnostic=None,
+            prepare_on_disconnect=False,
         )
         assert (await tc_entity._async_stream_target()).opener_serial == "door-1"
         coordinator.client.async_get_camera_alias.assert_not_called()
@@ -386,6 +388,8 @@ async def test_camera_passes_lan_only_option_to_shared_stream() -> None:
             coordinator.client.async_access_token,
             lan_only=True,
             fallback_target_supplier=entity._async_camera_target,
+            on_diagnostic=None,
+            prepare_on_disconnect=False,
         )
 
 

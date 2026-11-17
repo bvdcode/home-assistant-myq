@@ -223,6 +223,7 @@ async def test_keypad_idle_source_and_snapshot_then_exact_alias_when_power_respo
     with patch("custom_components.myq.camera.TendLiveStream") as factory:
         factory.return_value.source_url = AsyncMock(return_value="http://127.0.0.1/video")
         await entity.stream_source()
+        assert factory.call_args.kwargs["prepare_on_disconnect"] is True
     assert await entity.async_camera_image() == IMAGE
     coordinator.client.async_prepare_keypad.assert_not_awaited()
     assert await entity._async_stream_target() == TendCameraTarget(destination="account:mac1")

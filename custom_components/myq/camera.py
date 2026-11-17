@@ -169,7 +169,8 @@ class MyQCameraEntity(CoordinatorEntity[MyQDataUpdateCoordinator], Camera):
                 )
                 if self.coordinator.config_entry
                 else False,
-                **({"on_diagnostic": self._runtime_diagnostic} if camera.is_video_keypad else {}),
+                on_diagnostic=self._runtime_diagnostic if camera.is_video_keypad else None,
+                prepare_on_disconnect=camera.is_video_keypad,
             )
         return await self._live_stream.source_url()
 

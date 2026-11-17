@@ -73,6 +73,7 @@ class TendLiveStream:
         token_supplier: Callable[[], Awaitable[str]],
         *,
         on_diagnostic: Callable[[str, str | int | float | None], None] | None = None,
+        prepare_on_disconnect: bool = False,
         lan_only: bool = False,
         fallback_target_supplier: CameraTargetSupplier | None = None,
     ) -> None:
@@ -81,6 +82,7 @@ class TendLiveStream:
         self._first_frame_started: float | None = None
         self._target_supplier = target_supplier
         self._target_task: asyncio.Future[TendCameraTarget] | None = None
+        self._prepare_on_disconnect = prepare_on_disconnect
         self._fallback_target_supplier = fallback_target_supplier
         self._lan_only = lan_only
         self._token_supplier = token_supplier
@@ -174,7 +176,8 @@ class TendLiveStream:
             return viewer
 
     async def _prepare_target(self) -> TendCameraTarget:
-        self._target_task = asyncio.ensure_future(self._target_supplier())
+        if self._target_task is None:
+            self._target_task = asyncio.ensure_future(self._target_supplier())
         try:
             return await self._target_task
         except (ClientError, MyQError, OSError) as error:
@@ -184,6 +187,22 @@ class TendLiveStream:
             raise TendStreamError(f"Camera could not prepare for live video: {reason}") from None
         finally:
             self._target_task = None
+
+    def _prepare_after_disconnect(self) -> None:
+        if (
+            self._prepare_on_disconnect
+            and self._viewers
+            and self._session is not None
+            and self._session.ended
+            and self._target_task is None
+        ):
+            self._target_task = asyncio.ensure_future(self._target_supplier())
+
+    async def _cancel_preparation(self) -> None:
+        if self._target_task is not None:
+            target_task, self._target_task = self._target_task, None
+            target_task.cancel()
+            await asyncio.gather(target_task, return_exceptions=True)
 
     def _report_media_path(self) -> None:
         if self._on_diagnostic is not None and self._session is not None:
@@ -196,6 +215,7 @@ class TendLiveStream:
         if not frame:
             if not self._closed and self._session is not None:
                 self._report("error", "VideoEnded")
+                self._prepare_after_disconnect()
             for viewer in self._viewers:
                 viewer.end()
             return
@@ -262,7 +282,7 @@ class TendLiveStream:
         self._report("consumers", len(self._viewers))
         if not self._viewers and not self._closed:
             delay = _IDLE_SECONDS
-            if self._session is not None and self._session.ended:
+            if self._session is not None and self._session.ended and self._target_task is None:
                 delay = 0
             self._idle_timer = asyncio.get_running_loop().call_later(delay, self._start_idle_close)
 
@@ -273,6 +293,7 @@ class TendLiveStream:
     async def _close_if_idle(self) -> None:
         async with self._session_lock:
             if not self._viewers:
+                await self._cancel_preparation()
                 await self._close_session()
 
     async def _close_session(self) -> None:
@@ -305,6 +326,7 @@ class TendLiveStream:
                     await self._runner.cleanup()
                     self._runner = None
         finally:
+            await self._cancel_preparation()
             if self._idle_task is not None:
                 await self._idle_task
             async with self._session_lock:
