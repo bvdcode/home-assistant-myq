@@ -139,7 +139,7 @@ async def test_unsupported_authentication_starts_browser_sign_in(
         "email": EMAIL,
     }
     assert (
-        "custom_components.myq.config_flow",
+        "custom_components.myq.sign_in",
         logging.WARNING,
         "Automatic MyQ authentication could not continue during login; "
         f"offering browser sign-in: {error_type.__name__}: {detail}",
@@ -214,7 +214,7 @@ async def test_browser_fallback_logs_response_context_without_response_contents(
     assert result["step_id"] == "browser"
     stage = "MFA verification" if during_mfa else "login"
     assert (
-        "custom_components.myq.config_flow",
+        "custom_components.myq.sign_in",
         logging.WARNING,
         f"Automatic MyQ authentication could not continue during {stage}; "
         f"offering browser sign-in: {reason}",
@@ -368,7 +368,7 @@ async def test_unsupported_screen_after_mfa_starts_browser_sign_in(
     assert result["step_id"] == "browser"
     mock_login_session.start_browser.assert_called_once_with()
     assert (
-        "custom_components.myq.config_flow",
+        "custom_components.myq.sign_in",
         logging.WARNING,
         "Automatic MyQ authentication could not continue during MFA verification; "
         f"offering browser sign-in: {error_type.__name__}",

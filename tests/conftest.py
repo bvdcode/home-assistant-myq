@@ -16,7 +16,7 @@ def auto_enable_custom_integrations(
 @pytest.fixture
 def mock_login_session() -> Generator[MagicMock]:
     with (
-        patch("custom_components.myq.config_flow.MyQLoginSession") as login_class,
+        patch("custom_components.myq.sign_in.MyQLoginSession") as login_class,
         patch("custom_components.myq.config_flow.async_create_clientsession") as create_session,
     ):
         session = create_session.return_value
