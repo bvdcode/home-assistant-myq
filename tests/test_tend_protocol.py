@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import struct
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -98,11 +98,13 @@ def test_tend_video_payload_decrypts_h264_record() -> None:
         frames.append,
     )
     rtp = b"\x80\x60" + struct.pack(">HII", 7, 1000, 123) + payload
-    transport._handle_media(struct.pack("<II", 1, 0) + rtp[:12])
-    transport._handle_media(struct.pack("<II", 1, 1) + rtp[12:])
-    transport._handle_media(struct.pack("<II", 2, 0) + b"next")
+    transport.channels = [_Channel(MagicMock(), 20000, False), _Channel(MagicMock(), 20001, True)]
+    peer = ("192.168.1.20", 9808)
+    transport.on_datagram(False, struct.pack("<II", 1, 0) + rtp[:12], peer)
+    transport.on_datagram(False, struct.pack("<II", 1, 1) + rtp[12:], peer)
+    transport.on_datagram(False, struct.pack("<II", 2, 0) + b"next", peer)
     assert frames == [frame]
-    report = transport._receiver_report()
+    report = transport._receiver.report()
     assert report is not None
     assert report[:2] == b"\x81\xc9"
 
@@ -163,19 +165,20 @@ def test_video_transport_ignores_datagrams_from_unknown_hosts() -> None:
     announced[20:24] = bytes((198, 51, 100, 7))
     struct.pack_into(">H", announced, 40, 9808)
 
-    stranger = ("192.168.1.99", 9808)
-    transport.on_datagram(False, bytes(announced), stranger)
-    transport.on_datagram(False, _sdnk(5, b"\x01"), stranger)
-    transport.on_datagram(False, media, stranger)
-    transport.on_datagram(False, _sdnk(5, b"\x01"), ("198.51.100.7", 9808))
-    assert transport.channels[0].peer is None
-    assert transport._fragments == []
+    with patch.object(transport._frames, "receive") as media_receiver:
+        stranger = ("192.168.1.99", 9808)
+        transport.on_datagram(False, bytes(announced), stranger)
+        transport.on_datagram(False, _sdnk(5, b"\x01"), stranger)
+        transport.on_datagram(False, media, stranger)
+        transport.on_datagram(False, _sdnk(5, b"\x01"), ("198.51.100.7", 9808))
+        assert transport.channels[0].peer is None
+        media_receiver.assert_not_called()
 
-    transport.on_datagram(False, bytes(announced), ("203.0.113.5", 30000))
-    transport.on_datagram(False, _sdnk(5, b"\x01"), ("198.51.100.7", 9808))
-    assert transport.channels[0].connected
-    transport.on_datagram(False, media, ("192.168.1.20", 9808))
-    assert transport._fragments == [bytes(16)]
+        transport.on_datagram(False, bytes(announced), ("203.0.113.5", 30000))
+        transport.on_datagram(False, _sdnk(5, b"\x01"), ("198.51.100.7", 9808))
+        assert transport.channels[0].connected
+        transport.on_datagram(False, media, ("192.168.1.20", 9808))
+        media_receiver.assert_called_once_with(media)
 
 
 @pytest.mark.parametrize(

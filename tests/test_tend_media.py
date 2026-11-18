@@ -1,10 +1,12 @@
-"""Check RTP sequence tracking and receiver reports."""
+"""Check video transport routing and control packets."""
 
+import asyncio
 import struct
+from unittest.mock import AsyncMock, MagicMock, call, patch
 
 import pytest
 
-from custom_components.myq.tend_media import VideoTransport
+from custom_components.myq.tend_media import VideoTransport, _Channel
 from custom_components.myq.tend_protocol import TendCamera, VideoOffer
 
 
@@ -17,88 +19,7 @@ def transport() -> VideoTransport:
     )
 
 
-def _rtp(sequence: int, ssrc: int = 123) -> bytes:
-    return b"\x80\x60" + struct.pack(">HII", sequence, 1000, ssrc)
-
-
-@pytest.mark.parametrize(
-    ("sequences", "extended_max", "lost", "fraction"),
-    [
-        ((100, 101, 102), 102, 0, 0),
-        ((100, 102, 101, 103), 103, 0, 0),
-        ((100, 101, 101, 102), 102, -1, 0),
-        ((65534, 65535, 0, 1), 65537, 0, 0),
-        ((65534, 0, 65535, 1), 65537, 0, 0),
-        ((65534, 65535, 0, 65535, 1), 65537, -1, 0),
-        ((65534, 0, 1), 65537, 1, 64),
-    ],
-)
-def test_receiver_report_tracks_reordered_and_duplicate_packets(
-    transport: VideoTransport,
-    sequences: tuple[int, ...],
-    extended_max: int,
-    lost: int,
-    fraction: int,
-) -> None:
-    for sequence in sequences:
-        transport._observe_rtp(_rtp(sequence))
-    report = transport._receiver_report()
-    assert report is not None
-    assert struct.unpack_from(">I", report, 16)[0] == extended_max
-    assert int.from_bytes(report[13:16], "big", signed=True) == lost
-    assert report[12] == fraction
-
-
-def test_receiver_report_recovers_after_late_packet_between_reports(
-    transport: VideoTransport,
-) -> None:
-    for sequence in (65534, 0):
-        transport._observe_rtp(_rtp(sequence))
-    first = transport._receiver_report()
-    assert first is not None
-    assert int.from_bytes(first[13:16], "big", signed=True) == 1
-
-    for sequence in (65535, 1):
-        transport._observe_rtp(_rtp(sequence))
-    second = transport._receiver_report()
-    assert second is not None
-    assert struct.unpack_from(">I", second, 16)[0] == 65537
-    assert int.from_bytes(second[13:16], "big", signed=True) == 0
-    assert second[12] == 0
-
-
-def test_receiver_report_resets_for_new_source(transport: VideoTransport) -> None:
-    for sequence in (65534, 0, 65535, 1):
-        transport._observe_rtp(_rtp(sequence))
-    assert transport._receiver_report() is not None
-
-    for sequence in (50, 51):
-        transport._observe_rtp(_rtp(sequence, ssrc=456))
-    report = transport._receiver_report()
-    assert report is not None
-    assert struct.unpack_from(">I", report, 8)[0] == 456
-    assert struct.unpack_from(">I", report, 16)[0] == 51
-    assert int.from_bytes(report[13:16], "big", signed=True) == 0
-    assert report[12] == 0
-
-
-def test_receiver_report_counts_each_full_sequence_cycle_once(
-    transport: VideoTransport,
-) -> None:
-    for sequence in range(65534, 131075):
-        transport._observe_rtp(_rtp(sequence % 65536))
-        if sequence in (65536, 131072):
-            transport._observe_rtp(_rtp(65535))
-    report = transport._receiver_report()
-    assert report is not None
-    assert struct.unpack_from(">I", report, 16)[0] == 131074
-    assert int.from_bytes(report[13:16], "big", signed=True) == -2
-    assert report[12] == 0
-
-
 def test_reported_transport_uses_actual_media_sender(transport: VideoTransport) -> None:
-    from unittest.mock import MagicMock
-
     transport._relay_ip = "203.0.113.8"
     transport.channels = [MagicMock(), MagicMock()]
     assert transport.media_path == "unknown"
@@ -111,3 +32,39 @@ def test_reported_transport_uses_actual_media_sender(transport: VideoTransport) 
     transport._camera_ips.add("198.51.100.9")
     transport.on_datagram(False, bytes(8), ("198.51.100.9", 5001))
     assert transport.media_path == "p2p"
+
+
+async def test_transport_sends_reports_and_goodbye_on_the_control_channel(
+    transport: VideoTransport,
+) -> None:
+    media = MagicMock(spec=asyncio.DatagramTransport)
+    control = MagicMock(spec=asyncio.DatagramTransport)
+    media_peer = (transport.camera.local_ip, 5000)
+    control_peer = (transport.camera.local_ip, 5001)
+    transport.channels = [
+        _Channel(media, 40000, False, peer=media_peer),
+        _Channel(control, 40001, True, peer=control_peer),
+    ]
+    rtp = b"\x80\x60" + struct.pack(">HII", 7, 1000, 123)
+    transport.on_datagram(False, struct.pack("<II", 1, 0) + rtp, media_peer)
+    transport.on_datagram(False, struct.pack("<II", 2, 0) + b"next", media_peer)
+    with patch(
+        "custom_components.myq.tend_media.asyncio.sleep",
+        new=AsyncMock(side_effect=[None, asyncio.CancelledError]),
+    ) as sleep:
+        await transport._report_loop()
+    assert sleep.await_args_list == [call(2.0), call(2.0)]
+    control.sendto.assert_called_once()
+    report, peer = control.sendto.call_args.args
+    assert report[:4] == b"\x81\xc9\x00\x07"
+    assert struct.unpack_from(">I", report, 8)[0] == 123
+    assert peer == control_peer
+    media.sendto.assert_not_called()
+
+    transport.close()
+    transport.close()
+
+    bye = b"\x81\xcb\x00\x01" + report[4:8]
+    assert control.sendto.call_args_list[1:] == [call(bye, control_peer), call(bye, control_peer)]
+    media.close.assert_called_once_with()
+    control.close.assert_called_once_with()
