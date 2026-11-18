@@ -18,6 +18,10 @@ class MyQCloudflareChallengeError(MyQError):
     """Automatic sign-in encountered an interactive browser challenge."""
 
 
+class MyQAuthorizationDeniedError(MyQError):
+    """The authorization endpoint refused the sign-in request."""
+
+
 class MyQBrowserSessionExpiredError(MyQError):
     """Browser authorization expired or its callback was already consumed."""
 

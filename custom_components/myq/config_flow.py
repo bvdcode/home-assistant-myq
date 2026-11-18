@@ -41,6 +41,7 @@ from .const import (
 )
 from .exceptions import (
     MyQAuthenticationError,
+    MyQAuthorizationDeniedError,
     MyQBrowserSessionExpiredError,
     MyQCloudflareChallengeError,
     MyQError,
@@ -277,7 +278,11 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         except MyQInvalidCredentialsError:
             self._close_login()
             return LoginAttempt(error="invalid_auth")
-        except (MyQCloudflareChallengeError, MyQUnsupportedAuthPageError) as error:
+        except (
+            MyQAuthorizationDeniedError,
+            MyQCloudflareChallengeError,
+            MyQUnsupportedAuthPageError,
+        ) as error:
             return self._browser_fallback(error, step="login")
         except ClientError, TimeoutError:
             self._close_login()
@@ -313,7 +318,11 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             tokens = await self._required_login().async_submit_mfa(code)
         except MyQInvalidMfaError:
             return LoginAttempt(error="invalid_mfa")
-        except (MyQCloudflareChallengeError, MyQUnsupportedAuthPageError) as error:
+        except (
+            MyQAuthorizationDeniedError,
+            MyQCloudflareChallengeError,
+            MyQUnsupportedAuthPageError,
+        ) as error:
             return self._browser_fallback(error, step="MFA verification")
         except ClientError, TimeoutError:
             return LoginAttempt(error="cannot_connect")
@@ -384,7 +393,9 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     def _browser_fallback(
         self,
-        error: MyQCloudflareChallengeError | MyQUnsupportedAuthPageError,
+        error: MyQAuthorizationDeniedError
+        | MyQCloudflareChallengeError
+        | MyQUnsupportedAuthPageError,
         *,
         step: str,
     ) -> LoginAttempt:
