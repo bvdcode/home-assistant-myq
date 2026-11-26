@@ -192,6 +192,22 @@
       "keypad_refresh_power": {
         "name": "Batterij- en voedingsstatus vernieuwen"
       }
+    },
+    "switch": {
+      "lockmode": {
+        "name": "Afstandsbedieningen blokkeren"
+      },
+      "worklight_settings": {
+        "name": "Verlichting bij beweging"
+      }
+    },
+    "number": {
+      "timetoclose": {
+        "name": "Timer voor automatisch sluiten"
+      },
+      "lighttimer": {
+        "name": "Verlichtingsduur"
+      }
     }
   },
   "exceptions": {

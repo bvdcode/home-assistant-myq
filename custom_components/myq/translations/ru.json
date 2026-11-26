@@ -192,6 +192,22 @@
       "keypad_refresh_power": {
         "name": "Обновить состояние батареи и питания"
       }
+    },
+    "switch": {
+      "lockmode": {
+        "name": "Блокировка пультов"
+      },
+      "worklight_settings": {
+        "name": "Включение подсветки при движении"
+      }
+    },
+    "number": {
+      "timetoclose": {
+        "name": "Таймер автозакрытия"
+      },
+      "lighttimer": {
+        "name": "Длительность подсветки"
+      }
     }
   },
   "exceptions": {

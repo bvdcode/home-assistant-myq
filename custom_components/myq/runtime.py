@@ -11,6 +11,7 @@ from .models import GarageDoor, OAuthTokens, StoredTokens
 if TYPE_CHECKING:
     from .client import MyQClient
     from .coordinator import MyQDataUpdateCoordinator
+    from .settings_coordinator import OpenerSettingsCoordinator
 
 
 class MyQConfigData(TypedDict):
@@ -30,6 +31,7 @@ class MyQRuntimeData:
 
     client: MyQClient
     coordinator: MyQDataUpdateCoordinator
+    settings: OpenerSettingsCoordinator
 
 
 type MyQConfigEntry = ConfigEntry[MyQRuntimeData]

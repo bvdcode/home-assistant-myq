@@ -192,6 +192,22 @@
       "keypad_refresh_power": {
         "name": "Refresh battery and power"
       }
+    },
+    "switch": {
+      "lockmode": {
+        "name": "Remote control lockout"
+      },
+      "worklight_settings": {
+        "name": "Motion-activated work light"
+      }
+    },
+    "number": {
+      "timetoclose": {
+        "name": "Auto-close timer"
+      },
+      "lighttimer": {
+        "name": "Work light duration"
+      }
     }
   },
   "exceptions": {

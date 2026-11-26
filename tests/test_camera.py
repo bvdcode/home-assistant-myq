@@ -248,6 +248,7 @@ async def test_setup_adds_camera_only_for_doors_with_cameras(hass: HomeAssistant
     entry.add_to_hass(hass)
     other_door = replace(DOOR, serial_number="door-2", name="Side garage", camera=None)
     client = MagicMock()
+    client.async_read_opener_setting = AsyncMock(return_value=None)
     client.async_get_devices = AsyncMock(return_value=MyQDevices((DOOR, other_door)))
     client.async_get_camera_image = AsyncMock(return_value=IMAGE)
 
@@ -325,6 +326,7 @@ async def test_webrtc_is_restored_when_camera_becomes_available(
         DOOR, online=opener_online, camera=replace(DOOR.camera, online=camera_online)
     )
     client = MagicMock()
+    client.async_read_opener_setting = AsyncMock(return_value=None)
     client.async_get_devices = AsyncMock(return_value=MyQDevices((offline_door,)))
 
     with (

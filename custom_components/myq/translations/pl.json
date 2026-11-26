@@ -192,6 +192,22 @@
       "keypad_refresh_power": {
         "name": "Odśwież stan baterii i zasilania"
       }
+    },
+    "switch": {
+      "lockmode": {
+        "name": "Blokada pilotów"
+      },
+      "worklight_settings": {
+        "name": "Oświetlenie włączane ruchem"
+      }
+    },
+    "number": {
+      "timetoclose": {
+        "name": "Czas do automatycznego zamknięcia"
+      },
+      "lighttimer": {
+        "name": "Czas świecenia"
+      }
     }
   },
   "exceptions": {

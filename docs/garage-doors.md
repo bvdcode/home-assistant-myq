@@ -29,3 +29,19 @@ After failed background updates, retries wait four, eight and then 15 minutes.
 MyQ can request a longer delay. A successful update restores the usual interval.
 If you disable polling in Home Assistant's system options, commands leave the
 last confirmed state on screen until you request a manual update.
+
+## Opener settings
+
+Supported settings appear under **Configuration** on the opener’s device page.
+
+- **Remote control lockout** enables or disables remote controls. The existing
+  **Vacation mode** sensor reports the mode independently.
+- **Auto-close timer** sets the delay from 1 to 99 minutes. Set it to 0 to turn
+  automatic closing off.
+- **Work light duration** accepts 90, 150, 210 or 270 seconds.
+- **Motion-activated work light** controls whether motion turns on the light.
+  The **Work light** binary sensor shows whether the lamp is currently on.
+
+The integration checks supported settings at startup. It rereads settings every
+12 hours and after a change from Home Assistant. Door movement uses a separate
+polling schedule.

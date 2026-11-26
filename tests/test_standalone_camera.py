@@ -98,6 +98,7 @@ async def test_setup_preserves_devices_and_updates_cameras_without_extra_polling
             await stored.close()
         restored_at = stored.captured_at
     client = MagicMock()
+    client.async_read_opener_setting = AsyncMock(return_value=None)
     doors = (DOOR,) if with_door else ()
     client.async_get_devices = AsyncMock(
         return_value=MyQDevices(doors, (ATTACHED, FIRST, SECOND) if with_door else (FIRST, SECOND))
