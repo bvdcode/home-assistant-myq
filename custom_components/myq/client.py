@@ -23,11 +23,12 @@ from .const import (
     USER_AGENT,
 )
 from .discovery import parse_garage_door, parse_light
-from .exceptions import MyQApiError, MyQAuthenticationError
+from .exceptions import MyQApiError, MyQAuthenticationError, MyQUnsupportedDeviceError
 from .keypad_state import KeypadPower
 from .keypad_wake import async_wake_keypad
 from .models import GarageDoor, MyQAccount, MyQCamera, MyQDevices, MyQLight
 from .oauth import MyQAuth
+from .opener_settings import REMOTE_TYPES, OpenerSetting
 from .request_limits import RequestCooldown
 
 type HeadersFn = Callable[[str], dict[str, str]]
@@ -229,12 +230,40 @@ class MyQClient:
             lights=tuple(lights),
         )
 
-    async def _async_command(self, door: GarageDoor, command: str) -> None:
-        url = (
-            f"{GARAGE_DEVICES_BASE_URL}/api/v6.0/accounts/{door.account_id}/"
-            f"door_openers/{door.serial_number}/{command}"
+    async def async_read_opener_setting(
+        self, door: GarageDoor, setting: OpenerSetting
+    ) -> int | bool | None:
+        """Read one setting, returning None for devices without the capability."""
+        if setting is OpenerSetting.LOCK_MODE and door.in_vacation_mode is None:
+            return None
+        path = "accessories" if setting is OpenerSetting.LOCK_MODE else setting.value
+        async with asyncio.timeout(15):
+            payload = await self._async_request_json("GET", _opener_url(door, path), bounded=True)
+        if setting is OpenerSetting.LOCK_MODE:
+            remotes = payload.get("gdo_transmitter_names")
+            if isinstance(remotes, list) and any(
+                isinstance(remote, dict)
+                and isinstance(remote_type := remote.get("transmitter_type"), str)
+                and remote_type in REMOTE_TYPES
+                for remote in remotes
+            ):
+                return door.in_vacation_mode
+            return None
+        return setting.read(payload)
+
+    async def async_write_opener_setting(
+        self, door: GarageDoor, setting: OpenerSetting, value: int | bool
+    ) -> None:
+        """Apply one validated setting to its owning opener."""
+        await self._async_request(
+            "PUT",
+            _opener_url(door, setting.value),
+            json_body=setting.payload(value),
+            allow_redirects=False,
         )
-        await self._async_request("PUT", url)
+
+    async def _async_command(self, door: GarageDoor, command: str) -> None:
+        await self._async_request("PUT", _opener_url(door, command))
 
     async def _async_request_json(
         self, method: str, url: str, headers: HeadersFn | None = None, *, bounded: bool = False
@@ -289,11 +318,25 @@ class MyQClient:
                         raise MyQApiError("MyQ response exceeds size limit")
                 body = bytes(received)
             self._request_cooldown.check_response(url, response.status, response.headers)
+            if response.status == 400:
+                try:
+                    problem = json.loads(body)
+                except UnicodeDecodeError, json.JSONDecodeError:
+                    problem = None
+                if isinstance(problem, dict) and problem.get("code") == "400.003":
+                    raise MyQUnsupportedDeviceError("Device does not support this operation")
             if response.status in {401, 403}:
                 raise MyQAuthenticationError(f"MyQ returned HTTP {response.status}")
             if response.status >= (300 if allow_redirects is False else 400):
                 raise MyQApiError(f"MyQ returned HTTP {response.status}")
             return body
+
+
+def _opener_url(door: GarageDoor, path: str) -> str:
+    return (
+        f"{GARAGE_DEVICES_BASE_URL}/api/v6.0/accounts/{quote(door.account_id, safe='')}/"
+        f"door_openers/{quote(door.serial_number, safe='')}/{path}"
+    )
 
 
 def _camera_alias(camera: MyQCamera, payload: dict[str, object]) -> str:

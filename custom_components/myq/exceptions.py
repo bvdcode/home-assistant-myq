@@ -34,6 +34,10 @@ class MyQApiError(MyQError):
     """A cloud response could not be used by the requested operation."""
 
 
+class MyQUnsupportedDeviceError(MyQApiError):
+    """The cloud explicitly rejected the operation for this device model."""
+
+
 class MyQRateLimitError(MyQApiError):
     """A service has asked the client to pause further requests."""
 
