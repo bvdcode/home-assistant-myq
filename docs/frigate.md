@@ -8,10 +8,10 @@ opener-mounted camera in [issue #33](https://github.com/bvdcode/home-assistant-m
 ## Prepare the camera in Home Assistant
 
 1. Under **Settings → Devices & services → MyQ → Configure**, enable
-   **Require LAN-only camera video**. Open the TC camera in Home Assistant and
-   confirm live video plays.
+   **Require LAN-only camera video**. Open the TC camera’s live view in Home
+   Assistant using WebRTC and confirm that video plays.
 2. In the camera entity's settings, enable **Preload camera stream**. This
-   keeps the video session active for Frigate. Use a powered garage camera
+   keeps the HLS stream active. Use a powered garage camera
    for continuous viewing. Leave preloading off on a battery Video Keypad.
 3. On the opener's device page, find its serial number under **Device info**.
    The RTSP stream name for an attached camera is `myq_<opener-serial>_camera`.
@@ -47,3 +47,8 @@ cameras:
 Apply the configuration and open **garage** in Frigate. Once video plays,
 configure the forwarder to start after reboot and keep the Frigate container's
 IP address fixed so the access rule continues to match.
+
+After Home Assistant restarts, if Frigate cannot find the RTSP stream, open
+the camera’s live view in Home Assistant using WebRTC. In Home Assistant
+2026.7.4, opening that view registers the named stream with go2rtc. Then check
+that video has resumed in Frigate.
