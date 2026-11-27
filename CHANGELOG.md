@@ -2,6 +2,39 @@
 
 <!-- version list -->
 
+## v0.2.17 (2026-11-18)
+
+Reduce camera overhead and separate keypad diagnostics
+
+- Limit passive preview decoding while preserving the latest frame
+- Share failed camera preparation cooldowns across viewers
+- Separate keypad diagnostics and cache lifecycle from device polling
+- Add regression coverage for throttling, retries and cleanup
+
+
+## v0.2.16 (2026-11-18)
+
+Add light controls and improve Video Keypad support
+
+- Add standalone MyQ light discovery, on/off controls, and light-only account setup
+- Wake sleeping Video Keypads and share live video sessions
+- Persist passive keypad previews and complete snapshot-time translations
+- Handle request timeouts and clean up preloaded camera streams
+- Refresh WebRTC providers after camera recovery
+- Update light-control translations and documentation
+
+
+## v0.2.15 (2026-11-16)
+
+Add Video Keypad diagnostics and manual power refresh
+
+- Expose cached battery, power mode and shared video session diagnostics.
+- Add manual power refresh with persistent caching, expiry and shutdown cleanup.
+- Complete diagnostic translations across all 16 supported languages.
+- Add regression coverage for diagnostics, session lifecycle and localization.
+- Simplify contribution and security documentation.
+
+
 ## v0.2.14 (2026-11-16)
 
 Improve localization and integration maintainability
