@@ -192,6 +192,22 @@
       "keypad_refresh_power": {
         "name": "Actualiser la batterie et l’alimentation"
       }
+    },
+    "switch": {
+      "lockmode": {
+        "name": "Verrouillage des télécommandes"
+      },
+      "worklight_settings": {
+        "name": "Éclairage sur détection de mouvement"
+      }
+    },
+    "number": {
+      "timetoclose": {
+        "name": "Délai de fermeture automatique"
+      },
+      "lighttimer": {
+        "name": "Durée d’éclairage"
+      }
     }
   },
   "exceptions": {

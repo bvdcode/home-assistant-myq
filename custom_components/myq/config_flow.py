@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 import re
 from collections.abc import Mapping
-from dataclasses import dataclass
 from typing import cast
 
 import voluptuous as vol
@@ -16,7 +15,6 @@ from homeassistant.helpers.aiohttp_client import (
     async_get_clientsession,
 )
 
-from .auth import MyQLoginSession
 from .client import MyQClient
 from .config_flow_forms import (
     BROWSER_CALLBACK_SCHEMA,
@@ -39,30 +37,13 @@ from .const import (
     DEFAULT_MFA_METHOD,
     DOMAIN,
 )
-from .exceptions import (
-    MyQAuthenticationError,
-    MyQBrowserSessionExpiredError,
-    MyQCloudflareChallengeError,
-    MyQError,
-    MyQInvalidCallbackError,
-    MyQInvalidCredentialsError,
-    MyQInvalidMfaError,
-    MyQUnsupportedAuthPageError,
-)
+from .exceptions import MyQError
 from .models import OAuthTokens
 from .oauth import MyQAuth
 from .runtime import MyQConfigData, MyQConfigEntry, tokens_to_data
+from .sign_in import MyQSignIn
 
 _LOGGER = logging.getLogger(__name__)
-
-
-@dataclass(frozen=True, slots=True)
-class LoginAttempt:
-    """The tokens, recoverable error or browser continuation of a sign-in step."""
-
-    tokens: OAuthTokens | None = None
-    error: str | None = None
-    browser_url: str | None = None
 
 
 class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -79,15 +60,13 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def __init__(self) -> None:
         self._email: str | None = None
         self._mfa_method: str | None = None
-        self._browser_url: str | None = None
-        self._login: MyQLoginSession | None = None
-        self._login_session: ClientSession | None = None
+        self._sign_in = MyQSignIn(self._create_login_session)
         self._reauth_entry: MyQConfigEntry | None = None
 
     @callback
     def async_remove(self) -> None:
         """Release the sign-in session when the flow is dismissed before it finishes."""
-        self._close_login()
+        self._sign_in.close()
 
     async def async_step_user(
         self,
@@ -122,7 +101,7 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Associate browser authorization with the new or reconnecting account."""
         if self._reauth_entry is not None:
-            self._begin_browser_login()
+            self._sign_in.begin_browser()
             return await self.async_step_browser()
 
         if user_input is not None:
@@ -130,7 +109,7 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self._email = browser_input[CONF_EMAIL].strip().casefold()
             self._mfa_method = DEFAULT_MFA_METHOD
             self._async_abort_entries_match({CONF_EMAIL: self._email})
-            self._begin_browser_login()
+            self._sign_in.begin_browser()
             return await self.async_step_browser()
 
         return self.async_show_form(
@@ -197,7 +176,9 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         if user_input is not None:
             callback_input = cast(BrowserCallbackInput, user_input)
-            attempt = await self._async_complete_browser(callback_input["callback_url"].strip())
+            attempt = await self._sign_in.async_complete_browser(
+                callback_input["callback_url"].strip()
+            )
             if attempt.tokens is not None:
                 return await self._async_finish(attempt.tokens)
             errors["base"] = attempt.error or "unknown"
@@ -207,7 +188,7 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=BROWSER_CALLBACK_SCHEMA,
             errors=errors,
             description_placeholders={
-                "authorization_url": self._required_browser_url(),
+                "authorization_url": self._sign_in.browser_url,
                 "email": self._required_email(),
             },
         )
@@ -225,7 +206,9 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             password_input = cast(PasswordInput, user_input)
             self._mfa_method = password_input[CONF_MFA_METHOD]
-            attempt = await self._async_start_login(password_input["password"])
+            attempt = await self._sign_in.async_start(
+                self._required_email(), password_input["password"], self._required_mfa_method()
+            )
             if attempt.tokens is not None:
                 return await self._async_finish(attempt.tokens)
             if attempt.browser_url is not None:
@@ -253,7 +236,7 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             if not re.fullmatch(r"\d{6}", code):
                 errors["base"] = "invalid_mfa"
             else:
-                attempt = await self._async_submit_mfa(code)
+                attempt = await self._sign_in.async_submit_mfa(code)
                 if attempt.tokens is not None:
                     return await self._async_finish(attempt.tokens)
                 if attempt.browser_url is not None:
@@ -266,63 +249,6 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-    async def _async_start_login(self, password: str) -> LoginAttempt:
-        self._create_login_session()
-        try:
-            tokens = await self._required_login().async_start(
-                self._required_email(),
-                password,
-                self._required_mfa_method(),
-            )
-        except MyQInvalidCredentialsError:
-            self._close_login()
-            return LoginAttempt(error="invalid_auth")
-        except (MyQCloudflareChallengeError, MyQUnsupportedAuthPageError) as error:
-            return self._browser_fallback(error, step="login")
-        except ClientError, TimeoutError:
-            self._close_login()
-            return LoginAttempt(error="cannot_connect")
-        except MyQError:
-            _LOGGER.exception("Unexpected MyQ error while starting authentication")
-            self._close_login()
-            return LoginAttempt(error="unknown")
-        return LoginAttempt(tokens=tokens)
-
-    async def _async_complete_browser(self, callback_url: str) -> LoginAttempt:
-        if self._login is None:
-            return LoginAttempt(error="authentication_expired")
-        try:
-            tokens = await self._required_login().async_complete_browser(callback_url)
-        except MyQInvalidCallbackError:
-            return LoginAttempt(error="invalid_callback")
-        except MyQBrowserSessionExpiredError:
-            return self._restart_browser("browser_session_expired")
-        except MyQAuthenticationError:
-            return self._restart_browser("browser_auth_failed")
-        except ClientError, TimeoutError:
-            return self._restart_browser("cannot_connect")
-        except MyQError:
-            _LOGGER.exception("Unexpected MyQ error while completing browser authentication")
-            return self._restart_browser("unknown")
-        return LoginAttempt(tokens=tokens)
-
-    async def _async_submit_mfa(self, code: str) -> LoginAttempt:
-        if self._login is None:
-            return LoginAttempt(error="authentication_expired")
-        try:
-            tokens = await self._required_login().async_submit_mfa(code)
-        except MyQInvalidMfaError:
-            return LoginAttempt(error="invalid_mfa")
-        except (MyQCloudflareChallengeError, MyQUnsupportedAuthPageError) as error:
-            return self._browser_fallback(error, step="MFA verification")
-        except ClientError, TimeoutError:
-            return LoginAttempt(error="cannot_connect")
-        except MyQError:
-            _LOGGER.exception("Unexpected MyQ error while submitting MFA")
-            self._close_login()
-            return LoginAttempt(error="unknown")
-        return LoginAttempt(tokens=tokens)
-
     async def _async_finish(self, tokens: OAuthTokens) -> ConfigFlowResult:
         email_address = self._required_email()
         auth = MyQAuth(async_get_clientsession(self.hass), tokens, lambda _: None)
@@ -330,13 +256,13 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         try:
             devices = await client.async_get_devices()
         except ClientError, TimeoutError:
-            self._close_login()
+            self._sign_in.close()
             return self.async_abort(reason="cannot_connect")
         except MyQError:
             _LOGGER.exception("Unexpected MyQ API error during account validation")
-            self._close_login()
+            self._sign_in.close()
             return self.async_abort(reason="unknown")
-        self._close_login()
+        self._sign_in.close()
         if not devices.doors and not devices.cameras and not devices.lights:
             return self.async_abort(reason="no_devices")
 
@@ -357,54 +283,12 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._abort_if_unique_id_configured()
         return self.async_create_entry(title=email_address, data=data)
 
-    def _close_login(self) -> None:
-        if self._login_session is not None:
-            self._login_session.detach()
-        self._login_session = None
-        self._login = None
-        self._browser_url = None
-
-    def _create_login_session(self) -> None:
-        self._close_login()
-        session = async_create_clientsession(
+    def _create_login_session(self) -> ClientSession:
+        return async_create_clientsession(
             self.hass,
             auto_cleanup=False,
             cookie_jar=CookieJar(),
         )
-        self._login_session = session
-        self._login = MyQLoginSession(session)
-
-    def _begin_browser_login(self) -> None:
-        self._create_login_session()
-        self._start_browser()
-
-    def _start_browser(self) -> str:
-        self._browser_url = self._required_login().start_browser()
-        return self._browser_url
-
-    def _browser_fallback(
-        self,
-        error: MyQCloudflareChallengeError | MyQUnsupportedAuthPageError,
-        *,
-        step: str,
-    ) -> LoginAttempt:
-        reason = f"{type(error).__name__}: {error}".rstrip(": ")
-        _LOGGER.warning(
-            "Automatic MyQ authentication could not continue during %s; "
-            "offering browser sign-in: %s",
-            step,
-            reason,
-        )
-        return LoginAttempt(browser_url=self._start_browser())
-
-    def _restart_browser(self, error: str) -> LoginAttempt:
-        self._start_browser()
-        return LoginAttempt(error=error)
-
-    def _required_browser_url(self) -> str:
-        if self._browser_url is None:
-            raise RuntimeError("The MyQ config flow has no browser authorization URL")
-        return self._browser_url
 
     def _required_email(self) -> str:
         if self._email is None:
@@ -415,11 +299,6 @@ class MyQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if self._mfa_method is None:
             raise RuntimeError("The MyQ config flow has no MFA method")
         return self._mfa_method
-
-    def _required_login(self) -> MyQLoginSession:
-        if self._login is None:
-            raise RuntimeError("The MyQ config flow has no login session")
-        return self._login
 
 
 class MyQOptionsFlow(config_entries.OptionsFlow):

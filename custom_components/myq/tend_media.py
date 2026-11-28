@@ -1,4 +1,4 @@
-"""UDP transport, frame assembly and receiver reports for Tend video."""
+"""UDP connection setup, peer selection and media routing for Tend video."""
 
 from __future__ import annotations
 
@@ -9,10 +9,10 @@ import logging
 import secrets
 import socket
 import struct
-import time
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from .tend_frames import TendFrameAssembler
 from .tend_protocol import (
     _SDNK_MAGIC,
     TendCamera,
@@ -20,13 +20,13 @@ from .tend_protocol import (
     VideoOffer,
     _media_id,
     _sdnk,
-    decode_video_payload,
     parse_peer_packet,
     register_packet,
 )
+from .tend_rtp import RtpReceiver
 
 _LOGGER = logging.getLogger(__name__)
-_RTP_SEQUENCE_MODULUS = 1 << 16
+_REPORT_INTERVAL = 2.0
 _LAN_NETWORKS = tuple(
     ipaddress.IPv4Network(n) for n in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
 )
@@ -64,7 +64,7 @@ class _DatagramHandler(asyncio.DatagramProtocol):
 
 
 class VideoTransport:
-    """LAN hole punching, RTP assembly, AES decoding, and RTCP reports."""
+    """Own UDP channels, select peers and route media and control packets."""
 
     def __init__(
         self,
@@ -78,7 +78,6 @@ class VideoTransport:
         self._lan_only = lan_only
         self._lan_ip = _camera_lan_ip(camera.local_ip) if lan_only else ""
         self.offer = offer
-        self.on_frame = on_frame
         self.channels: list[_Channel] = []
         self.local_ip = ""
         self._relay_ip = ""
@@ -87,20 +86,8 @@ class VideoTransport:
         self._camera_ips = {camera.local_ip} if camera.local_ip else set[str]()
         self._connected = asyncio.Event()
         self._report_task: asyncio.Task[None] | None = None
-        self._frame_number: int | None = None
-        self._fragments: list[bytes] = []
-        self._local_ssrc = secrets.randbits(32)
-        self._source_ssrc: int | None = None
-        self._base_seq = 0
-        self._max_seq = 0
-        self._cycles = 0
-        self._received = 0
-        self._expected_prior = 0
-        self._received_prior = 0
-        self._last_transit: float | None = None
-        self._jitter = 0.0
-        self._last_sr = 0
-        self._last_sr_at = 0.0
+        self._receiver = RtpReceiver(secrets.randbits(32))
+        self._frames = TendFrameAssembler(offer.aes_key, on_frame, self._receiver.observe)
 
     async def _bind(self) -> None:
         loop = asyncio.get_running_loop()
@@ -206,12 +193,12 @@ class VideoTransport:
         if setup:
             self._handle_setup(channel, data, remote)
         elif control:
-            self._handle_rtcp(data)
+            self._receiver.receive_control(data)
         elif len(data) >= 8:
             if remote[0] != self._last_media_peer:
                 self._last_media_peer = remote[0]
                 self.media_path = self._media_path(remote[0])
-            self._handle_media(data)
+            self._frames.receive(data)
 
     def _accept_remote(self, channel: _Channel, remote: tuple[str, int]) -> bool:
         if self._lan_only and remote != channel.peer:
@@ -288,104 +275,15 @@ class VideoTransport:
                 return "lan"
         return "p2p"
 
-    def _handle_media(self, data: bytes) -> None:
-        if len(data) < 8:
-            return
-        frame_number = struct.unpack_from("<I", data)[0]
-        if self._frame_number is None:
-            self._frame_number = frame_number
-        elif frame_number != self._frame_number:
-            self._flush_rtp()
-            self._frame_number = frame_number
-        self._fragments.append(data[8:])
-
-    def _flush_rtp(self) -> None:
-        if not self._fragments:
-            return
-        rtp = b"".join(self._fragments)
-        self._fragments.clear()
-        if len(rtp) < 12 or rtp[0] >> 6 != 2:
-            return
-        self._observe_rtp(rtp)
-        for record in decode_video_payload(rtp[12:], self.offer.aes_key):
-            self.on_frame(record)
-
-    def _observe_rtp(self, rtp: bytes) -> None:
-        seq, timestamp, ssrc = struct.unpack_from(">HII", rtp, 2)
-        if ssrc != self._source_ssrc:
-            self._source_ssrc = ssrc
-            self._base_seq = seq
-            self._max_seq = seq
-            self._cycles = 0
-            self._received = 0
-            self._expected_prior = 0
-            self._received_prior = 0
-            self._last_transit = None
-            self._jitter = 0
-        elif 0 < (seq - self._max_seq) % _RTP_SEQUENCE_MODULUS < _RTP_SEQUENCE_MODULUS // 2:
-            if seq < self._max_seq:
-                self._cycles += _RTP_SEQUENCE_MODULUS
-            self._max_seq = seq
-        self._received += 1
-        transit = time.monotonic() * 90000 - timestamp
-        if self._last_transit is not None:
-            delta = abs(transit - self._last_transit)
-            self._jitter += (delta - self._jitter) / 16
-        self._last_transit = transit
-
-    def _handle_rtcp(self, data: bytes) -> None:
-        offset = 0
-        while offset + 4 <= len(data):
-            size = (struct.unpack_from(">H", data, offset + 2)[0] + 1) * 4
-            if data[offset] >> 6 != 2 or size < 4 or offset + size > len(data):
-                return
-            if data[offset + 1] == 200 and size >= 20:
-                msw, lsw = struct.unpack_from(">II", data, offset + 8)
-                self._last_sr = ((msw & 0xFFFF) << 16) | (lsw >> 16)
-                self._last_sr_at = time.monotonic()
-            offset += size
-
     async def _report_loop(self) -> None:
         try:
             while True:
-                await asyncio.sleep(2)
-                report = self._receiver_report()
+                await asyncio.sleep(_REPORT_INTERVAL)
+                report = self._receiver.report()
                 if report is not None and self.channels[1].peer is not None:
                     self._send(self.channels[1], report, self.channels[1].peer)
         except asyncio.CancelledError:
             pass
-
-    def _receiver_report(self) -> bytes | None:
-        if self._source_ssrc is None:
-            return None
-        expected = self._cycles + self._max_seq - self._base_seq + 1
-        lost = max(-(1 << 23), min((1 << 23) - 1, expected - self._received))
-        expected_interval = expected - self._expected_prior
-        lost_interval = expected_interval - (self._received - self._received_prior)
-        fraction = (
-            min(255, lost_interval * 256 // expected_interval)
-            if expected_interval > 0 and lost_interval > 0
-            else 0
-        )
-        self._expected_prior = expected
-        self._received_prior = self._received
-        report = bytearray(32)
-        report[:2] = b"\x81\xc9"
-        struct.pack_into(">HII", report, 2, 7, self._local_ssrc, self._source_ssrc)
-        report[12] = fraction
-        report[13:16] = (lost & 0xFFFFFF).to_bytes(3, "big")
-        struct.pack_into(
-            ">IIII",
-            report,
-            16,
-            self._cycles + self._max_seq,
-            int(self._jitter) & 0xFFFFFFFF,
-            self._last_sr,
-            min(int((time.monotonic() - self._last_sr_at) * 65536), 0xFFFFFFFF)
-            if self._last_sr_at
-            else 0,
-        )
-        return bytes(report)
 
     def close(self) -> None:
         """Stop receiver reports and release every allocated UDP channel."""
@@ -393,7 +291,7 @@ class VideoTransport:
             self._report_task.cancel()
             self._report_task = None
         if len(self.channels) == 2 and self.channels[1].peer is not None:
-            bye = struct.pack(">BBHI", 0x81, 203, 1, self._local_ssrc)
+            bye = self._receiver.goodbye()
             with contextlib.suppress(OSError):
                 self._send(self.channels[1], bye, self.channels[1].peer)
                 self._send(self.channels[1], bye, self.channels[1].peer)

@@ -52,6 +52,7 @@ async def test_setup_creates_cover_and_persists_refreshed_tokens(
     entry = _entry()
     entry.add_to_hass(hass)
     client = MagicMock()
+    client.async_read_opener_setting = AsyncMock(return_value=None)
     client.async_get_devices = AsyncMock(return_value=MyQDevices((DOOR,)))
     token_listener: Callable[[OAuthTokens], None] | None = None
 
@@ -154,6 +155,7 @@ async def test_setup_errors_report_translated_reasons(
     entry = _entry()
     entry.add_to_hass(hass)
     client = MagicMock()
+    client.async_read_opener_setting = AsyncMock(return_value=None)
     client.async_get_devices = AsyncMock(side_effect=error)
     with patch("custom_components.myq.MyQClient", return_value=client):
         assert not await hass.config_entries.async_setup(entry.entry_id)
@@ -167,6 +169,7 @@ async def test_sensor_translations_preserve_machine_values(hass: HomeAssistant) 
     entry = _entry()
     entry.add_to_hass(hass)
     client = MagicMock()
+    client.async_read_opener_setting = AsyncMock(return_value=None)
     door = replace(DOOR, battery_backup_state="charged")
     client.async_get_devices = AsyncMock(return_value=MyQDevices((door,)))
     with patch("custom_components.myq.MyQClient", return_value=client):
@@ -200,6 +203,7 @@ async def test_door_open_sensor_tracks_cover_without_additional_polling(
     entry = _entry()
     entry.add_to_hass(hass)
     client = MagicMock()
+    client.async_read_opener_setting = AsyncMock(return_value=None)
     client.async_get_devices = AsyncMock(return_value=MyQDevices((DOOR,)))
 
     with patch("custom_components.myq.MyQClient", return_value=client):
@@ -272,6 +276,7 @@ async def test_command_polls_motion_and_final_state_then_stops_on_unload(
     entry = _entry()
     entry.add_to_hass(hass)
     client = MagicMock()
+    client.async_read_opener_setting = AsyncMock(return_value=None)
     client.async_get_devices = AsyncMock(
         return_value=MyQDevices((replace(DOOR, door_state=initial),))
     )
@@ -353,6 +358,7 @@ async def test_commands_with_polling_disabled_keep_confirmed_state(
     entry = _entry(disable_polling=True)
     entry.add_to_hass(hass)
     client = MagicMock()
+    client.async_read_opener_setting = AsyncMock(return_value=None)
     client.async_get_devices = AsyncMock(
         return_value=MyQDevices((replace(DOOR, door_state=initial),))
     )
@@ -397,6 +403,7 @@ async def test_missing_door_recovers_all_entities_without_losing_customization(
     door = replace(DOOR, battery_backup_state="charged")
     other_door = replace(door, serial_number="door-2", name="Side garage")
     client = MagicMock()
+    client.async_read_opener_setting = AsyncMock(return_value=None)
     client.async_get_devices = AsyncMock(return_value=MyQDevices((door, other_door)))
 
     with patch("custom_components.myq.MyQClient", return_value=client):
@@ -495,6 +502,7 @@ async def test_camera_policy_reload_ignores_token_and_unrelated_option_updates(
     entry = _entry()
     entry.add_to_hass(hass)
     client = MagicMock()
+    client.async_read_opener_setting = AsyncMock(return_value=None)
     client.async_get_devices = AsyncMock(return_value=MyQDevices((DOOR,)))
     with patch("custom_components.myq.MyQClient", return_value=client):
         assert await hass.config_entries.async_setup(entry.entry_id)

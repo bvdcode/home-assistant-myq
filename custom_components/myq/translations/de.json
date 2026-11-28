@@ -192,6 +192,22 @@
       "keypad_refresh_power": {
         "name": "Batterie- und Energiezustand aktualisieren"
       }
+    },
+    "switch": {
+      "lockmode": {
+        "name": "Fernbedienungen sperren"
+      },
+      "worklight_settings": {
+        "name": "Bewegungsgesteuerte Beleuchtung"
+      }
+    },
+    "number": {
+      "timetoclose": {
+        "name": "Zeit bis zum automatischen Schließen"
+      },
+      "lighttimer": {
+        "name": "Beleuchtungsdauer"
+      }
     }
   },
   "exceptions": {

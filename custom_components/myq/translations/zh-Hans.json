@@ -192,6 +192,22 @@
       "keypad_refresh_power": {
         "name": "刷新电池和电源状态"
       }
+    },
+    "switch": {
+      "lockmode": {
+        "name": "遥控器锁定"
+      },
+      "worklight_settings": {
+        "name": "移动感应照明"
+      }
+    },
+    "number": {
+      "timetoclose": {
+        "name": "自动关闭计时器"
+      },
+      "lighttimer": {
+        "name": "照明时长"
+      }
     }
   },
   "exceptions": {

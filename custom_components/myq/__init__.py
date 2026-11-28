@@ -23,6 +23,7 @@ from .runtime import (
     tokens_from_data,
     tokens_to_data,
 )
+from .settings_coordinator import OpenerSettingsCoordinator
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 PLATFORMS: tuple[Platform, ...] = (
@@ -31,7 +32,9 @@ PLATFORMS: tuple[Platform, ...] = (
     Platform.CAMERA,
     Platform.COVER,
     Platform.LIGHT,
+    Platform.NUMBER,
     Platform.SENSOR,
+    Platform.SWITCH,
 )
 
 
@@ -103,8 +106,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyQConfigEntry) -> bool:
             await hass.config_entries.async_reload(updated.entry_id)
 
     entry.async_on_unload(entry.add_update_listener(camera_policy_changed))
-    entry.runtime_data = MyQRuntimeData(client=client, coordinator=coordinator)
+    settings = OpenerSettingsCoordinator(hass, entry, coordinator)
+    entry.runtime_data = MyQRuntimeData(client=client, coordinator=coordinator, settings=settings)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    entry.async_create_background_task(hass, settings.async_refresh(), "myq opener settings")
     return True
 
 

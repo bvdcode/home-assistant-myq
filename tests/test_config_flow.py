@@ -1,13 +1,15 @@
 import logging
+from typing import cast
 from unittest.mock import MagicMock
 
 import pytest
-from aiohttp import ClientConnectionError
+from aiohttp import ClientConnectionError, ClientSession
 from homeassistant import config_entries, data_entry_flow
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.translation import async_get_translations
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.myq.auth import MyQLoginSession
 from custom_components.myq.const import (
     CONF_EMAIL,
     CONF_MFA_METHOD,
@@ -17,6 +19,7 @@ from custom_components.myq.const import (
     MFA_METHOD_SMS,
 )
 from custom_components.myq.exceptions import (
+    MyQAuthorizationDeniedError,
     MyQCloudflareChallengeError,
     MyQInvalidCallbackError,
     MyQInvalidCredentialsError,
@@ -24,6 +27,8 @@ from custom_components.myq.exceptions import (
     MyQUnsupportedAuthPageError,
 )
 from custom_components.myq.models import GarageDoor, MyQCamera, MyQDevices, MyQLight, OAuthTokens
+
+from .http import FakeResponse, FakeSession
 
 EMAIL = "driver@example.com"
 PASSWORD = "secret"
@@ -110,11 +115,16 @@ async def test_invalid_credentials_remain_on_user_form(
     mock_login_session.http_session.detach.assert_called_once_with()
 
 
-@pytest.mark.parametrize("error_type", [MyQCloudflareChallengeError, MyQUnsupportedAuthPageError])
+@pytest.mark.parametrize(
+    "error_type",
+    [MyQAuthorizationDeniedError, MyQCloudflareChallengeError, MyQUnsupportedAuthPageError],
+)
 async def test_unsupported_authentication_starts_browser_sign_in(
     hass: HomeAssistant,
     mock_login_session: MagicMock,
-    error_type: type[MyQCloudflareChallengeError | MyQUnsupportedAuthPageError],
+    error_type: type[
+        MyQAuthorizationDeniedError | MyQCloudflareChallengeError | MyQUnsupportedAuthPageError
+    ],
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     detail = "HTTP 200 at /AccountMfa/VerifyOtp, forms=1"
@@ -129,11 +139,97 @@ async def test_unsupported_authentication_starts_browser_sign_in(
         "email": EMAIL,
     }
     assert (
-        "custom_components.myq.config_flow",
+        "custom_components.myq.sign_in",
         logging.WARNING,
         "Automatic MyQ authentication could not continue during login; "
         f"offering browser sign-in: {error_type.__name__}: {detail}",
     ) in caplog.record_tuples
+
+
+@pytest.mark.parametrize("during_mfa", [False, True], ids=["login", "mfa"])
+@pytest.mark.parametrize(
+    ("body", "reason"),
+    [
+        (
+            '{"reason":"Resource not authorized","detail":"private-body"}',
+            "MyQAuthorizationDeniedError: Authorization request denied "
+            "(HTTP 403 at /connect/authorize, reason=Resource not authorized)",
+        ),
+        (
+            "<title>Just a moment</title><body>private-body</body>",
+            "MyQCloudflareChallengeError: Interactive browser verification required "
+            "(HTTP 403 at /connect/authorize)",
+        ),
+    ],
+    ids=["denied", "challenge"],
+)
+async def test_browser_fallback_logs_response_context_without_response_contents(
+    hass: HomeAssistant,
+    mock_login_session: MagicMock,
+    caplog: pytest.LogCaptureFixture,
+    body: str,
+    reason: str,
+    during_mfa: bool,
+) -> None:
+    responses = []
+    if during_mfa:
+        responses.extend(
+            [
+                FakeResponse(
+                    "",
+                    body='<form action="/Account/Login"><input name="Email" type="email">'
+                    '<input name="Password" type="password"></form>',
+                ),
+                FakeResponse(
+                    "",
+                    body='<form action="/AccountMfa/VerifyOtp">'
+                    '<input name="SelectedMfaMethod" type="hidden" value="Email">'
+                    '<input name="Otp"></form>',
+                ),
+            ]
+        )
+    responses.extend(
+        [
+            FakeResponse(
+                "",
+                302,
+                headers={
+                    "Location": "/connect/authorize?state=private-state&code=private-code"
+                    "#private-fragment"
+                },
+            ),
+            FakeResponse("", 403, body, headers={"Set-Cookie": "private-cookie"}),
+        ]
+    )
+    session = FakeSession(request_responses=responses)
+    login = MyQLoginSession(cast(ClientSession, session))
+    mock_login_session.async_start.side_effect = login.async_start
+    mock_login_session.async_submit_mfa.side_effect = login.async_submit_mfa
+    result = await _submit_credentials(hass)
+    if during_mfa:
+        assert result["step_id"] == "mfa"
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {"code": "123456"}
+        )
+    assert result["step_id"] == "browser"
+    stage = "MFA verification" if during_mfa else "login"
+    assert (
+        "custom_components.myq.sign_in",
+        logging.WARNING,
+        f"Automatic MyQ authentication could not continue during {stage}; "
+        f"offering browser sign-in: {reason}",
+    ) in caplog.record_tuples
+    for private in (
+        "private-body",
+        "private-state",
+        "private-code",
+        "private-fragment",
+        "private-cookie",
+        EMAIL,
+        PASSWORD,
+        "123456",
+    ):
+        assert private not in caplog.text
 
 
 async def test_browser_sign_in_can_be_selected_without_password(
@@ -250,11 +346,16 @@ async def test_dismissed_sign_in_releases_login_session(
     mock_login_session.http_session.detach.assert_called_once_with()
 
 
-@pytest.mark.parametrize("error_type", [MyQCloudflareChallengeError, MyQUnsupportedAuthPageError])
+@pytest.mark.parametrize(
+    "error_type",
+    [MyQAuthorizationDeniedError, MyQCloudflareChallengeError, MyQUnsupportedAuthPageError],
+)
 async def test_unsupported_screen_after_mfa_starts_browser_sign_in(
     hass: HomeAssistant,
     mock_login_session: MagicMock,
-    error_type: type[MyQCloudflareChallengeError | MyQUnsupportedAuthPageError],
+    error_type: type[
+        MyQAuthorizationDeniedError | MyQCloudflareChallengeError | MyQUnsupportedAuthPageError
+    ],
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     mock_login_session.async_start.return_value = None
@@ -267,7 +368,7 @@ async def test_unsupported_screen_after_mfa_starts_browser_sign_in(
     assert result["step_id"] == "browser"
     mock_login_session.start_browser.assert_called_once_with()
     assert (
-        "custom_components.myq.config_flow",
+        "custom_components.myq.sign_in",
         logging.WARNING,
         "Automatic MyQ authentication could not continue during MFA verification; "
         f"offering browser sign-in: {error_type.__name__}",

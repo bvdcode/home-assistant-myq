@@ -192,6 +192,22 @@
       "keypad_refresh_power": {
         "name": "Actualizar batería y alimentación"
       }
+    },
+    "switch": {
+      "lockmode": {
+        "name": "Bloqueo de mandos a distancia"
+      },
+      "worklight_settings": {
+        "name": "Luz activada por movimiento"
+      }
+    },
+    "number": {
+      "timetoclose": {
+        "name": "Temporizador de cierre automático"
+      },
+      "lighttimer": {
+        "name": "Duración de la luz"
+      }
     }
   },
   "exceptions": {

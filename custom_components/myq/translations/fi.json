@@ -192,6 +192,22 @@
       "keypad_refresh_power": {
         "name": "Päivitä akun ja virransyötön tila"
       }
+    },
+    "switch": {
+      "lockmode": {
+        "name": "Kaukosäätimien lukitus"
+      },
+      "worklight_settings": {
+        "name": "Liiketunnistimella syttyvä valo"
+      }
+    },
+    "number": {
+      "timetoclose": {
+        "name": "Automaattisen sulkemisen viive"
+      },
+      "lighttimer": {
+        "name": "Valon paloaika"
+      }
     }
   },
   "exceptions": {

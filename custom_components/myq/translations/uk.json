@@ -192,6 +192,22 @@
       "keypad_refresh_power": {
         "name": "Оновити стан батареї та живлення"
       }
+    },
+    "switch": {
+      "lockmode": {
+        "name": "Блокування пультів"
+      },
+      "worklight_settings": {
+        "name": "Увімкнення освітлення під час руху"
+      }
+    },
+    "number": {
+      "timetoclose": {
+        "name": "Таймер автоматичного закриття"
+      },
+      "lighttimer": {
+        "name": "Тривалість освітлення"
+      }
     }
   },
   "exceptions": {

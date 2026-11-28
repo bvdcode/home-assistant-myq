@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from .auth_forms import ParsedForm, parse_forms
 from .exceptions import (
     MyQApiError,
+    MyQAuthorizationDeniedError,
     MyQCloudflareChallengeError,
     MyQUnsupportedAuthPageError,
 )
@@ -50,23 +51,7 @@ def login_form(page: HttpPage) -> ParsedForm:
 
 def _page_summary(page: HttpPage) -> str:
     path = urllib.parse.urlsplit(page.url).path or "/"
-    title_match = re.search(
-        r"<title\b[^>]*>(.*?)</title>",
-        page.body,
-        re.IGNORECASE | re.DOTALL,
-    )
-    title = _plain_text(title_match.group(1)) if title_match else ""
-    content = _plain_text(page.body)
-    parts = [f"HTTP {page.status} at {path}"]
-    if title:
-        parts.append(f"title={title[:120]!r}")
-    if content:
-        parts.append(f"content={content[:240]!r}")
-    return ", ".join(parts)
-
-
-def _plain_text(value: str) -> str:
-    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", value))).strip()
+    return f"HTTP {page.status} at {path}"
 
 
 def otp_form(page: HttpPage) -> ParsedForm:
@@ -77,11 +62,7 @@ def otp_form(page: HttpPage) -> ParsedForm:
         None,
     )
     if form is None or not 200 <= page.status < 300:
-        path = urllib.parse.urlsplit(page.url).path or "/"
-        message = (
-            "The MyQ MFA form was not recognized "
-            f"(HTTP {page.status} at {path}, forms={len(forms)})"
-        )
+        message = f"The MyQ MFA form was not recognized ({_page_summary(page)}, forms={len(forms)})"
         if 200 <= page.status < 300:
             raise MyQUnsupportedAuthPageError(message)
         raise MyQApiError(message)
@@ -120,14 +101,17 @@ def validation_error(page_html: str) -> str | None:
     return re.sub(r"\s+", " ", message) or None
 
 
-def raise_for_challenge(page: HttpPage) -> None:
-    """Reject identity pages that require interactive browser verification."""
-    authorize_forbidden = (
+def raise_for_auth_block(page: HttpPage) -> None:
+    """Distinguish interactive verification from a refused authorization request."""
+    if any(marker in page.body for marker in ("Just a moment", "Verify you are human")):
+        raise MyQCloudflareChallengeError(
+            f"Interactive browser verification required ({_page_summary(page)})"
+        )
+    if (
         page.status == 403
         and urllib.parse.urlsplit(page.url).path.lower() == "/connect/authorize"
         and "Resource not authorized" in page.body
-    )
-    if authorize_forbidden or any(
-        marker in page.body for marker in ("Just a moment", "Verify you are human")
     ):
-        raise MyQCloudflareChallengeError
+        raise MyQAuthorizationDeniedError(
+            f"Authorization request denied ({_page_summary(page)}, reason=Resource not authorized)"
+        )

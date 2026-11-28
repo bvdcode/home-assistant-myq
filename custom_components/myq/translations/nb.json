@@ -192,6 +192,22 @@
       "keypad_refresh_power": {
         "name": "Oppdater batteri- og strømstatus"
       }
+    },
+    "switch": {
+      "lockmode": {
+        "name": "Sperring av fjernkontroller"
+      },
+      "worklight_settings": {
+        "name": "Bevegelsesaktivert lys"
+      }
+    },
+    "number": {
+      "timetoclose": {
+        "name": "Tidsur for automatisk lukking"
+      },
+      "lighttimer": {
+        "name": "Lysets varighet"
+      }
     }
   },
   "exceptions": {

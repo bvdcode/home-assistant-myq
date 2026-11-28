@@ -63,7 +63,7 @@ def test_lan_only_never_selects_public_or_other_private_candidate() -> None:
     receiver = transport()
     receiver.on_datagram(False, candidates(("198.51.100.1", 9000), ("192.168.1.30", 9001)), BROKER)
     assert receiver.channels[0].peer is None
-    with patch.object(receiver, "_handle_media") as media:
+    with patch.object(receiver._frames, "receive") as media:
         receiver.on_datagram(False, b"media packet", BROKER)
         receiver.on_datagram(False, b"media packet", ("198.51.100.1", 9000))
         media.assert_not_called()
@@ -105,8 +105,8 @@ def test_pin_applies_to_media_rtcp_and_handshake_packets() -> None:
     for channel in receiver.channels:
         channel.peer = (CAMERA_IP, 9000 + int(channel.control))
     with (
-        patch.object(receiver, "_handle_media") as media,
-        patch.object(receiver, "_handle_rtcp") as rtcp,
+        patch.object(receiver._frames, "receive") as media,
+        patch.object(receiver._receiver, "receive_control") as rtcp,
     ):
         for control in [False, True]:
             for remote in [BROKER, (CAMERA_IP, 9999), ("192.168.1.30", 9000)]:

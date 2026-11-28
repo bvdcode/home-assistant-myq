@@ -11,6 +11,7 @@ from custom_components.myq.auth import MyQLoginSession
 from custom_components.myq.const import BROWSER_USER_AGENT, MFA_METHOD_EMAIL, MFA_METHOD_SMS
 from custom_components.myq.exceptions import (
     MyQApiError,
+    MyQAuthorizationDeniedError,
     MyQCloudflareChallengeError,
     MyQInvalidMfaError,
     MyQUnsupportedAuthPageError,
@@ -178,20 +179,17 @@ async def test_missing_login_form_reports_safe_page_summary() -> None:
             FakeResponse(
                 "",
                 403,
-                "<html><title>Access denied</title><body>Request blocked.</body></html>",
+                "<html><title>private-title</title>"
+                "<body>private-body driver@example.com</body></html>",
             ),
         ]
     )
     login = MyQLoginSession(cast(ClientSession, session))
 
-    with pytest.raises(
-        MyQApiError,
-        match=(
-            r"HTTP 403 at /blocked, title='Access denied', "
-            r"content='Access denied Request blocked\.'"
-        ),
-    ):
+    with pytest.raises(MyQApiError, match=r"HTTP 403 at /blocked") as error:
         await login.async_start("driver@example.com", "secret", MFA_METHOD_EMAIL)
+
+    assert str(error.value) == "The MyQ sign-in form was not found (HTTP 403 at /blocked)"
 
 
 async def test_authorize_forbidden_starts_browser_fallback() -> None:
@@ -206,7 +204,10 @@ async def test_authorize_forbidden_starts_browser_fallback() -> None:
     )
     login = MyQLoginSession(cast(ClientSession, session))
 
-    with pytest.raises(MyQCloudflareChallengeError):
+    with pytest.raises(
+        MyQAuthorizationDeniedError,
+        match=r"HTTP 403 at /connect/authorize, reason=Resource not authorized",
+    ):
         await login.async_start("driver@example.com", "secret", MFA_METHOD_EMAIL)
 
 

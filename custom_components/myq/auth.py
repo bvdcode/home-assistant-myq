@@ -13,7 +13,7 @@ from .auth_pages import (
     consent_form,
     login_form,
     otp_form,
-    raise_for_challenge,
+    raise_for_auth_block,
     validation_error,
 )
 from .browser_auth import _BrowserAuthorization
@@ -60,7 +60,7 @@ class MyQLoginSession:
         authorization_code, page = await self._follow_redirects(page)
         if authorization_code is not None:
             return await self._async_exchange_code(authorization_code)
-        raise_for_challenge(page)
+        raise_for_auth_block(page)
 
         form = login_form(page)
         fields = dict(form.fields)
@@ -75,7 +75,7 @@ class MyQLoginSession:
         authorization_code, result = await self._follow_redirects(submitted)
         if authorization_code is not None:
             return await self._async_exchange_code(authorization_code)
-        raise_for_challenge(result)
+        raise_for_auth_block(result)
 
         message = validation_error(result.body)
         if message is not None:
@@ -83,7 +83,7 @@ class MyQLoginSession:
         authorization_code, result = await self._select_mfa_method(result, mfa_method)
         if authorization_code is not None:
             return await self._async_exchange_code(authorization_code)
-        raise_for_challenge(result)
+        raise_for_auth_block(result)
         self._set_mfa_form(result)
         return None
 
@@ -103,13 +103,13 @@ class MyQLoginSession:
             ),
         )
         authorization_code, result = await self._follow_redirects(submitted)
-        raise_for_challenge(result)
+        raise_for_auth_block(result)
         authorization_code, result = await self._follow_consent(
             authorization_code,
             result,
         )
         if authorization_code is None:
-            raise_for_challenge(result)
+            raise_for_auth_block(result)
             message = validation_error(result.body)
             if message is None:
                 self._set_mfa_form(result)

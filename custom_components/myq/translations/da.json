@@ -192,6 +192,22 @@
       "keypad_refresh_power": {
         "name": "Opdater batteri- og strømstatus"
       }
+    },
+    "switch": {
+      "lockmode": {
+        "name": "Lås fjernbetjeninger"
+      },
+      "worklight_settings": {
+        "name": "Bevægelsesaktiveret lys"
+      }
+    },
+    "number": {
+      "timetoclose": {
+        "name": "Timer for automatisk lukning"
+      },
+      "lighttimer": {
+        "name": "Lysets varighed"
+      }
     }
   },
   "exceptions": {

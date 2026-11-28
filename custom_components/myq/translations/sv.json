@@ -192,6 +192,22 @@
       "keypad_refresh_power": {
         "name": "Uppdatera batteri- och strömstatus"
       }
+    },
+    "switch": {
+      "lockmode": {
+        "name": "Spärr för fjärrkontroller"
+      },
+      "worklight_settings": {
+        "name": "Rörelseaktiverad belysning"
+      }
+    },
+    "number": {
+      "timetoclose": {
+        "name": "Tid till automatisk stängning"
+      },
+      "lighttimer": {
+        "name": "Belysningstid"
+      }
     }
   },
   "exceptions": {

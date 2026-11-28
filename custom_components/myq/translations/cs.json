@@ -192,6 +192,22 @@
       "keypad_refresh_power": {
         "name": "Aktualizovat stav baterie a napájení"
       }
+    },
+    "switch": {
+      "lockmode": {
+        "name": "Blokování dálkových ovladačů"
+      },
+      "worklight_settings": {
+        "name": "Osvětlení aktivované pohybem"
+      }
+    },
+    "number": {
+      "timetoclose": {
+        "name": "Časovač automatického zavření"
+      },
+      "lighttimer": {
+        "name": "Doba svícení"
+      }
     }
   },
   "exceptions": {
