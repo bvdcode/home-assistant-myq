@@ -94,7 +94,8 @@ work-light binary sensor reports its state only.
 
 After a light command, status polling starts after 1 second and slows to a
 5-second interval until MyQ reports the requested state, for up to 60 seconds.
-Light entities always show the state reported by MyQ.
+Light entities always show the state reported by MyQ. Real-device validation
+of light commands and state updates is pending.
 
 ## Cameras
 
