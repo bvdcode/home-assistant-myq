@@ -2,6 +2,17 @@
 
 <!-- version list -->
 
+## v0.2.18 (2026-11-28)
+
+Add opener settings and improve sign-in error handling
+
+- Expose auto-close and light timers, remote lockout and motion-activated lighting on supported openers
+- Confirm setting changes and resume missed settings checks when an opener comes back online
+- Distinguish sign-in denial from browser verification and handle expired credentials during settings updates
+- Separate video frame assembly from RTP statistics
+- Document garage door polling, camera streaming and Frigate RTSP setup and recovery
+
+
 ## v0.2.17 (2026-11-18)
 
 Reduce camera overhead and separate keypad diagnostics
